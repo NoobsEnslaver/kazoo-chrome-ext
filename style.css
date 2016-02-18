@@ -139,7 +139,7 @@ ul.ui-autocomplete {
 }
 
 #about_ok_button {
-	background-color: #F7A300;
+	background-color: #34647F;
 	color: white;
 	border: 0;
 	width: 100px;
@@ -162,7 +162,7 @@ ul.ui-autocomplete {
 	left: 13px;
 	width: 250px;
 	height: 185px;
-	border: 2px solid #F7A300;
+	border: 2px solid #7494AF;
 }
 
 #services {
@@ -180,16 +180,23 @@ ul.ui-autocomplete {
 	width: 220px;
 }
 
-#usernamediv {
+#accnamediv {
 	position: absolute;
 	top: 60px;
 	left: 15px;
 	width: 220px;
 }
 
-#passworddiv {
+#usernamediv {
 	position: absolute;
 	top: 85px;
+	left: 15px;
+	width: 220px;
+}
+
+#passworddiv {
+	position: absolute;
+	top: 110px;
 	left: 15px;
 	width: 220px;
 }
@@ -202,7 +209,7 @@ ul.ui-autocomplete {
 }
 
 #signin {
-	background-color: #F7A300;
+	background-color: #34647F;
 	color: white;
 	border: 0;
 	width: 150px;
@@ -228,7 +235,7 @@ ul.ui-autocomplete {
 }
 
 #signin:hover {
-	background-color: #F2B36C;
+	background-color: #34647F;
 }
 
 #status {
@@ -254,7 +261,7 @@ ul.ui-autocomplete {
 
 #tabs {
 	height: 90%;
-	border-color: #F7A300;
+	border-color: #F2B36C;
 	margin: 0 auto;
 }
 
@@ -268,7 +275,7 @@ ul.ui-autocomplete {
 	background-color: #F4F4F4;
 	border-width: .1em;
 	border-style: solid;
-	border-color: #F7A300;
+	border-color: #34647F;
 	border-top-style: none;
 	position: abosolute;
 	bottom: 10;
@@ -289,6 +296,7 @@ ul.ui-autocomplete {
 	bottom: 15px;
 	left: 160px;
 	cursor: pointer;
+	display: none;
 }
 
 #cfabutton {
@@ -296,6 +304,7 @@ ul.ui-autocomplete {
 	bottom: 15px;
 	left: 130px;
 	cursor: pointer;
+	display: none;
 }
 
 #robutton {
@@ -303,6 +312,7 @@ ul.ui-autocomplete {
 	bottom: 15px;
 	left: 100px;
 	cursor: pointer;
+	display: none;
 }
 
 #clicktodial {

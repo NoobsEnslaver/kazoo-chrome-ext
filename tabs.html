@@ -1,95 +1,122 @@
 <!-- 
-Copyright 2013, BroadSoft, Inc.
+     Copyright 2013, BroadSoft, Inc.
 
-Licensed under the Apache License,Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+     Licensed under the Apache License,Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
- 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "ASIS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
- -->
+     http://www.apache.org/licenses/LICENSE-2.0
+     
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "ASIS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+  -->
 <!doctype html>
 <html>
-<head>
-<link rel="stylesheet" type="text/css" href="style.css" />
-<link rel="stylesheet" href="jquery-ui.css" />
-<style>
-.ui-autocomplete{
-	max-height: 100px;
-	width: 80px;
-	overflow-y: scroll;
-	overflow-x: hidden;
-}
-</style>
-</head>
-<body>
-	<div id="name"></div>
+  <head>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="stylesheet" href="jquery-ui.css" />
+    <style>
+      .ui-autocomplete{
+      max-height: 100px;
+      width: 80px;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="name"></div>
 
-	<div id="signout_link_tabs">
-		<div id="signout">
-					<a href="#" tabindex="-1">sign out</a>
-		</div>
+    <div id="signout_link_tabs">
+      <div id="signout">
+	<a href="#" tabindex="-1">sign out</a>
+      </div>
+    </div>
+    <div id="tabs">
+      <ul>
+	<li><a href="#dialer"><span><img
+				       src="images/call.png" title="Call"></span></a></li>
+	<li><a href="#history"><span><img
+					src="images/history.png" title="History"></span></a></li>
+	<li><a href="#preferences"><span><img
+					    src="images/preferences.png" title="Preferences"></span></a></li>
+      </ul>
+      <div id="dialer">
+	<div class="ui-widget">
+	  <input id="destination" placeholder="Phone number" />
 	</div>
-	<div id="tabs">
-		<ul>
-			<li><a href="#dialer"><span><img
-						src="images/call.png" title="Call"></span></a></li>
-			<li><a href="#history"><span><img
-						src="images/history.png" title="History"></span></a></li>
-			<li><a href="#preferences"><span><img
-						src="images/preferences.png" title="Preferences"></span></a></li>
-		</ul>
-		<div id="dialer">
-			<div class="ui-widget">
-				<input id="destination" placeholder="Search and Dial" />
-			</div>
-			<div class="ui-widget">
-				<table id="calls">
-				</table>
-			</div>
-		</div>
-		<div id="history">
-			<div id="calllogs">
-				<table id="calllogentries">
-				</table>
-			</div>
-		</div>
-		<div id="preferences">
-			<div id="clicktodial">
-				<input id="clicktodialbox" type="checkbox" checked />&nbsp;Enable
-				Click to Dial
-			</div>
-			<br />
-			<div id="notifications">
-				<input id="notificationsbox" type="checkbox" checked />&nbsp;Enable
-				notifications
-			</div>
-			<div id="texttospeech">
-				<input id="texttospeechbox" type="checkbox" checked />&nbsp;Enable
-				text to speech
-			</div>
-		</div>
+	<div align="center">
+	  <table>
+	    <tr>
+	      <td><button id="btn1" style="width:60px;height:27px">1</button></td>
+	      <td><button id="btn2" style="width:60px;height:27px">2</button></td>
+	      <td><button id="btn3" style="width:60px;height:27px">3</button></td>
+	    </tr>
+	    <tr>
+	      <td><button id="btn4" style="width:60px;height:27px">4</button></td>
+	      <td><button id="btn5" style="width:60px;height:27px">5</button></td>
+	      <td><button id="btn6" style="width:60px;height:27px">6</button></td>
+	    </tr>
+	    <tr>
+	      <td><button id="btn7" style="width:60px;height:27px">7</button></td>
+	      <td><button id="btn8" style="width:60px;height:27px">8</button></td>
+	      <td><button id="btn9" style="width:60px;height:27px">9</button></td>
+	    </tr>
+	    <tr>
+	      <td><button id="btn10" style="width:60px;height:27px">+</button></td>
+	      <td><button id="btn11" style="width:60px;height:27px">0</button></td>
+	      <td><button id="btn12" style="width:60px;height:27px"><img src="images/answer.png" style="width:20px;height:20px"></button></td>
+	    </tr>
+	  </table>
 	</div>
-	<div id="toolbar">
-		<img id="robutton" src="images/remoteoffice_disabled.png" title="Remote Office" /> 
-		<img id="cfabutton" src="images/callforward_disabled.png" title="Call Forwarding Always" />
-		<img id="dndbutton" src="images/dnd_disabled.png" title="Do Not Disturb" />
+	<div class="ui-widget">
+	  <table id="calls">
+	  </table>
 	</div>
-	<div id="whitespace_below_toolbar"></div>
-	<div id="about_link_tabs">
-		<a href="#" tabindex="-1">about</a>
+      </div>
+      <div id="history">
+	<div id="calllogs">
+	  <table id="calllogentries">
+	  </table>
 	</div>
-</body>
-<script src="jquery.js"></script>
-<script src="jquery-ui.js"></script>
-<script src="jquery.base64.js"></script>
-<script src="xsiactions.js"></script>
-<script type="text/javascript" src="auth.js"></script>
-<script type="text/javascript" src="log.js"></script>
-<script src="dotabs.js"></script>
+      </div>
+      <div id="preferences">
+	<div id="clicktodial">
+	  <input id="clicktodialbox" type="checkbox" checked />&nbsp;Enable
+	  Click to Dial
+	</div>
+	<br />
+	<div id="notifications">
+	  <input id="notificationsbox" type="checkbox" unchecked disabled />&nbsp;Enable
+	  notifications
+	</div>
+	<div id="texttospeech">
+	  <input id="texttospeechbox" type="checkbox" unchecked disabled />&nbsp;Enable
+	  text to speech
+	</div>
+      </div>
+    </div>
+    <div id="toolbar">
+      <select align="left" id="devices">
+	<option value="0">Any phone</option>
+      </select>
+      <img id="robutton" src="images/remoteoffice_disabled.png" title="Remote Office" /> 
+      <img id="cfabutton" src="images/callforward_disabled.png" title="Call Forwarding Always" />
+      <img id="dndbutton" src="images/dnd_disabled.png" title="Do Not Disturb" display="none" />
+    </div>
+    <div id="whitespace_below_toolbar"></div>
+    <div id="about_link_tabs">
+      <a href="#" tabindex="-1">about</a>
+    </div>
+  </body>
+  <script src="jquery.js"></script>
+  <script src="jquery-ui.js"></script>
+  <script src="jquery.base64.js"></script>
+  <!-- <script src="xsiactions.js"></script> -->
+  <!-- <script type="text/javascript" src="auth.js"></script> -->
+  <script type="text/javascript" src="log.js"></script>
+  <script src="dotabs.js"></script>
 </html>
