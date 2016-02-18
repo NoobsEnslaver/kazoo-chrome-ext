@@ -261,7 +261,7 @@ ul.ui-autocomplete {
 
 #tabs {
 	height: 90%;
-	border-color: #F2B36C;
+	border-color: #34647F;
 	margin: 0 auto;
 }
 
@@ -366,7 +366,7 @@ ul.ui-autocomplete {
 }
 
 #calllogentries tr:hover {
-	background-color: #FCD8B1;
+	background-color: #6494AF;
 }
 
 #restartmessage {

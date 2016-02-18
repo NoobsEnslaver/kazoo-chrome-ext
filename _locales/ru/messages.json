@@ -1,0 +1,23 @@
+{
+    "appName": { "message": "Менеджер звонков от Siplabs" },
+    "appDesc": {"message": "Расширение Google Chrome™, предоставляющее доступ к серверам телефонии Kazoo." },
+    "signin_label": {"message": "Войти"},
+    "url": {"message": "Адрес сервера"},
+    "accname": {"message": "Имя аккаунта"},
+    "username": {"message": "Имя пользователя"},
+    "password": {"message": "Пароль"},
+    "signin": {"message": "Войти"},
+    "about": {"message": "справка" },
+    "signout_text": {"message": "выйти"},
+    "call_tab": {"message": "Позвонить"},
+    "history_tab": {"message": "История"},
+    "pref_tab": {"message": "Настройки"},
+    "phone_num": {"message": "Номер телефона"},
+    "clicktodialbox": {"message": "Включить отстлеживание номеров на странице"},
+    "notificationsbox": {"message": "Включить уведомления"},
+    "texttospeechbox": {"message": "Включить голосовую почту"},
+    "any_phone": {"message": "Любое устройство"},
+    "robutton": {"message": "Удалённый офис"},
+    "cfabutton": {"message": "Перенаправление звонков"},
+    "dndbutton": {"message": "Не беспокоить"}    
+}

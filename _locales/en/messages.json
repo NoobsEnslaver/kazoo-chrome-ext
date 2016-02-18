@@ -1,0 +1,23 @@
+{
+    "appName": { "message": "Siplabs Dialer for Google Chrome™" },
+    "appDesc": {"message": "A Google Chrome™ extension that provides Kazoo telephony integration." },
+    "signin_label": {"message": "Sign In"},
+    "url": {"message": "Enter URL"},
+    "accname": {"message": "Enter your account name"},
+    "username": {"message": "Enter your user name"},
+    "password": {"message": "Enter your password"},
+    "signin": {"message": "Sign In"},
+    "about": {"message": "about" },
+    "signout_text": {"message": "signout"},
+    "call_tab": {"message": "Call"},
+    "history_tab": {"message": "History"},
+    "pref_tab": {"message": "Preferences"},
+    "phone_num": {"message": "Phone number"},
+    "clicktodialbox": {"message": "Enable Click to Dial"},
+    "notificationsbox": {"message": "Enable notifications"},
+    "texttospeechbox": {"message": "Enable text to speech"},
+    "any_phone": {"message": "Any  phone"},
+    "robutton": {"message": "Remote Office"},
+    "cfabutton": {"message": "Call Forwarding Always"},
+    "dndbutton": {"message": "Do Not Disturb"}    
+}

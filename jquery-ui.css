@@ -755,9 +755,9 @@ button.ui-button::-moz-focus-inner {
 	width: 90px; /* Increase tab width */
 	background-color: #F1F1F1; /*tab color non-selected */
 	outline: none;
-	border-right: 1px solid #F7A300; 
-	/* border-left: 1px solid #F7A300; remove left border. It comes from the border of the entire tab set */
-	border-bottom: 1px solid #F7A300; 
+	border-right: 1px solid #34647F; 
+	/* border-left: 1px solid #34647F; remove left border. It comes from the border of the entire tab set */
+	border-bottom: 1px solid #34647F; 
 }
 
 .ui-tabs .ui-tabs-nav li.ui-tabs-active {
@@ -820,7 +820,7 @@ body .ui-tooltip {
 }
 .ui-widget-content {
 	/* border: 1px solid #aaaaaa; test*/
-	border: 1px solid #F7A300;
+	border: 1px solid #6494AF;
 	background: #ffffff url(images/ui-bg_flat_75_ffffff_40x100.png) 50% 50% repeat-x;
 	color: #222222;
 }
@@ -847,7 +847,7 @@ body .ui-tooltip {
 .ui-widget-content .ui-state-default,
 .ui-widget-header .ui-state-default {
 	border: 1px solid #d3d3d3;
-	background: #e6e6e6 url(images/ui-bg_glass_75_e6e6e6_1x400.png) 50% 50% repeat-x;
+	/* background: #e6e6e6 url(images/ui-bg_glass_75_e6e6e6_1x400.png) 50% 50% repeat-x; */
 	font-weight: normal;
 	color: #555555;
 }
@@ -864,7 +864,7 @@ body .ui-tooltip {
 .ui-widget-content .ui-state-focus,
 .ui-widget-header .ui-state-focus {
 	border: 1px solid #999999;
-	background: #dadada url(images/ui-bg_glass_75_dadada_1x400.png) 50% 50% repeat-x;
+	background: #dadada;  /* url(images/ui-bg_glass_75_dadada_1x400.png) 50% 50% repeat-x; */
 	font-weight: normal;
 	color: #212121;
 }
@@ -872,14 +872,15 @@ body .ui-tooltip {
 .ui-state-hover a:hover,
 .ui-state-hover a:link,
 .ui-state-hover a:visited {
-	color: #212121;
+    color: #212121;
+    background: #ffffff;
 	text-decoration: none;
 }
 .ui-state-active,
 .ui-widget-content .ui-state-active,
 .ui-widget-header .ui-state-active {
 	border: 1px solid #aaaaaa;
-	background: #ffffff url(images/ui-bg_glass_65_ffffff_1x400.png) 50% 50% repeat-x;
+	background: #ffffff; /* url(images/ui-bg_glass_65_ffffff_1x400.png) 50% 50% repeat-x; */
 	font-weight: normal;
 	color: #212121;
 }
@@ -896,7 +897,7 @@ body .ui-tooltip {
 .ui-widget-content .ui-state-highlight,
 .ui-widget-header .ui-state-highlight {
 	border: 1px solid #fcefa1;
-	background: #fbf9ee url(images/ui-bg_glass_55_fbf9ee_1x400.png) 50% 50% repeat-x;
+	background: #fbf9ee /* url(images/ui-bg_glass_55_fbf9ee_1x400.png) 50% 50% repeat-x; */
 	color: #363636;
 }
 .ui-state-highlight a,

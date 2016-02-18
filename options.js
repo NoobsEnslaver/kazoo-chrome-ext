@@ -110,6 +110,7 @@ function showGUI(name) {
 
 function restoreOptions() {
 
+    localize();
     $("#url").focus();
     $(document).keypress(function(event) {
 	if (event.keyCode == 13) {
@@ -159,6 +160,15 @@ function showAboutBox() {
     top.location.assign("about.html");
 }
 
+function localize(){
+    $("#signin_label")[0].innerText = chrome.i18n.getMessage("signin_label");
+    $("#url")[0].placeholder = chrome.i18n.getMessage("url");
+    $("#accname")[0].placeholder = chrome.i18n.getMessage("accname");
+    $("#username")[0].placeholder = chrome.i18n.getMessage("username");
+    $("#password")[0].placeholder = chrome.i18n.getMessage("password");
+    $("#signin")[0].innerText = chrome.i18n.getMessage("signin");
+    $("#about")[0].innerText = chrome.i18n.getMessage("about");
+}
 
 // about
 document.querySelector('#about_link_options').addEventListener('click', showAboutBox);

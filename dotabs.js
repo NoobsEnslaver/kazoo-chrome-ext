@@ -230,6 +230,24 @@ function restoreTabs() {
     $("#btn12").on("click", call_btn);
 
     drawDevices();
+
+    localize();
+}
+
+function localize(){
+    $("#signout_text")[0].innerText = chrome.i18n.getMessage("signout_text");
+    $("#call_tab")[0].title = chrome.i18n.getMessage("call_tab");
+    $("#history_tab")[0].title = chrome.i18n.getMessage("history_tab");
+    $("#pref_tab")[0].title = chrome.i18n.getMessage("pref_tab");
+    $("#destination")[0].placeholder = chrome.i18n.getMessage("phone_num");
+    $("#clicktodial")[0].innerHTML += chrome.i18n.getMessage("clicktodialbox");
+    $("#notifications")[0].innerHTML += chrome.i18n.getMessage("notificationsbox");
+    $("#texttospeech")[0].innerHTML += chrome.i18n.getMessage("texttospeechbox");
+    $("#any_phone")[0].innerText = chrome.i18n.getMessage("any_phone");
+    $("#robutton")[0].title = chrome.i18n.getMessage("robutton");
+    $("#cfabutton")[0].title = chrome.i18n.getMessage("cfabutton");
+    $("#dndbutton")[0].title = chrome.i18n.getMessage("dndbutton");
+
 }
 
 function btn_handler(e)
