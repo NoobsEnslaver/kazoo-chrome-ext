@@ -1,4 +1,4 @@
 chromedialer
 ============
 
-A Google Chrome extension that provides BroadWorks telephony integration.
+A Google Chrome extension that provides Kazoo telephony integration.

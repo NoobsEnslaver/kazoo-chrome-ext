@@ -1,45 +1,45 @@
 {
-  "name" : "Siplabs Dialer for Google Chrome™",
-  "short_name": "SipDialer",
-    "version" : "1.1",
-    "default_locale": "en",
-  "description" : "A Google Chrome™ extension that provides Kazoo telephony integration.",
-  "manifest_version": 2,
-  "omnibox": { "keyword" : "-call" },
-  "options_page": "options.html",
-  "browser_action": {
-    "default_icon": "images/logo_offline_128x128.png",
-    "default_popup": "options.html"
-  },
-  "web_accessible_resources": [ "images/click2dial.png", "injected.js" ],
-  "background" : {    
-    "page" : "background.html",
-    "persistent" : true
-  },
-  "content_scripts" : [
-    {
-      "matches" : [
-        "http://*/*",
-        "https://*/*"
-      ],
-      "js" : [
-        "jquery.js",
-        "jquery.base64.js",
-        "contentscript.js",
-        "jquery.kazoosdk.js"],
-      "run_at" : "document_idle",
-      "all_frames" : true,
-      "css" : [ "injected.css", "jquery-ui.css" ]
-    }
-  ],
-  "permissions": [ "notifications", "tabs", "http://*/*", "https://*/*", "tts" ,"identity"],
-  "oauth2": {
-	"client_id": "anonymous",
-    "scopes": [
-      "https://www.google.com/m8/feeds/"
-    ]
-  },  
-    "icons": {
-	"128": "images/bsft_logo_128x128.png"
-   }
+	"name" : "__MSG_appName__",
+	"short_name": "SipDialer",
+	"version" : "1.1.1",
+	"default_locale": "en",
+	"description" : "__MSG_appDesc__",
+	"manifest_version": 2,
+	"omnibox": { "keyword" : "-call" },
+	"options_page": "options.html",
+	"browser_action": {
+		"default_icon": "images/logo_offline_128x128.png",
+		"default_popup": "options.html"
+	},
+	"web_accessible_resources": [ "images/click2dial.png", "injected.js" ],
+	"background" : {    
+		"page" : "background.html",
+		"persistent" : true
+	},
+	"content_scripts" : [
+		{
+			"matches" : [
+				"http://*/*",
+				"https://*/*"
+			],
+			"js" : [
+				"jquery.js",
+				"jquery.base64.js",
+				"contentscript.js",
+				"jquery.kazoosdk.js"],
+			"run_at" : "document_idle",
+			"all_frames" : true,
+			"css" : [ "injected.css", "jquery-ui.css" ]
+		}
+	],
+	"permissions": [ "notifications", "tabs", "http://*/*", "https://*/*", "tts" ,"identity"],
+	"oauth2": {
+		"client_id": "anonymous",
+		"scopes": [
+			"https://www.google.com/m8/feeds/"
+		]
+	},  
+	"icons": {
+		"128": "images/bsft_logo_128x128.png"
+	}
 }

@@ -746,13 +746,13 @@ button.ui-button::-moz-focus-inner {
 	border-bottom-width: 0;
 	padding: 0;
 	white-space: nowrap;
-	width: 90px; /* Increase tab width */
+	width: 67px; /* Increase tab width */
 }
 .ui-tabs .ui-tabs-nav li a {
 	float: left; 
 	/* padding: 0 1em;   remove this to center image */
 	text-decoration: none;
-	width: 90px; /* Increase tab width */
+	width: 67px; /* Increase tab width */
 	background-color: #F1F1F1; /*tab color non-selected */
 	outline: none;
 	border-right: 1px solid #34647F; 
@@ -763,7 +763,7 @@ button.ui-button::-moz-focus-inner {
 .ui-tabs .ui-tabs-nav li.ui-tabs-active {
 	margin-bottom: -1px;
 	padding-bottom: 1px;
-	width: 92px; /* Increase tab width */
+	width: 69px; /* Increase tab width */
 	background-color: #F1F1F1; /*tab color non-selected */
 	border-bottom-style: none; /*t*/
 }
@@ -771,7 +771,7 @@ button.ui-button::-moz-focus-inner {
 .ui-tabs .ui-tabs-nav li.ui-state-disabled a,
 .ui-tabs .ui-tabs-nav li.ui-tabs-loading a {
 	cursor: text;
-	width: 92px; /* Increase tab width */
+	width: 69px; /* Increase tab width */
 	background-color: white; /*tab color selected */
 	outline: none;
 	border-bottom: none; /* remove border for atcive tab*/
@@ -821,7 +821,7 @@ body .ui-tooltip {
 .ui-widget-content {
 	/* border: 1px solid #aaaaaa; test*/
 	border: 1px solid #6494AF;
-	background: #ffffff url(images/ui-bg_flat_75_ffffff_40x100.png) 50% 50% repeat-x;
+	background: #ffffff ;/* url(images/ui-bg_flat_75_ffffff_40x100.png) 50% 50% repeat-x; */
 	color: #222222;
 }
 .ui-widget-content a {
@@ -832,7 +832,7 @@ body .ui-tooltip {
 	border-top-style: none;
 	border-left-style: none;
 	border-right-style:none;
-	background: #cccccc url(images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x;  
+	background: #cccccc; /* url(images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x;   */
 	color: #222222; 
 	font-weight: bold;
 }
