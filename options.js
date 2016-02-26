@@ -15,6 +15,7 @@ limitations under the License.
  */
 
 var MODULE = "options.js";
+var KAZOO = {};
 
 function showMessage(message, fadeOut) {
 	$("#status").text(message);
@@ -25,61 +26,44 @@ function showMessage(message, fadeOut) {
 }
 
 function signin() {
-	localStorage["url"] = $("#url").val();
+	var url = $("#url").val();
+	localStorage["url"] = (url[url.length-1] == '/')? url: url + '/';
 	localStorage["username"] = $("#username").val();
-	localStorage["password"] = $("#password").val();
+	localStorage["accname"] = $("#accname").val();
+	localStorage["credentials"] = CryptoJS.MD5(localStorage["username"] + ":" + $("#password").val()).toString();
 	localStorage["clicktodial"] = "true";
 	localStorage["notifications"] = "true";
 	localStorage["texttospeech"] = "true";
-	var xsiactions_options = {
-		host : localStorage["url"],
-		username : localStorage["username"],
-		password : localStorage["password"],
-	};
-	XSIACTIONS.API.init(xsiactions_options);	
-	try {
-		var name = XSIACTIONS.API.getName();
-		LOGGER.API.log(MODULE,"User name: " + name);
-		localStorage["name"] = name;
-		localStorage["connectionStatus"] = "signedIn";
+	localStorage["account_id"] = "";
+	localStorage["user_id"] = "";
+	localStorage["errorMessage"] = "";
+
+	localStorage["connectionStatus"] = "";
+	chrome.runtime.sendMessage({type : "BG_RESTART"});
+	
+	wait(()=>{
+		if (localStorage["connectionStatus"] == "signedIn")
+			top.location.assign("tabs.html");
+		return (localStorage["connectionStatus"] == "signedIn") || (localStorage["connectionStatus"] == "authFailed");
 		
-		try{
-		var dnd = XSIACTIONS.API.getDoNotDisturb();
-		localStorage["dnd"] = dnd;
-		dndAssigned = true;
-		} catch (error) {
-			LOGGER.API.error(MODULE,error.message);
-			localStorage["dnd"] = "unassigned";
-		}
+	}, { timeout_callback: ()=>{
+		showMessage("Connection timeout");
+	}});
+}
+
+function wait(predicate, options){
+	if (predicate()) return;
 	
-		try{
-		var cfa = XSIACTIONS.API.getCallForwardAlways();
-		localStorage["cfa"] = cfa;
-		} catch (error) {
-			LOGGER.API.error(MODULE,error.message);
-			localStorage["cfa"] = "unassigned";
-		}
+	options = options || {};	
+	options.sample_time = options.sample_time || 100;
+	options.timeout = isFinite(options.timeout)?(options.timeout - options.sample_time): 3000;
+	options.timeout_callback= options.timeout_callback || function(){};
 	
-		try{
-		var ro = XSIACTIONS.API.getRemoteOffice();
-		localStorage["ro"] = ro;
-		} catch (error) {
-			LOGGER.API.error(MODULE,error.message);
-			localStorage["ro"] = "unassigned";
-		}
-	} catch (error) {
-		showMessage("Invalid credentials. Please verify the information is correct and try again.");
-		LOGGER.API.error(MODULE,error.message);
+	if (options.timeout > 0) {
+		window.setTimeout(wait, options.sample_time, predicate, options);
+	}else {
+		options.timeout_callback();
 	}
-	
-	
-	
-	if (localStorage["connectionStatus"] == "signedIn"){
-		localStorage["restartRequired"] = "true";
-		localStorage["errorMessage"]="";
-		top.location.assign("restart.html");
-	}
-	
 }
 
 function showGUI(name) {
@@ -100,32 +84,26 @@ function restoreOptions() {
 
 	var error = localStorage["errorMessage"];
 	if (localStorage["errorMessage"] != undefined && localStorage["errorMessage"] != ""){
-		showMessage(error);
 		$("#url").val(localStorage["url"]);
 		$("#username").val(localStorage["username"]);
+		$("#accname").val(localStorage["accname"]);
 		$("#password").val("");
 		localStorage["connectionStatus"] = "signedOut";
-	}
-	else if (localStorage["restartRequired"] == "true") {
-		top.location.assign("restart.html");
 	} else {
 		var url = localStorage["url"];
 		var username = localStorage["username"];
-		var password = localStorage["password"];
+		var accname = localStorage["accname"];
 		if (url) {
 			$("#url").val(url);
 		}
 		if (username) {
 			$("#username").val(username);
 		}
-		if (password) {
-			$("#password").val(password);
+		if (accname){
+			$("#accname").val(accname);
 		}
 		try {
-			name = localStorage["name"];
-			// If name exists then user had logged in successfully. Go to tabs.
-			if (name && url) {
-				localStorage["connectionStatus"] = "signedIn";
+			if (localStorage["connectionStatus"] == "signedIn") {
 				top.location.assign("tabs.html");
 			}
 		} catch (error) {
@@ -144,6 +122,24 @@ function showAboutBox() {
 	top.location.assign("about.html");
 }
 
+//background error drawer
+chrome.runtime.onMessage.addListener((a,b,c)=>{
+	if (!a.sender == "KAZOO") return;
+
+	if (a.type == "error") {
+		var error_code = a.data.status;
+		switch(error_code){
+		case 400:
+		case 401:
+			showMessage("Authorization error.");
+			break;
+
+		default:
+			showMessage("Unknown error.");
+			break;
+		}
+	}
+});
 
 // about
 document.querySelector('#about_link_options').addEventListener('click', showAboutBox);

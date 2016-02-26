@@ -13,12 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-var storageUrl = localStorage["url"];
-var storageUsername = localStorage["username"];
-var storagePassword = localStorage["password"];
+
 var MODULE = "background.js";
-var retryAttempt = 0;
-var xsiEvents;
+var KAZOO = {};
+
 
 function onMessage(request, sender, sendResponse) {
 	var type = request.type;
@@ -26,10 +24,36 @@ function onMessage(request, sender, sendResponse) {
 		var destination = request.text.replace(/[- \(\)\.]/g, "");
 		var status = "ok";
 		try {
+			if (!localStorage["history"]) {
+				localStorage["history"] = JSON.stringify([]);
+			}
+			var history = JSON.parse(localStorage["history"]);
+			history.push({
+				number: destination,
+				time: Date.now(),
+				type: "outgoing",
+				name: ""
+			});
+			localStorage["history"] = JSON.stringify(history);
+
 			LOGGER.API.log(MODULE, "calling: " + destination);
-			XSIACTIONS.API.call(destination);
+			if (localStorage["active_device"] && localStorage["active_device"] != "" && localStorage["active_device"] != "any_phone") {
+				KAZOO.device.quickcall({
+					number: destination,
+					account_id: localStorage["account_id"],
+					deviceId: localStorage["active_device"]
+				});
+			}else{
+				KAZOO.user.quickcall({
+					number: destination,
+					account_id: localStorage["account_id"],
+					userId: localStorage["user_id"]
+				});
+			}
+
 		} catch (error) {
 			status = "error";
+			LOGGER.API.log(MODULE, "Exception in 'OnMessage': " + error);
 		}
 		sendResponse({
 			status : status
@@ -38,310 +62,129 @@ function onMessage(request, sender, sendResponse) {
 		sendResponse({
 			status : localStorage["clicktodial"]
 		});
+	}else if (type == "BG_RESTART") {
+		contentLoaded();
 	}
 }
 
-function onChange(text, suggest) {
-	if (text.length > 1) {
-		var suggestions = [];
-		var response = XSIACTIONS.API.searchEnterpriseDirectory(text);
-		$(response).find("directoryDetails").each(
-				function() {
-					var name = $(this).find("firstName").text() + " "
-							+ $(this).find("lastName").text();
-					var number = $(this).find("number").text();
-					var mobile = $(this).find("mobile").text();
-					if (number != "") {
-						suggestions.push({
-							content : number,
-							description : name + " (work: " + number + ")"
-						});
-					}
-					if (mobile != "") {
-						suggestions.push({
-							content : mobile,
-							description : name + " (mobile: " + mobile + ")"
-						});
-					}
+function updateDevices(){
+	KAZOO.device.list({
+		account_id: localStorage["account_id"],
+		success: (data, status)=>{
+			var new_devices = [];
+			var devices = data.data;
+			for(var device_num in devices) {
+				new_devices.push({
+					num: device_num,
+					name: devices[device_num].name,
+					id: devices[device_num].id
 				});
+			};
+			localStorage["devices"] = JSON.stringify(new_devices);
 
-		var url = "https://www.google.com/m8/feeds/contacts/default/full?v=3.0&max-results=20&q="
-				+ text;
-		authenticatedXhr(
-				'GET',
-				url,
-				function(error, status, response) {
-					if (error == null) {
-						$(response)
-								.find("entry")
-								.each(
-										function() {
-											var title = $(this).find("title")
-													.text();
-											if (title == "") {
-												title = "Unknown";
-											}
-											$(this)
-													.find("gd\\:phoneNumber")
-													.each(
-															function() {
-																var number = $(
-																		this)
-																		.text();
-																var type = $(
-																		this)
-																		.attr(
-																				"rel")
-																		.replace(
-																				"http://schemas.google.com/g/2005#",
-																				"");
-																suggestions
-																		.push({
-																			content : number,
-																			description : title
-																					+ " ("
-																					+ type
-																					+ ": "
-																					+ number
-																					+ ")"
-																		});
-															});
-										});
-					} else {
-						LOGGER.API.error(MODULE, error);
-					}
-				});
-		suggest(suggestions);
-	}
-}
+			localStorage["active_device"] = (localStorage["active_device"] && devices[localStorage["active_device"]])? localStorage["active_device"]: "";
+		}});
+};
 
-function onEntered(text) {
-	var normalized = text.replace("+", "");
-	LOGGER.API.log(MODULE, normalized);
-	try {
-		XSIACTIONS.API.call(normalized);
-	} catch (error) {
-		LOGGER.API.error(MODULE, "onEntered error: " + error.message);
-	}
-}
-
-// list to local storage changes. Jquery allows multiple handlers.
-$(window)
-		.bind(
-				"storage",
-				function(e) {
-					if (e.originalEvent.key == "connectionStatus") {
-						if (e.originalEvent.newValue == "signedIn") {
-							LOGGER.API.log(MODULE,
-									"User credentials have been validated.");
-						} else if (e.originalEvent.newValue == "connected") {
-							LOGGER.API.log(MODULE,
-									"User is connected with XSI Events API");
-						} else if (e.originalEvent.newValue == "signedOut") {
-							LOGGER.API
-									.log(MODULE,
-											"User has signed out. Terminating XSIEVENTS Framework");
-							xsiEvents.terminate();
-						}
-					}
-				});
-
-function setServiceStatesToUnknown() {
-	if (localStorage["dnd"] != "unassigned") {
-		localStorage["dnd"] = "unknown";
-	}
-	if (localStorage["ro"] != "unassigned") {
-		localStorage["ro"] = "unknown";
-	}
-	if (localStorage["cfa"] != "unassigned") {
-		localStorage["cfa"] = "unknown";
-	}
-}
-
-function connectXsiEvents() {
-	// init the worker, hosts contains all the XSP hosts
-	var creds = $.base64.encode(storageUsername + ":" + storagePassword);
-	xsiEvents.postMessage({
-		cmd : 'init',
-		config : {
-			hosts : [ storageUrl ],
-			username : storageUsername,
-			credentials : creds
-		}
-	});
-
-	sendStartMessage();
-}
 
 function contentLoaded() {
-	localStorage["restartRequired"] = "false";
-	// restore Xsi-Actions
-	var xsiactions_options = {
-		host : localStorage["url"],
-		username : localStorage["username"],
-		password : localStorage["password"],
-	};
-	XSIACTIONS.API.init(xsiactions_options);
-
-	chrome.omnibox.onInputChanged.addListener(onChange);
-	chrome.omnibox.onInputEntered.addListener(onEntered);
-	chrome.extension.onMessage.addListener(onMessage);
-
-	chrome.notifications.onButtonClicked.addListener(function(notificationId,
-			buttonIndex) {
-		if (notificationId.indexOf("callhalf") == 0) {
-			chrome.notifications.clear(notificationId, function() {
-			});
-			if (buttonIndex == 0) {
-				XSIACTIONS.API.talk(notificationId);
-			} else {
-				XSIACTIONS.API.transferToVoicemail(notificationId);
-			}
-		}
-	});
-
-	// add suspend listener
-	chrome.runtime.onSuspend.addListener(function() {
-		xsiEvents.terminate();
-	});
-
-	// create xsi events worker
-	xsiEvents = new Worker('xsi-events-api.js');
-	xsiEvents
-			.addEventListener(
-					'message',
-					function(e) {
-						switch (e.data.type) {
-						case 'disconnected':
-							// try to re-connect if the disconnect was NOT
-							// because of auth failure; so that we don't keep
-							// trying to connect with bad credentials and
-							// lock-out the user
-							if (e.data.value != '401' && e.data.value != '403') {
-								if (retryAttempt > 4) {
-									retryAttempt = 0;
-								}
-								var wait = (Math.pow(2, retryAttempt) * 5000)
-										+ Math.floor(Math.random() * 11) * 1000;
-								LOGGER.API.log(MODULE, 'waiting for ' + wait
-										+ 's before re-connect');
-								setTimeout(function() {
-									retryAttempt++;
-									sendStartMessage();
-								}, wait);
-							} else {
-								LOGGER.API
-										.log(MODULE,
-												"*** DISCONNECTED DUE TO AUTHORIZATION FAILURE ***");
-								LOGGER.API
-										.log(MODULE,
-												"*** Will not try to reconnect to protect from account lockout ***");
-								localStorage["errorMessage"] = "An authentication error occurred. Please login again.";
-								localStorage["connectionStatus"] = "signedOut";
-							}
-							setServiceStatesToUnknown();
-							break;
-						case 'DoNotDisturbEvent':
-							localStorage["dnd"] = e.data.value;
-							break;
-						case 'CallForwardingAlwaysEvent':
-							localStorage["cfa"] = e.data.value;
-							break;
-						case 'RemoteOfficeEvent':
-							localStorage["ro"] = e.data.value;
-							break;
-						case 'CallSubscriptionEvent':
-							localStorage["calls"] = JSON
-									.stringify(e.data.value);
-							break;
-						case 'CallReceivedEvent':
-							var lCalls = JSON.parse(localStorage["calls"]);
-							for ( var callId in e.data.value) {
-								var call = e.data.value[callId];
-								lCalls[callId] = call;
-								if (call.state == "Alerting") {
-									if (localStorage["notifications"] == "true") {
-										var opts = {
-											type : "basic",
-											title : "Incoming Call",
-											message : "Call from " + call.name
-													+ " " + call.number,
-											iconUrl : "images/bsft_logo_128x128.png",
-											buttons : [ {
-												title : "Answer"
-											}, {
-												title : "Decline"
-											} ]
-										};
-										chrome.notifications.create(callId,
-												opts, function() {
-												});
-									}
-									if (localStorage["texttospeech"] == "true") {
-										number = call.number.replace(
-												"+" + call.countryCode + "-",
-												"").replace(/([0-9])/g, "$1 ");
-										chrome.tts.speak("Call from "
-												+ call.name + " " + number, {
-											"lang" : "en-US"
-										});
-									}
-								}
-							}
-							localStorage["calls"] = JSON.stringify(lCalls);
-							break;
-						case 'CallAnsweredEvent':
-							var lCalls = JSON.parse(localStorage["calls"]);
-							for ( var callId in e.data.value) {
-								var call = e.data.value[callId];
-								// hack to override the answer time
-								// so that the timer is accurate (ish?)
-								// even if the PC clock is not in sync
-								// with AS
-								call.answerTime = new Date().getTime();
-								lCalls[callId] = call;
-								chrome.notifications.clear(callId, function() {
-								});
-							}
-							localStorage["calls"] = JSON.stringify(lCalls);
-							break;
-						case 'CallReleasedEvent':
-							var lCalls = JSON.parse(localStorage["calls"]);
-							for ( var callId in e.data.value) {
-								delete lCalls[callId];
-								chrome.notifications.clear(callId, function() {
-								});
-							}
-							localStorage["calls"] = JSON.stringify(lCalls);
-							break;
-						case 'CallOriginatingEvent':
-						case 'CallOriginatedEvent':
-						case 'CallHeldEvent':
-						case 'CallRetrievedEvent':
-						case 'CallUpdatedEvent':
-							var lCalls = JSON.parse(localStorage["calls"]);
-							for ( var callId in e.data.value) {
-								var call = e.data.value[callId];
-								lCalls[callId] = call;
-							}
-							localStorage["calls"] = JSON.stringify(lCalls);
-							break;
-						case 'log':
-							LOGGER.API.log(MODULE, e.data.value);
-							break;
-						}
-					}, false);
-
-	if (localStorage["connectionStatus"] == "signedIn") {
-		connectXsiEvents();
+	if (!(localStorage["url"] && localStorage["username"] && localStorage["accname"] && localStorage["credentials"])){
+		chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
+		return;
 	}
 
+	var kazoosdk_options = {
+		apiRoot: localStorage["url"] + "v2/",
+
+		onRequestStart: function(request, requestOptions) {
+			LOGGER.API.log(MODULE,"Request started: " + request);
+		},
+		onRequestEnd: function(request, requestOptions) {
+			LOGGER.API.log(MODULE,"Request ended: " + request);
+		},
+		onRequestError: function(error, requestOptions) {
+			if(requestOptions.generateError !== false) {
+				LOGGER.API.log(MODULE,"Request error: " + error.status + " " + error.status.text);
+			}
+			var error_count = incrementErrorCount(error.status);
+
+			if (error.status == "401"){
+				if (error_count < 3) {
+					window.setTimeout(authorize, 1000);
+				}
+			}
+
+			 showError(error);
+		}
+	};
+	KAZOO = $.getKazooSdk(kazoosdk_options);
+
+	authorize();
+	window.setInterval(authorize, 30*60*1000); // update auth-token every 30m
 }
 
-function sendStartMessage() {
-	xsiEvents.postMessage({
-		cmd : 'start'
-	});
+function incrementErrorCount(error_code){
+	var errors = {};
+	try{
+		errors = JSON.parse(localStorage["errors"]);
+	}catch(e){}
+	errors[error_code] = (errors[error_code] + 1) || 1;
+	errors["last_modify"] = Date.now();
+	window.setTimeout(()=>{
+		if (! localStorage["errors"]) return;
+		var errors = JSON.parse(localStorage["errors"]);
+		if (Date.now() - errors["last_modify"] >= 5000) {
+			localStorage.removeItem('errors');
+		}
+	}, 5000);
+	localStorage["errors"] = JSON.stringify(errors[error_code]);
+	return errors[error_code];
 }
 
-document.addEventListener('DOMContentLoaded', contentLoaded);
+function showError(data){
+	chrome.runtime.sendMessage({
+		sender: "KAZOO",
+		type: "error",
+		data: data
+	}, ()=>{});
+}
+
+function authorize(){
+	localStorage["connectionStatus"] = "inProgress";
+	chrome.browserAction.setIcon({path: "images/logo_wait_128x128.gif"});
+	KAZOO.auth.userAuth({
+		data: {
+			account_name: localStorage["accname"],
+			method: "md5",
+			credentials: localStorage["credentials"]
+		},
+		success: function(data, status) {
+			localStorage["account_id"] = data.data.account_id;
+			localStorage["user_id"] = data.data.owner_id;
+			KAZOO.account.get({
+				account_id: data.data.account_id,
+				success: function(data, status) {
+					LOGGER.API.log(MODULE,"Auth completed, account name: " + data.data.name);
+					chrome.browserAction.setIcon({path: "images/logo_online_128x128.png"});
+					localStorage["name"] = data.data.name;
+					localStorage["connectionStatus"] = "signedIn";
+					localStorage["errorMessage"]="";
+					updateDevices();
+				},
+				error: error_handler
+			});
+		},
+		error: error_handler,
+		generateError: true
+	});}
+
+function error_handler(data, status){
+	LOGGER.API.error(MODULE, status.error);
+	chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
+	localStorage["connectionStatus"]= "authFailed";
+	localStorage.removeItem('credentials');
+	localStorage["errorMessage"] = status.responseText;
+}
+
+chrome.extension.onMessage.addListener(onMessage);
+document.addEventListener('DOMContentLoaded', ()=>{contentLoaded();});
