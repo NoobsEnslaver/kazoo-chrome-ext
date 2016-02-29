@@ -17,6 +17,18 @@ limitations under the License.
 var message = {
 	type : "IS_CLICK_TO_DIAL_ENABLED"
 };
+
+function sendCallMessage(number) {
+	var message = {
+		type : "CALL",
+		text : number
+	};
+	var confirm = window.confirm("Are you sure you want to call " + number + "?");
+	if (confirm) {
+		window.postMessage(message, "*");
+	}
+}
+
 chrome.runtime.sendMessage(message, function(response) {
 	if (response.status == "true") {
 
@@ -42,13 +54,32 @@ chrome.runtime.sendMessage(message, function(response) {
 
 		var image = chrome.extension.getURL("images/click2dial.png");
 		var replacement = "$1 <img id='clicktocall' src='" + image + "' onClick=\"sendCallMessage('$1');\" />";
+		var replacement2= "$1 <img id='clicktocall' src='" + image + "'/>";
 
 		for ( var i = 0; i < nodes.length; i++) {
 			var node = nodes[i];
 			if (node.parentNode) {
-				node.parentNode.innerHTML = node.parentNode.innerHTML.replace(re, replacement);
+				if(node.parentNode.tagName == 'A')
+					node.parentNode.innerHTML = node.parentNode.innerHTML.replace(re, replacement2);
+				else
+					node.parentNode.innerHTML = node.parentNode.innerHTML.replace(re, replacement);
 			}
 		}
+
+		// Links handler
+		var targets = Array.from(document.body.getElementsByTagName("a")).filter(
+			(x)=>{return (x.href &&
+				      x.href.trim().startsWith("tel:") &&
+				      x.href.trim().match(re));});
+
+		targets.map((x)=>{ var num = x.href.match(re);
+				   if (num && num.length > 0)
+				   {
+					   x.addEventListener('click', (e)=>{ sendCallMessage('+' + num[0]);});
+					   x.href = '#';
+				   }});
+
+		console.log("found " + targets.length + " telphone number links");
 
 		var s = document.createElement("script");
 		s.src = chrome.extension.getURL("injected.js");
