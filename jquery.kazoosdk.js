@@ -31,6 +31,23 @@
 			'searchByName': { verb: 'GET', url: 'search?t=account&q=name&v={accountName}'},
 			'searchAll': { verb: 'GET', url: 'search/multi?t=account&by_name={searchValue}&by_realm={searchValue}&by_id={searchValue}'}
 		},
+		lists: {
+			'getLists': { verb: 'GET', url: 'accounts/{account_id}/lists'},
+			'getListProp': { verb: 'GET', url: 'accounts/{account_id}/lists/{list_id}'},
+			'addList': { verb: 'PUT', url: 'accounts/{account_id}/lists'},
+			'replaceList': { verb: 'POST', url: 'accounts/{account_id}/lists'}, //Error: 405 (Method Not Allowed)
+			//'updateList': { verb: 'PATCH', url: 'accounts/{account_id}/lists'}, //Error: 405 (Method Not Allowed)
+			//'deleteList': { verb: 'DELETE', url: 'accounts/{account_id}/lists/{list_id}'},
+			'purgeList': { verb: 'DELETE', url: 'accounts/{account_id}/lists/{list_id}/entries'},
+			'addEntry': { verb: 'PUT', url: 'accounts/{account_id}/lists/{list_id}/entries'},
+			'getEntries': { verb: 'GET', url: 'accounts/{account_id}/lists/{list_id}/entries'},
+			'getEntryProp': { verb: 'GET', url: 'accounts/{account_id}/lists/{list_id}/entries/{entry_id}'},
+			//'replaceEntry': { verb: 'POST', url: 'accounts/{account_id}/lists/{list_id}/entries/{entry_id}'}, //Error: 400 (Bad Request)
+			'updateEntry': { verb: 'PATCH', url: 'accounts/{account_id}/lists/{list_id}/entries/{entry_id}'},
+			'deleteEntry': { verb: 'DELETE', url: 'accounts/{account_id}/lists/{list_id}/entries/{entry_id}'},
+			'getEntryVcard': { verb: 'GET', url: 'accounts/{account_id}/lists/{list_id}/entries/{entry_id}/vcard'},
+			'addPhotoToListEntry': { verb: 'POST', url: 'accounts/{account_id}/lists/{list_id}/entries/{entry_id}/photo'}
+		},
 		appsStore: {
 			'get': { verb: 'GET', 'url': 'accounts/{account_id}/apps_store/{appId}' },
 			'list': { verb: 'GET', 'url': 'accounts/{account_id}/apps_store' },
