@@ -422,6 +422,38 @@ ul.ui-autocomplete {
 	background-color: #6494AF;
 }
 
+/* ------ Phone Book --------  */
+#phonebook {
+    overflow: auto;
+    height: 155px;
+    width: 280px;
+}
+
+
+#phonebookentries {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+#phonebookentries tr td {
+	padding: 5px;
+	text-align: left;
+	vertical-align: bottom;
+	border-bottom: 1px solid #F1F1F1;
+	font-size: 9px;
+}
+
+#phonebookentries tr td p {
+	margin: 0px;
+	font-size: 11px;
+	font-weight: bold;
+}
+
+#phonebookentries tr:hover {
+	background-color: #6494AF;
+}
+/* ---- end Phone Book ------  */
+
 #restartmessage {
 	font-size: 12px;
 	color: #359C0C;

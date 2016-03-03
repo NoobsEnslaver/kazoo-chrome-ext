@@ -19,5 +19,11 @@
 	"any_phone": {"message": "Any  phone"},
 	"robutton": {"message": "Remote Office"},
 	"cfabutton": {"message": "Call Forwarding Always"},
-	"dndbutton": {"message": "Do Not Disturb"}    
+	"dndbutton": {"message": "Do Not Disturb"},
+	"help_why": {"message": "Why?"},
+	"help_ask_create_pb": {"message": "You have no phone book yet, maybe, you want"},
+	"help_ask_create_pb2": {"message": "create it?"},
+	"help_why_answer": {"message": "Address Book allows you to store your contacts on a remote server and access them in a convenient way with a variety of devices."},
+	"pb_name_placeholder": {"message": "name"},
+	"pb_phone_placeholder": {"message": "phone number"}
 }

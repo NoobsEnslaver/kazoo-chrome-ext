@@ -58,6 +58,7 @@ function signout(manual) {
 	localStorage["account_id"] = "";
 	localStorage["user_id"] = "";
 	if (manual) {
+		localStorage["phone_book"]= "NONE";
 		localStorage["history"] = JSON.stringify([]);
 		localStorage["devices"] = JSON.stringify([]);
 		localStorage["username"] = "";
@@ -85,6 +86,24 @@ function announceServiceState(service, value) {
 		}
 	}
 }
+
+//Go up to parrents tree, looking for number.
+function phonebook_handler(e){
+	if (e) {
+		if (e.tagName) {
+			return 	e.tagName != "TR"? phonebook_handler(e.parentNode):
+				e.id == "phonebook_new_entry"? null:
+				chrome.runtime.sendMessage({
+					type : "CALL",
+					text : e.childNodes[1].textContent}, ()=>{});
+		} else
+		{
+			return e.target? phonebook_handler(e.target): null;
+		}
+	}
+	return null;
+}
+
 
 function history_handler(e){
 	if (e) {
@@ -168,24 +187,60 @@ function restoreTabs() {
 						msg_list[i].old = true;
 					}
 					localStorage["vm_boxes"] = JSON.stringify(msg_list);
+				} else if (ui.newPanel.attr("id") == "phonebook") {
+					localStorage["currentTab"] = "phonebook";
+
+					if (localStorage["phone_book"] == "NONE") {
+						$("#phonebookentries")[0].style.display = "none";
+						$("#new_phonebook_msg")[0].style.display = "";
+						
+					}else {
+						$("#phonebookentries")[0].style.display = "";
+						$("#new_phonebook_msg")[0].style.display = "none";
+						
+						var pb_list;
+						try{
+							pb_list = JSON.parse(localStorage["phone_book"]);	
+						}catch(e){
+							pb_list = [];
+						}
+
+						$("#phonebookentries").empty();
+						// Create the first one table entry with input fields for creating new entries in phone book
+						// || <input name> | <input number> | <add button> ||
+						create_input_pb_row();
+						//Fill phonebook table
+						// || name | phone | remove_btn ||						
+						for ( var z = 0; z < pb_list.length; z++) {
+							create_default_pb_row(pb_list[z].value.name, pb_list[z].value.phone, pb_list[z].id, z);
+						}
+					}
 				}
 			}
 		});
 
 	// restore current tab
-	var currentTab = localStorage["currentTab"];
-	if (currentTab == "dialer") {
+	switch(localStorage["currentTab"]){
+	case "dialer":
 		$("#tabs").tabs("option", "active", 0);
 		$('#destination').focus();
-	} else if (currentTab == "history") {
-		$("#tabs").tabs("option", "active", 2);
-	} else if (currentTab == "preferences") {
-		$("#tabs").tabs("option", "active", 3);
-	}else if (currentTab == "messages") {
+		break;				
+	case "messages":
 		$("#tabs").tabs("option", "active", 1);
-	} else {
+		break;		
+	case "phonebook":
+		$("#tabs").tabs("option", "active", 2);
+		break;
+	case "history":
+		$("#tabs").tabs("option", "active", 3);
+		break;
+	case "preferences":
+		$("#tabs").tabs("option", "active", 4);
+		break;
+	default:
 		$("#tabs").tabs("option", "active", 0);
 		$('#destination').focus();
+		break;
 	}
 
 	$("#btn1").on("click", btn_handler);
@@ -201,13 +256,16 @@ function restoreTabs() {
 	$("#btn11").on("click", btn_handler);
 	$("#btn12").on("click", call_btn);
 
+	$("#create_phonebook_btn").on('click', create_phonebook_handler);
+	
 	$("#language").val(localStorage.lang);
 	$("#language").on("change", switch_lang_handler);
 	
 	drawDevices();
-
+	updatePhoneBook();
 	localize();
 }
+
 
 function showVMMessages(e){
 	var vmbox_id = e.currentTarget.id;
@@ -254,9 +312,55 @@ function create_play_media_row(vmbox_id, media_id){
 	return row1;
 }
 
+function create_input_pb_row(){
+	var input_field, col1, col2, col3, input1, input2, image;
+	var translate;
+	try{
+		translate = JSON.parse(localStorage["localization"]);
+	}catch(e){
+		translate = {
+			"pb_name_placeholder": {"message": "name"},
+			"pb_phone_placeholder": {"message": "phone number"}
+		};
+	}
+	
+	input_field = document.createElement("tr");
+	col1 = document.createElement("td");
+	col2 = document.createElement("td");
+	col3 = document.createElement("td");
+	input1 = document.createElement("input");
+	input2 = document.createElement("input");
+	image = document.createElement("img");
+
+	input1.id = "pb_new_name";
+	input1.placeholder = translate["pb_name_placeholder"].message;
+	input1.size=15;
+	input2.id = "pb_new_phone";
+	input2.placeholder = translate["pb_phone_placeholder"].message;
+	input2.size=15;
+	image.src = "images/add.png";
+	image.onclick = (e)=>{
+		var row = create_default_pb_row($("#pb_new_name").val(),  $("#pb_new_phone").val(), Math.random());
+		$("#phonebookentries").append(row);							
+		chrome.runtime.sendMessage({
+			type: "PHONE_BOOK_ADD_ENTRY",
+			name: $("#pb_new_name").val(),
+			phone: $("#pb_new_phone").val() }, ()=>{});
+	};
+
+	col1.appendChild(input1);
+	col2.appendChild(input2);
+	col3.appendChild(image);
+	
+	input_field.appendChild(col1);
+	input_field.appendChild(col2);
+	input_field.appendChild(col3);
+
+	$("#phonebookentries").append(input_field);
+}
+
 function create_info_media_row(from, number, name, box_id, media_id){
 	var row, col1, col2, col3, col4, p1, img;
-
 	row = document.createElement("tr");
 	col1 = document.createElement("td");
 	col2 = document.createElement("td");
@@ -309,10 +413,70 @@ function create_box_row(name, phone, count, is_new, id){
 	return row;
 }
 
+function create_default_pb_row(name, phone, id, index){
+	index = index? index: 100 + Math.random();
+
+	var row, col1, col2, col3, p1, p2, img;
+	row = document.createElement("tr");
+	col1 = document.createElement("td");
+	col2 = document.createElement("td");
+	col3 = document.createElement("td");
+	p1= document.createElement("p");
+	p2= document.createElement("p");
+	img = document.createElement("img");
+
+	p1.innerText = name;
+	p2.innerText = phone;
+	img.src = "images/remove.png";
+	img.id = id;
+	img.onclick = (e)=>{
+		$("#"+ e.currentTarget.id)[0].parentNode.parentNode.remove();
+		chrome.runtime.sendMessage({
+			type : "PHONE_BOOK_REMOVE_ENTRY",
+			entry_id: e.currentTarget.id }, ()=>{});
+	};
+	col1.appendChild(p1);
+	col2.appendChild(p2);
+	col3.appendChild(img);							
+	col1.onclick = (e)=>{
+		chrome.runtime.sendMessage({
+			type : "CALL",
+			text : e.currentTarget.parentNode.childNodes[1].childNodes[0].innerText }, ()=>{});
+	};
+	col2.onclick = (e)=>{
+		chrome.runtime.sendMessage({
+			type : "CALL",
+			text : e.currentTarget.childNodes[0].innerText }, ()=>{});
+	};
+	
+	row.id = "calllogentry'" + index + "_" + name;
+	row.appendChild(col1);
+	row.appendChild(col2);
+	row.appendChild(col3);
+
+	$("#phonebookentries").append(row);
+}
+
+function create_phonebook_handler(){
+	var message = { type : "CREATE_PHONE_BOOK"};
+	chrome.runtime.sendMessage(message, ()=>{});
+	$("#phonebookentries")[0].style.display = "";
+	$("#new_phonebook_msg")[0].style.display = "none";
+}
+
+function updatePhoneBook(){
+	var message = { type : "UPDATE_PHONE_BOOK"};
+	chrome.runtime.sendMessage(message, ()=>{});
+}
+
 function localize(){
 	try{
 		var x = JSON.parse(localStorage["localization"]);
-		
+
+		$("#help_why").text(x.help_why.message);
+		$("#help_why")[0].title = x.help_why_answer.message;
+		$("#help_ask_create_pb").text(x.help_ask_create_pb.message);
+		$("#help_ask_create_pb2").text(x.help_ask_create_pb2.message);
 		$("#signout_text")[0].innerText = x.signout_text.message;
 		$("#call_tab")[0].title = x.call_tab.message;
 		$("#history_tab")[0].title = x.history_tab.message;

@@ -19,5 +19,11 @@
 	"any_phone": {"message": "Любое устройство"},
 	"robutton": {"message": "Удалённый офис"},
 	"cfabutton": {"message": "Перенаправление звонков"},
-	"dndbutton": {"message": "Не беспокоить"}    
+	"dndbutton": {"message": "Не беспокоить"},
+	"help_why": {"message": "Зачем?"},
+	"help_ask_create_pb": {"message": "Телефонной книги еще нет, возможно, вы хотите её "},
+	"help_ask_create_pb2": {"message": "создать?"},
+	"help_why_answer": {"message": "Адресная книга позволяет хранить ваши контакты на удалённом сервере и получать доступ к ним в удобной форме с различных устройств."},
+	"pb_name_placeholder": {"message": "имя"},
+	"pb_phone_placeholder": {"message": "номер телефона"}
 }

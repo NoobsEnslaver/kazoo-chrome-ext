@@ -74,6 +74,33 @@ function onMessage(request, sender, sendResponse) {
 	case "UPDATE_LOCALIZATION":
 		updateLocalization();
 		break;
+
+	case "UPDATE_PHONE_BOOK":
+		updatePhoneBook();
+		break;
+
+	case "CREATE_PHONE_BOOK":
+		createPhoneBook();
+		break;
+
+	case "PHONE_BOOK_ADD_ENTRY":
+		phoneBookAddEntry(request.name, request.phone);
+		break;
+
+	case "PHONE_BOOK_REMOVE_ENTRY":
+		phoneBookRemoveEntry(request.entry_id);
+		break;
+	}
+}
+
+function phoneBookAddEntry(name, phone){
+	if (name.length > 0 && phone.length > 0) {
+		var list_id =JSON.parse(localStorage["phone_book"])[0].value.list_id;
+		KAZOO.lists.addEntry({account_id: localStorage["account_id"],
+				      success: updatePhoneBook,
+				      list_id: list_id,
+				      data:{ name: name, phone: phone }
+				     });
 	}
 }
 
@@ -107,6 +134,34 @@ function updateLocalization(){
 										  "cfabutton":{message: chrome.i18n.getMessage("cfabutton")},
 										  "dndbutton":{message: chrome.i18n.getMessage("dndbutton")}
 										});});
+}
+
+function phoneBookRemoveEntry(entry_id){
+	var list_id =JSON.parse(localStorage["phone_book"])[0].value.list_id;
+	KAZOO.lists.deleteEntry({account_id: localStorage["account_id"],
+				 success: updatePhoneBook,
+				 list_id: list_id,
+				 entry_id: entry_id
+				});
+}
+
+function createPhoneBook(){
+	KAZOO.lists.addList({account_id: localStorage["account_id"],
+			     success: updatePhoneBook,
+			     data:{ name: "Phone book" }});
+}
+
+function updatePhoneBook(){
+	KAZOO.lists.getLists({account_id: localStorage["account_id"], success: (data, status)=>{
+		var phone_book = data.data.find((x)=>{return ( x.name == "Phone book");});
+		if (phone_book) {
+			KAZOO.lists.getEntries({account_id: localStorage["account_id"], list_id: phone_book.id, success:(d, s)=>{
+				localStorage["phone_book"] = JSON.stringify(d.data);
+			}});
+		}else{
+			localStorage["phone_book"] = localStorage["phone_book"]? localStorage["phone_book"]: "NONE";
+		}
+	}});
 }
 
 function updateDevices(){
@@ -214,6 +269,7 @@ function authorize(){
 					localStorage["authTokens"] = KAZOO.authTokens[Object.keys(KAZOO.authTokens)[0]];
 					updateDevices();
 					updateVoiceMails();
+					updatePhoneBook();
 
 					window.setInterval(authorize, 60*60*1000); // update auth-token every hour	
 					window.setInterval(updateVoiceMails, 30*1000);
