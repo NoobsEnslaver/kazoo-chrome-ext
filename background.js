@@ -79,6 +79,7 @@ function onMessage(request, sender, sendResponse) {
 		updatePhoneBook();
 		break;
 
+
 	case "CREATE_PHONE_BOOK":
 		createPhoneBook();
 		break;
@@ -89,6 +90,10 @@ function onMessage(request, sender, sendResponse) {
 
 	case "PHONE_BOOK_REMOVE_ENTRY":
 		phoneBookRemoveEntry(request.entry_id);
+		break;
+
+	case "SWITCH_DND":
+		switchDND();
 		break;
 	}
 }
@@ -149,6 +154,18 @@ function createPhoneBook(){
 	KAZOO.lists.addList({account_id: localStorage["account_id"],
 			     success: updatePhoneBook,
 			     data:{ name: "Phone book" }});
+}
+
+function switchDND(){
+	KAZOO.user.get({userId: localStorage['user_id'], account_id: localStorage['account_id'],
+			success: (data, status)=>{
+				if(!(data.data.do_not_disturb && data.data.do_not_disturb.enabled)){
+					data.data.do_not_disturb = {enabled: false};
+				}
+				data.data.do_not_disturb.enabled = !data.data.do_not_disturb.enabled;
+				KAZOO.user.update({data: data.data, userId: localStorage['user_id'], account_id: localStorage['account_id'],success:(a,b)=>{}});
+				localStorage.dnd = !data.data.do_not_disturb.enabled;
+			}});
 }
 
 function updatePhoneBook(){

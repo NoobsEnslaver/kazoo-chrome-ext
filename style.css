@@ -309,9 +309,8 @@ ul.ui-autocomplete {
 #dndbutton {
 	position: absolute;
 	bottom: 15px;
-	left: 160px;
+	left: 230px;
 	cursor: pointer;
-	display: none;
 }
 
 #cfabutton {

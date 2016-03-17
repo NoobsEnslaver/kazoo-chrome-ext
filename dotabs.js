@@ -260,7 +260,10 @@ function restoreTabs() {
 	
 	$("#language").val(localStorage.lang);
 	$("#language").on("change", switch_lang_handler);
-	
+
+	$("#dndbutton").on("click", dnd_btn_handler);
+	updateDNDButtonImage();
+
 	drawDevices();
 	updatePhoneBook();
 	localize();
@@ -498,6 +501,15 @@ function create_phonebook_handler(){
 function updatePhoneBook(){
 	var message = { type : "UPDATE_PHONE_BOOK"};
 	chrome.runtime.sendMessage(message, ()=>{});
+}
+
+function updateDNDButtonImage(){
+	$("#dndbutton")[0].src = "images/dnd_" + (localStorage.dnd=="true"? "active.png":"normal.png");
+}
+
+function dnd_btn_handler(){
+	chrome.runtime.sendMessage({type : "SWITCH_DND"}, ()=>{});	
+	window.setTimeout(updateDNDButtonImage, 500);
 }
 
 function localize(){
