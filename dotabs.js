@@ -103,6 +103,7 @@ function history_handler(e){
 
 function restoreTabs() {
 	// create tabs
+	$("#flags").hide();
 	$("#tabs").tabs();
 
 	// add activate(select) event handler for tabs
@@ -179,16 +180,57 @@ function restoreTabs() {
 	$("#btn11").on("click", btn_handler);
 	$("#btn12").on("click", call_btn);
 
+	$("#language").val(localStorage.lang);
+	$("#language").on("change", switch_lang_handler);
+	
 	drawDevices();
+
+	localize();
 }
 
-function btn_handler(e)
-{
+function localize(){
+	try{
+		var x = JSON.parse(localStorage["localization"]);
+		
+		$("#signout_text")[0].innerText = x.signout_text.message;
+		$("#call_tab")[0].title = x.call_tab.message;
+		$("#history_tab")[0].title = x.history_tab.message;
+		$("#pref_tab")[0].title = x.pref_tab.message;
+		$("#destination")[0].placeholder = x.phone_num.message;
+		$("#clicktodial")[0].lastChild.remove();
+		$("#clicktodial")[0].innerHTML += x.clicktodialbox.message;	//broke checkbutton to fuck, dont find different way
+		$("#notifications")[0].lastChild.remove();
+		$("#notifications")[0].innerHTML += x.notificationsbox.message;
+		$("#texttospeech")[0].lastChild.remove();
+		$("#texttospeech")[0].innerHTML += x.texttospeechbox.message;
+		$("#any_phone")[0].innerText = x.any_phone.message;
+		$("#robutton")[0].title = x.robutton.message;
+		$("#cfabutton")[0].title = x.cfabutton.message;
+		$("#dndbutton")[0].title = x.dndbutton.message;
+		$("#about")[0].innerText = x.about.message;
+	}catch(e){};
+
+	//Repair checkboxes
+	$('#clicktodialbox').on('click', (e)=>{	  localStorage["clicktodial"]  = e.target.checked;});
+	$('#notificationsbox').on('click', (e)=>{ localStorage["notification"] = e.target.checked;});
+	$('#texttospeechbox').on('click', (e)=>{  localStorage["texttospeech"] = e.target.checked;});
+	$("#clicktodialbox")[0].checked = localStorage["clicktodial"] == "true";
+	$("#notificationsbox")[0].checked = localStorage["notifications"] == "true";
+	$("#texttospeechbox")[0].checked = localStorage["texttospeech"] == "true";
+}
+
+function switch_lang_handler(){
+	localStorage.lang = $("#language").val();
+	var message = { type : "UPDATE_LOCALIZATION"};
+	chrome.runtime.sendMessage(message, ()=>{});
+	window.setTimeout(localize, 500);
+}
+
+function btn_handler(e){
 	$("#destination")[0].value += e.currentTarget.textContent;
 }
 
-function call_btn()
-{
+function call_btn(){
 	var message = {
 		type : "CALL",
 		text : $("#destination")[0].value
@@ -197,8 +239,7 @@ function call_btn()
 	chrome.runtime.sendMessage(message, ()=>{});
 }
 
-function drawDevices()
-{
+function drawDevices(){
 	console.log("devices drawed.");
 	var devices = JSON.parse(localStorage["devices"]);
 

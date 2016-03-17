@@ -17,10 +17,17 @@ limitations under the License.
 <!doctype html>
 <html>
 <head>
+<meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
 	<div id="signin_label">Sign In</div>
+	<table id="flags">
+		<tr>
+			<td><a href="#"><img id="ru-flag" src="images/ru-flag.png" title="Русский" /></a></td>
+			<td><a href="#"><img id="en-flag" src="images/en-flag.png" title="English" /></a></td>
+		</tr>
+	</table>
 	<div id="settings">
 		<div id="urldiv">
 			<input id="url" tabindex="1" placeholder="Enter URL" />
@@ -41,7 +48,7 @@ limitations under the License.
 		</div>
 	</div>
 	<div id="about_link_options">
-		<a href="#" tabindex="-1">about</a>
+		<a href="#" tabindex="-1" id="about">about</a>
 	</div>
 </body>
 <script src="jquery.js"></script>

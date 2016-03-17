@@ -57,10 +57,6 @@ td {
 	margin: 0px;
 }
 
-img {
-	
-}
-
 ul.ui-autocomplete {
 	text-align: left;
 }
@@ -172,6 +168,19 @@ ul.ui-autocomplete {
 
 #settings input {
 	width: 190px;
+}
+
+#flags {
+	position: relative;
+	top: 18px;
+	float: right;
+	right: 20px;
+	z-index: 999;
+}
+
+#flags img {
+    width: 18px;
+    height: 16px;
 }
 
 #urldiv {
@@ -332,6 +341,13 @@ ul.ui-autocomplete {
 	position: absolute;
 	left: 10px;
 	bottom: 80px;
+}
+
+#language {
+	position: absolute;
+	left: 75px;
+	bottom: 10px;
+	width: 120px;
 }
 
 #destination {

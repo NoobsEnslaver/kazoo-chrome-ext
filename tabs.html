@@ -17,6 +17,7 @@
 <!doctype html>
 <html>
 	<head>
+		<meta charset="utf-8">
 		<link rel="stylesheet" type="text/css" href="style.css" />
 		<link rel="stylesheet" href="jquery-ui.css" />
 		<style>
@@ -33,17 +34,17 @@
 
 		<div id="signout_link_tabs">
 			<div id="signout">
-				<a href="#" tabindex="-1">sign out</a>
+				<a href="#" tabindex="-1" id="signout_text">sign out</a>
 			</div>
 		</div>
 		<div id="tabs">
 			<ul>
 				<li><a href="#dialer"><span><img
-								     src="images/call.png" title="Call"></span></a></li>
+								     src="images/call.png" id="call_tab" title="Call"></span></a></li>
 				<li><a href="#history"><span><img
-								      src="images/history.png" title="History"></span></a></li>
+								      src="images/history.png" id="history_tab" title="History"></span></a></li>
 				<li><a href="#preferences"><span><img
-									  src="images/preferences.png" title="Preferences"></span></a></li>
+									  src="images/preferences.png" id="pref_tab" title="Preferences"></span></a></li>
 			</ul>
 			<div id="dialer">
 				<div class="ui-widget">
@@ -86,23 +87,26 @@
 			</div>
 			<div id="preferences">
 				<div id="clicktodial">
-					<input id="clicktodialbox" type="checkbox" checked />&nbsp;Enable
-					Click to Dial
+					<input id="clicktodialbox" type="checkbox" checked />&nbsp;
 				</div>
 				<br />
-				<div id="notifications">
-					<input id="notificationsbox" type="checkbox" unchecked disabled />&nbsp;Enable
-					notifications
+ 				<div id="notifications">
+					<input id="notificationsbox" type="checkbox" unchecked disabled />&nbsp;
 				</div>
 				<div id="texttospeech">
-					<input id="texttospeechbox" type="checkbox" unchecked disabled />&nbsp;Enable
-					text to speech
+					<input id="texttospeechbox" type="checkbox" unchecked disabled />&nbsp;
 				</div>
+
+				<select id="language" >
+					<option value="ru">Русский</option>
+					<option value="en">English</option>
+				</select> <br />
+
 			</div>
 		</div>
 		<div id="toolbar">
 			<select align="left" id="devices">
-				<option value="0">Any phone</option>
+				<option value="0" id="any_phone">Any phone</option>
 			</select>
 			<img id="robutton" src="images/remoteoffice_disabled.png" title="Remote Office" /> 
 			<img id="cfabutton" src="images/callforward_disabled.png" title="Call Forwarding Always" />
@@ -112,7 +116,7 @@
 			<div id="error_msg" style="color:red;">&nbsp;&nbsp;</div>
 		</div>
 		<div id="about_link_tabs">
-			<a href="#" tabindex="-1">about</a>
+			<a href="#" tabindex="-1" id="about">about</a>
 		</div>
 	</body>
 	<script src="jquery.js"></script>

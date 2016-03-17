@@ -21,7 +21,8 @@ var KAZOO = {};
 
 function onMessage(request, sender, sendResponse) {
 	var type = request.type;
-	if (type == "CALL") {
+	switch (type){
+	case "CALL":
 		var destination = request.text.replace(/[- \(\)\.]/g, "");
 		var status = "ok";
 		try {
@@ -36,7 +37,6 @@ function onMessage(request, sender, sendResponse) {
 				name: ""
 			});
 			localStorage["history"] = JSON.stringify(history);
-
 			LOGGER.API.log(MODULE, "calling: " + destination);
 			if (localStorage["active_device"] && localStorage["active_device"] != "" && localStorage["active_device"] != "any_phone") {
 				KAZOO.device.quickcall({
@@ -59,13 +59,54 @@ function onMessage(request, sender, sendResponse) {
 		sendResponse({
 			status : status
 		});
-	} else if (type == "IS_CLICK_TO_DIAL_ENABLED") {
+		break;
+		
+	case "IS_CLICK_TO_DIAL_ENABLED":
 		sendResponse({
 			status : localStorage["clicktodial"]
 		});
-	}else if (type == "BG_RESTART") {
-		contentLoaded();
+		break;
+
+	case "BG_RESTART":
+		contentLoaded();		
+		break;
+
+	case "UPDATE_LOCALIZATION":
+		updateLocalization();
+		break;
 	}
+}
+
+function updateLocalization(){
+	localStorage["lang"] = (localStorage["lang"] && localStorage["lang"].length == 2)?
+		localStorage["lang"]:
+		chrome.i18n.getUILanguage().substring(0, 2);
+	var lang = localStorage["lang"];
+
+	var a = $.getJSON("_locales/" + lang + "/messages.json").	//have problem with messaging with callbacks.
+		    done( (x)=> { localStorage["localization"] = JSON.stringify(x); }).
+		    fail( ( )=> { localStorage["localization"] = JSON.stringify({ "appName":{message: chrome.i18n.getMessage("appName")},
+										  "appDesc":{message: chrome.i18n.getMessage("appDesc")},
+										  "signin_label":{message: chrome.i18n.getMessage("signin_label")},
+										  "url":{message: chrome.i18n.getMessage("url")},
+										  "accname":{message: chrome.i18n.getMessage("accname")},
+										  "username":{message: chrome.i18n.getMessage("username")},
+										  "password":{message: chrome.i18n.getMessage("password")},
+										  "signin":{message: chrome.i18n.getMessage("signin")},
+										  "about":{message: chrome.i18n.getMessage("about")},
+										  "signout_text":{message: chrome.i18n.getMessage("signout_text")},
+										  "call_tab":{message: chrome.i18n.getMessage("call_tab")},
+										  "history_tab":{message: chrome.i18n.getMessage("history_tab")},
+										  "pref_tab":{message: chrome.i18n.getMessage("pref_tab")},
+										  "phone_num":{message: chrome.i18n.getMessage("phone_num")},
+										  "clicktodialbox":{message: chrome.i18n.getMessage("clicktodialbox")},
+										  "notificationsbox":{message: chrome.i18n.getMessage("notificationsbox")},
+										  "texttospeechbox":{message: chrome.i18n.getMessage("texttospeechbox")},
+										  "any_phone":{message: chrome.i18n.getMessage("any_phone")},
+										  "robutton":{message: chrome.i18n.getMessage("robutton")},
+										  "cfabutton":{message: chrome.i18n.getMessage("cfabutton")},
+										  "dndbutton":{message: chrome.i18n.getMessage("dndbutton")}
+										});});
 }
 
 function updateDevices(){
@@ -89,6 +130,7 @@ function updateDevices(){
 
 
 function contentLoaded() {
+	updateLocalization();
 	if (!(localStorage["url"] && localStorage["username"] && localStorage["accname"] && localStorage["credentials"])){
 		chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
 		return;
@@ -98,10 +140,10 @@ function contentLoaded() {
 		apiRoot: localStorage["url"] + "v2/",
 
 		onRequestStart: function(request, requestOptions) {
-			LOGGER.API.log(MODULE,"Request started: " + request);
+			LOGGER.API.log(MODULE,"Request started: " + JSON.stringify(request));
 		},
 		onRequestEnd: function(request, requestOptions) {
-			LOGGER.API.log(MODULE,"Request ended: " + request);
+			LOGGER.API.log(MODULE,"Request ended: " + JSON.stringify(request));
 		},
 		onRequestError: function(error, requestOptions) {
 			if(requestOptions.generateError !== false) {

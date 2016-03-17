@@ -75,7 +75,7 @@ function showGUI(name) {
 }
 
 function restoreOptions() {
-
+	localize();
 	$("#url").focus();
 	$(document).keypress(function(event) {
 		if (event.keyCode == 13) {
@@ -83,8 +83,12 @@ function restoreOptions() {
 		}
 	});
 
+	$("#en-flag").on("click", flag_click_handler);
+	$("#ru-flag").on("click", flag_click_handler);
+
 	var error = localStorage["errorMessage"];
 	if (localStorage["errorMessage"] != undefined && localStorage["errorMessage"] != ""){
+		chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
 		$("#url").val(localStorage["url"]);
 		$("#username").val(localStorage["username"]);
 		$("#accname").val(localStorage["accname"]);
@@ -114,6 +118,13 @@ function restoreOptions() {
 	}
 }
 
+function flag_click_handler(e){
+	localStorage.lang = e.currentTarget.id.substring(0,2);
+	var message = { type : "UPDATE_LOCALIZATION"};
+	chrome.runtime.sendMessage(message, ()=>{});
+	window.setTimeout(localize, 500);
+}
+
 function done() {
 	window.close();
 }
@@ -141,6 +152,20 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 		}
 	}
 });
+
+function localize(){
+	try{
+		var x = JSON.parse(localStorage["localization"]);
+
+		$("#signin_label")[0].innerText = x.signin_label.message;
+		$("#url")[0].placeholder = x.url.message;
+		$("#accname")[0].placeholder = x.accname.message;
+		$("#username")[0].placeholder = x.username.message;
+		$("#password")[0].placeholder = x.password.message;
+		$("#signin")[0].innerText = x.signin.message;
+		$("#about")[0].innerText = x.about.message;
+	}catch(e){}
+}
 
 // about
 document.querySelector('#about_link_options').addEventListener('click', showAboutBox);

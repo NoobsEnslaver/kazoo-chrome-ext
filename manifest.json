@@ -1,10 +1,9 @@
 {
-  "name" : "Siplabs Dialer for Google Chrome™",
-  // See http://developer.chrome.com/extensions/app_identity.html to get your own key and IDs"
-  //"key": "<enter key>",  
+  "name" : "__MSG_appName__",
   "short_name": "SipDialer",
   "version" : "1.2",
-  "description" : "A Google Chrome™ extension that provides Kazoo telephony integration.",
+  "default_locale": "en",
+  "description" : "__MSG_appDesc__",
   "manifest_version": 2,
   "omnibox": { "keyword" : "-call" },
   "options_page": "options.html",
@@ -35,7 +34,6 @@
   ],
   "permissions": [ "notifications", "tabs", "http://*/*", "https://*/*", "tts" ,"identity"],
   "oauth2": {
-    // See http://developer.chrome.com/extensions/app_identity.html to get your own client ID"
 	"client_id": "anonymous",
     "scopes": [
       "https://www.google.com/m8/feeds/"

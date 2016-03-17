@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-document.querySelector('#about_ok_button').addEventListener('click', returnToTabs);
 
 function returnToTabs() {
 	if (localStorage["currentTab"] == "options"){
@@ -23,4 +22,22 @@ function returnToTabs() {
 	else{
 		top.location.assign("tabs.html");
 	}
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+	console.log("start");
+	document.querySelector('#about_ok_button').addEventListener('click', returnToTabs);
+	localize();
+	console.log("end");
+});
+
+function localize(){
+	try{
+		var x = JSON.parse(localStorage["localization"]);
+		document.querySelector("#about_label").innerText = capitalizeString(x.about.message);
+	}catch(e){ console.log("Translating error"); }
+}
+
+function capitalizeString(string) {
+	return string.charAt(0).toUpperCase() + string.slice(1);
 }
