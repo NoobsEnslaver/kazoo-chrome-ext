@@ -264,6 +264,11 @@ ul.ui-autocomplete {
 	margin: 2px;
 }
 
+#messages {
+	font-size: 8pt;
+	margin: 2px;
+}
+
 #preferences {
 	font-size: 8pt;
 	margin: 2px;
@@ -383,6 +388,37 @@ ul.ui-autocomplete {
 }
 
 #calllogentries tr:hover {
+	background-color: #6494AF;
+}
+
+#messages {
+    overflow: auto;
+	height: 155px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+
+#msgtable {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+#msgtable tr td {
+	padding: 5px;
+	text-align: left;
+	vertical-align: bottom;
+	border-bottom: 1px solid #F1F1F1;
+	font-size: 9px;
+}
+
+#msgtable tr td p {
+	margin: 0px;
+	font-size: 11px;
+	font-weight: bold;
+}
+
+#msgtable tr:hover {
 	background-color: #6494AF;
 }
 

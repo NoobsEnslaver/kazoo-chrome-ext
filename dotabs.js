@@ -66,6 +66,7 @@ function signout(manual) {
 		localStorage["notifications"] = "";
 		localStorage["texttospeech"] = "";
 		localStorage["errorMessage"] = "";
+		localStorage.removeItem('vm_boxes');
 	}
 	top.location.assign("options.html");
 	chrome.runtime.sendMessage({type : "BG_RESTART"}, ()=>{});
@@ -112,9 +113,12 @@ function restoreTabs() {
 			activate : function(event, ui) {
 				if (ui.newPanel.attr("id") == "history") {
 					localStorage["currentTab"] = "history";
-
-					var list = JSON.parse(localStorage["history"]);
-
+					var list;
+					try{
+						list = JSON.parse(localStorage["history"]);
+					}catch(e){
+						list = [];
+					}
 					list.sort(function(a, b) {
 						a = new Date(a.time);
 						b = new Date(b.time);
@@ -147,9 +151,25 @@ function restoreTabs() {
 					$('#destination').focus();
 				} else if (ui.newPanel.attr("id") == "preferences") {
 					localStorage["currentTab"] = "preferences";
+				} else if (ui.newPanel.attr("id") == "messages") {
+					localStorage["currentTab"] = "messages";
+					var msg_list;
+					try{
+						msg_list = JSON.parse(localStorage["vm_boxes"]);
+					}catch(e){
+						msg_list = [];
+					}
+					
+					$("#msgtable").empty();
+					for ( var i = 0; i < msg_list.length; i++) {
+						var new_row = create_box_row(msg_list[i].name, msg_list[i].mailbox, msg_list[i].messages, !msg_list[i].old, msg_list[i].id);
+						new_row.onclick = showVMMessages;
+						$("#msgtable").append(new_row);
+						msg_list[i].old = true;
+					}
+					localStorage["vm_boxes"] = JSON.stringify(msg_list);
 				}
 			}
-
 		});
 
 	// restore current tab
@@ -158,14 +178,15 @@ function restoreTabs() {
 		$("#tabs").tabs("option", "active", 0);
 		$('#destination').focus();
 	} else if (currentTab == "history") {
-		$("#tabs").tabs("option", "active", 1);
-	} else if (currentTab == "preferences") {
 		$("#tabs").tabs("option", "active", 2);
+	} else if (currentTab == "preferences") {
+		$("#tabs").tabs("option", "active", 3);
+	}else if (currentTab == "messages") {
+		$("#tabs").tabs("option", "active", 1);
 	} else {
 		$("#tabs").tabs("option", "active", 0);
 		$('#destination').focus();
 	}
-
 
 	$("#btn1").on("click", btn_handler);
 	$("#btn2").on("click", btn_handler);
@@ -186,6 +207,106 @@ function restoreTabs() {
 	drawDevices();
 
 	localize();
+}
+
+function showVMMessages(e){
+	var vmbox_id = e.currentTarget.id;
+	console.log(vmbox_id);
+	var media_list;
+
+	try{
+		media_list = JSON.parse(localStorage["vm_media"]);
+	}catch(e){
+		media_list = [];
+	}
+	$("#msgtable").empty();
+	for ( var i = 0; i < media_list[vmbox_id].messages.length; i++) {
+		var new_info_row = create_info_media_row(media_list[vmbox_id].messages[i].from,
+							 media_list[vmbox_id].messages[i].caller_id_number,
+							 media_list[vmbox_id].messages[i].caller_id_name,
+							 vmbox_id,
+							 media_list[vmbox_id].messages[i].media_id );
+		var new_player_row = create_play_media_row(vmbox_id, media_list[vmbox_id].messages[i].media_id);
+
+		$("#msgtable").append(new_info_row);
+		$("#msgtable").append(new_player_row);
+	}
+}
+
+function create_play_media_row(vmbox_id, media_id){
+	var row1, col1, audio, source;
+	row1 = document.createElement("tr");
+	col1 = document.createElement("td");
+	audio = document.createElement("audio");
+	audio.style.width = "260px";
+	source = document.createElement("source");
+	source.src = localStorage["url"] + "v2/accounts/" +
+		localStorage["account_id"]+ "/vmboxes/" +
+		vmbox_id + "/messages/" + media_id +
+		"/raw?auth_token="+ localStorage["authTokens"];
+	source.type = "audio/ogg";
+	audio.appendChild(source);
+	audio.controls = "true";
+	col1.appendChild(audio);
+	col1.colSpan = 4;
+	row1.appendChild(col1);
+
+	return row1;
+}
+
+function create_info_media_row(from, number, name, box_id, media_id){
+	var row, col1, col2, col3, col4, p1, img;
+
+	row = document.createElement("tr");
+	col1 = document.createElement("td");
+	col2 = document.createElement("td");
+	col3 = document.createElement("td");
+	col4 = document.createElement("td");
+	p1= document.createElement("p");
+	img = document.createElement("img");
+
+	p1.innerText = from;
+	img.src = "images/remove.png";
+	col1.innerText = number;
+	col1.appendChild(p1);
+	col2.innerText = name;
+	col4.appendChild(img);
+	col4.style = "text-align:right !important";
+
+	row.appendChild(col1);
+	row.appendChild(col2);
+	row.appendChild(col3);
+	row.appendChild(col4);
+
+	return row;
+}
+
+function create_box_row(name, phone, count, is_new, id){
+	var row, col1, col2, col3, col4, p1, img;
+	row = document.createElement("tr");
+	col1 = document.createElement("td");
+	col2 = document.createElement("td");
+	col3 = document.createElement("td");
+	col4 = document.createElement("td");
+	p1= document.createElement("p");
+	img = document.createElement("img");
+
+	p1.innerText = name;
+	img.src = "images/msg_" + (is_new?"new":"old") +  ".png";
+	col1.innerText = phone;
+	col1.appendChild(p1);
+	col2.innerText = count;
+	col4.appendChild(img);
+	col4.style = "text-align:right !important";
+
+	row.appendChild(col1);
+	row.appendChild(col2);
+	row.appendChild(col3);
+	row.appendChild(col4);
+	row.id = id;
+
+	//$("#msgtable").append(row);
+	return row;
 }
 
 function localize(){

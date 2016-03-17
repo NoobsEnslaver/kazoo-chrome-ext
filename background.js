@@ -140,10 +140,10 @@ function contentLoaded() {
 		apiRoot: localStorage["url"] + "v2/",
 
 		onRequestStart: function(request, requestOptions) {
-			LOGGER.API.log(MODULE,"Request started: " + JSON.stringify(request));
+			//LOGGER.API.log(MODULE,"Request started: " + JSON.stringify(request));
 		},
 		onRequestEnd: function(request, requestOptions) {
-			LOGGER.API.log(MODULE,"Request ended: " + JSON.stringify(request));
+			//LOGGER.API.log(MODULE,"Request ended: " + JSON.stringify(request));
 		},
 		onRequestError: function(error, requestOptions) {
 			if(requestOptions.generateError !== false) {
@@ -163,7 +163,6 @@ function contentLoaded() {
 	KAZOO = $.getKazooSdk(kazoosdk_options);
 
 	authorize();
-	window.setInterval(authorize, 30*60*1000); // update auth-token every 30m
 }
 
 function incrementErrorCount(error_code){
@@ -212,7 +211,12 @@ function authorize(){
 					localStorage["name"] = data.data.name;
 					localStorage["connectionStatus"] = "signedIn";
 					localStorage["errorMessage"]="";
+					localStorage["authTokens"] = KAZOO.authTokens[Object.keys(KAZOO.authTokens)[0]];
 					updateDevices();
+					updateVoiceMails();
+
+					window.setInterval(authorize, 60*60*1000); // update auth-token every hour	
+					window.setInterval(updateVoiceMails, 30*1000);
 				},
 				error: error_handler
 			});
@@ -227,6 +231,59 @@ function error_handler(data, status){
 	localStorage["connectionStatus"]= "authFailed";
 	localStorage.removeItem('credentials');
 	localStorage["errorMessage"] = status.responseText;
+
+	contentLoaded();
+}
+
+function updateVoiceMails(){
+	KAZOO.voicemail.list({
+		filters: { filter_owner_id: localStorage["user_id"] },
+		account_id: localStorage["account_id"],
+		success: (data, status)=> {
+			data.data.map((box)=>{
+				KAZOO.voicemail.get({
+					account_id: localStorage["account_id"],
+					voicemailId: box.id,
+					success: (box_data, box_status)=> {
+						var msg_list;
+						try{
+							msg_list = JSON.parse(localStorage["vm_media"]);
+						}catch(e){
+							msg_list = {};
+						}
+
+						msg_list[box.id] = box_data.data;
+						localStorage["vm_media"] = JSON.stringify(msg_list);
+					}
+				});
+			});
+
+			var box_list;
+			try{
+				box_list = JSON.parse(localStorage["vm_boxes"]);
+			}catch(e){
+				box_list = [];
+			}
+
+			var new_msg = substract(data.data.map(
+				(x)=>{x.old = true; return x;}), box_list).map(
+					(x)=>{x.old = false; return x;});
+
+			localStorage["vm_boxes"] = JSON.stringify( box_list.concat(new_msg) );
+			if (new_msg.length > 0) {
+				chrome.browserAction.setIcon({path: "images/mail_ico256.png"});
+			}
+		}});
+}
+
+
+function substract(a, b)
+{
+	var c = a.map(JSON.stringify);
+	var d = b.map(JSON.stringify);	
+	var res = c.filter((n)=>{ return !d.includes(n);});
+
+	return res.map(JSON.parse);
 }
 
 chrome.extension.onMessage.addListener(onMessage);

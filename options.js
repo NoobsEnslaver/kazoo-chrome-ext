@@ -109,6 +109,7 @@ function restoreOptions() {
 		}
 		try {
 			if (localStorage["connectionStatus"] == "signedIn") {
+				chrome.browserAction.setIcon({path: "images/logo_online_128x128.png"});
 				top.location.assign("tabs.html");
 			}
 		} catch (error) {

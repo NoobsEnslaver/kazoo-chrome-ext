@@ -440,6 +440,7 @@
 				})
 			});
 
+			sdkMethods.authTokens = authTokens;
 			return sdkMethods;
 		} else {
 			throw('You must provide a valid apiRoot.');
