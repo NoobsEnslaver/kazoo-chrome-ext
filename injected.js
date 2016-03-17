@@ -1,5 +1,6 @@
 /* 
-Copyright 2013, BroadSoft, Inc.
+ Copyright 2016, SIPLABS LLC.
+ Copyright 2013, BroadSoft, Inc.
 
 Licensed under the Apache License,Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

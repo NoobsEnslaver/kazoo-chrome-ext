@@ -1,3 +1,10 @@
+/*
+ Changed by SIPLABS LLC, 2016.
+
+ The Kazoo javascript SDK is a jQuery plugin that allows 
+ you to easily call an extensive list of APIs from Kazoo.
+ */
+
 (function ( $ ) {
 	var baseMethods = {
 		auth: {
