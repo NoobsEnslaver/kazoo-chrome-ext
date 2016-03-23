@@ -591,4 +591,5 @@ function showMessage(message){
 	$("#error_msg").fadeOut(7000);
 }
 
+
 document.addEventListener('DOMContentLoaded', restoreTabs);

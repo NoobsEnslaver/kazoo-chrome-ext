@@ -344,3 +344,32 @@ function substract(a, b)
 
 chrome.extension.onMessage.addListener(onMessage);
 document.addEventListener('DOMContentLoaded', ()=>{contentLoaded();});
+chrome.contextMenus.create({
+	onclick: (a,b)=>{
+		var text = a.selectionText;
+		var international = "(([+]?)([0-9][0-9]?)((\\.|-| )([0-9]{1,3}))((\\.|-| )([0-9]{1,4})){2,4})";
+		var us = "((([2-9][0-8][0-9])|([\(][2-9][0-8][0-9][\)]))(\\.|-| )?([2-9][0-9]{2})(\\.|-| )?([0-9]{4}))";
+		var re = new RegExp();
+		re.compile("(" + us + "|" + international + ")");
+
+		var localization;
+		try{
+			localization = JSON.parse(localStorage["localization"]);
+		}catch(e){
+			LOGGER.API.log(MODULE, "Localization error.");
+		};
+
+		var phone = text.match(re);
+		if (phone) {
+			var name = prompt(localization.get_owner_name.message + " " +phone[0], localization.anonymous.message);
+			if (name) {
+				phoneBookAddEntry(name, phone[0]);
+			}
+		} else {
+			alert(localization.cant_parse_number.message + " :(");
+		}
+	},
+	id: "add_phone",
+	title:"Add to phonebook",
+	contexts: ["selection"]
+});

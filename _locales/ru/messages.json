@@ -25,5 +25,8 @@
 	"help_ask_create_pb2": {"message": "создать?"},
 	"help_why_answer": {"message": "Адресная книга позволяет хранить ваши контакты на удалённом сервере и получать доступ к ним в удобной форме с различных устройств."},
 	"pb_name_placeholder": {"message": "имя"},
-	"pb_phone_placeholder": {"message": "номер телефона"}
+	"pb_phone_placeholder": {"message": "номер телефона"},
+	"get_owner_name": {"message": "Введите имя владельца номера"},
+	"anonymous": {"message": "Таинственный незнакомец"},
+	"cant_parse_number": {"message": "Не удаётся выделить номер"}
 }

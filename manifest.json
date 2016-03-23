@@ -32,7 +32,7 @@
       "css" : [ "injected.css", "jquery-ui.css" ]
     }
   ],
-  "permissions": [ "notifications", "tabs", "http://*/*", "https://*/*", "tts" ,"identity"],
+  "permissions": [ "notifications", "tabs", "http://*/*", "https://*/*", "tts" ,"identity", "contextMenus"],
   "oauth2": {
 	"client_id": "anonymous",
     "scopes": [

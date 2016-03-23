@@ -25,5 +25,8 @@
 	"help_ask_create_pb2": {"message": "create it?"},
 	"help_why_answer": {"message": "Address Book allows you to store your contacts on a remote server and access them in a convenient way with a variety of devices."},
 	"pb_name_placeholder": {"message": "name"},
-	"pb_phone_placeholder": {"message": "phone number"}
+	"pb_phone_placeholder": {"message": "phone number"},
+	"get_owner_name": {"message": "Name of contact for"},
+	"anonymous": {"message": "Anonymous"},
+	"cant_parse_number": {"message": "No phone numbers there... i think..."}
 }
