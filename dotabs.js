@@ -345,7 +345,7 @@ function create_input_pb_row(){
 		chrome.runtime.sendMessage({
 			type: "PHONE_BOOK_ADD_ENTRY",
 			name: $("#pb_new_name").val(),
-			phone: $("#pb_new_phone").val() }, ()=>{});
+			phone: $("#pb_new_phone").val() + "" }, ()=>{});
 	};
 
 	col1.appendChild(input1);
@@ -357,6 +357,23 @@ function create_input_pb_row(){
 	input_field.appendChild(col3);
 
 	$("#phonebookentries").append(input_field);
+
+	$("#pb_new_name").on('input', text_input_handler_names);
+	$("#pb_new_phone").on('input', text_input_handler_phones);
+}
+
+function text_input_handler_names(e){
+	var table = $("#phonebookentries");
+	var template = e.currentTarget.value + "";
+	table.children().children().map((index, object)=>{
+		if(index == 0) return;
+		var text = object.childNodes[0].childNodes[0].textContent;
+		if (text.search(template) == -1) {
+			table.children().children()[index].style.visibility = "hidden";
+		} else {
+			table.children().children()[index].style.visibility = "visible";
+		}
+	});
 }
 
 function create_info_media_row(from, number, name, box_id, media_id){
@@ -411,6 +428,20 @@ function create_box_row(name, phone, count, is_new, id){
 
 	//$("#msgtable").append(row);
 	return row;
+}
+
+function text_input_handler_phones(e){
+	var table = $("#phonebookentries");
+	var template = e.currentTarget.value + "";
+	table.children().children().map((index, object)=>{
+		if(index == 0) return;
+		var text = object.childNodes[1].childNodes[0].textContent;
+		if (text.search(template) == -1) {
+			table.children().children()[index].style.visibility = "hidden";
+		} else {
+			table.children().children()[index].style.visibility = "visible";
+		}
+	});
 }
 
 function create_default_pb_row(name, phone, id, index){
