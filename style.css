@@ -124,7 +124,7 @@ ul.ui-autocomplete {
 	outline: none;
 	position: absolute;
 	right: 2px;
-	top: 237px;
+	bottom: 4px;
 }
 
 #about_link_options a {
@@ -260,9 +260,13 @@ ul.ui-autocomplete {
 }
 
 #history {
-	font-size: 8pt;
-	margin: 2px;
+    font-size: 8pt;
+    margin: 2px;
+    overflow: auto;
+    height: 80%;
+    width: 280px;
 }
+
 
 #messages {
 	font-size: 8pt;
@@ -332,25 +336,25 @@ ul.ui-autocomplete {
 #clicktodial {
 	position: absolute;
 	left: 10px;
-	bottom: 120px;
+	top: 50px;
 }
 
 #notifications {
 	position: absolute;
 	left: 10px;
-	bottom: 100px;
+	top: 70px;
 }
 
 #texttospeech {
 	position: absolute;
 	left: 10px;
-	bottom: 80px;
+	top: 90px;
 }
 
 #language {
 	position: absolute;
 	left: 75px;
-	bottom: 10px;
+	top: 130px;
 	width: 120px;
 }
 
@@ -362,7 +366,7 @@ ul.ui-autocomplete {
 
 #calllogs {
 	overflow: auto;
-	height: 155px;
+	height: 100%;
 	padding-left: 5px;
 	padding-right: 5px;
 }
@@ -392,7 +396,7 @@ ul.ui-autocomplete {
 
 #messages {
     overflow: auto;
-	height: 155px;
+    height: 80%;
 	padding-left: 5px;
 	padding-right: 5px;
 }
@@ -424,7 +428,7 @@ ul.ui-autocomplete {
 /* ------ Phone Book --------  */
 #phonebook {
     overflow: auto;
-    height: 155px;
+    height: 80%;
     width: 280px;
 }
 

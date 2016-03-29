@@ -243,6 +243,21 @@ function restoreTabs() {
 		break;
 	}
 
+	set_popup_heigth(localStorage["popup_heigth"]);
+	var resizer = document.getElementById("whitespace_below_toolbar");
+	resizer.ondragstart = (e)=>{return false;};
+	resizer.onmousedown = (e)=>{
+		resizer.onmousemove = (e)=>{			
+			if (e.pageY < 250 || e.pageY > 550) return;
+			var new_len = (e.pageY - 50) ;
+			set_popup_heigth(new_len);
+			localStorage["popup_heigth"] = new_len;
+		};
+		resizer.onmouseup = (e)=>{
+			resizer.onmousemove = null;
+		};
+	};
+
 	$("#btn1").on("click", btn_handler);
 	$("#btn2").on("click", btn_handler);
 	$("#btn3").on("click", btn_handler);
@@ -268,7 +283,6 @@ function restoreTabs() {
 	updatePhoneBook();
 	localize();
 }
-
 
 function showVMMessages(e){
 	var vmbox_id = e.currentTarget.id;
@@ -315,7 +329,14 @@ function create_play_media_row(vmbox_id, media_id){
 	return row1;
 }
 
-function create_input_pb_row(){
+function set_popup_heigth(new_len){
+	$("#tabs")[0].style.height = (new_len) + "px";
+	$("#messages")[0].style.height = (new_len-40) + "px";
+	$("#phonebook")[0].style.height = (new_len-40) + "px";
+	$("#history")[0].style.height = (new_len-40) + "px";
+}
+
+function create_input_pb_row(){	
 	var input_field, col1, col2, col3, input1, input2, image;
 	var translate;
 	try{
