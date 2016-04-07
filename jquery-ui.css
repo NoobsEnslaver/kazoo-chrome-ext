@@ -752,7 +752,7 @@ button.ui-button::-moz-focus-inner {
 	float: left; 
 	/* padding: 0 1em;   remove this to center image */
 	text-decoration: none;
-	width: 53px; /* Increase tab width */
+	width: 54px; /* Increase tab width */
 	background-color: #F1F1F1; /*tab color non-selected */
 	outline: none;
 	border-right: 1px solid #34647F; 
@@ -763,7 +763,7 @@ button.ui-button::-moz-focus-inner {
 .ui-tabs .ui-tabs-nav li.ui-tabs-active {
 	margin-bottom: -1px;
 	padding-bottom: 1px;
-	width: 55px; /* Increase tab width */
+	width: 56px; /* Increase tab width */
 	background-color: #F1F1F1; /*tab color non-selected */
 	border-bottom-style: none; /*t*/
 }
@@ -771,7 +771,7 @@ button.ui-button::-moz-focus-inner {
 .ui-tabs .ui-tabs-nav li.ui-state-disabled a,
 .ui-tabs .ui-tabs-nav li.ui-tabs-loading a {
 	cursor: text;
-	width: 55px; /* Increase tab width */
+	width: 56px; /* Increase tab width */
 	background-color: white; /*tab color selected */
 	outline: none;
 	border-bottom: none; /* remove border for atcive tab*/

@@ -42,7 +42,7 @@ document.querySelector('#signout').addEventListener('click', function() {
 });
 
 // about
-document.querySelector('#about_link_tabs').addEventListener('click',
+document.querySelector('#about').addEventListener('click',
 		showAboutBox);
 
 
@@ -244,7 +244,7 @@ function restoreTabs() {
 	}
 
 	set_popup_heigth(localStorage["popup_heigth"]);
-	var resizer = document.getElementById("whitespace_below_toolbar");
+	var resizer = document.getElementById("toolbar");
 	resizer.ondragstart = (e)=>{return false;};
 	resizer.onmousedown = (e)=>{
 		resizer.onmousemove = (e)=>{			
@@ -279,7 +279,15 @@ function restoreTabs() {
 	$("#dndbutton").on("click", dnd_btn_handler);
 	updateDNDButtonImage();
 
-	drawDevices();
+	var contextMenu = {};
+	contextMenu["Language"] = createLanguagesContextMenuItem([{shortName: "ru", fullName:"Russian"}, {shortName: "en", fullName:"English"}]);
+	contextMenu["Active device"] = createDevicesContextMenuItem();
+	contextMenu["Click to dial"] = createClickToDialContextMenuItem();
+	contextMenu["sep1"] = "---------";
+	
+	contextMenu["Quit"] = {name: "Quit"};
+	
+	drawContextMenu(contextMenu);
 	updatePhoneBook();
 	localize();
 }
@@ -330,10 +338,10 @@ function create_play_media_row(vmbox_id, media_id){
 }
 
 function set_popup_heigth(new_len){
-	$("#tabs")[0].style.height = (new_len) + "px";
-	$("#messages")[0].style.height = (new_len-40) + "px";
-	$("#phonebook")[0].style.height = (new_len-40) + "px";
-	$("#history")[0].style.height = (new_len-40) + "px";
+	$("#tabs")[0].style.height = (new_len - 150) + "px";
+	$("#messages")[0].style.height = (new_len - 190) + "px";
+	$("#phonebook")[0].style.height = (new_len- 190) + "px";
+	$("#history")[0].style.height = (new_len- 190) + "px";
 }
 
 function create_input_pb_row(){	
@@ -542,34 +550,34 @@ function localize(){
 		$("#help_ask_create_pb").text(x.help_ask_create_pb.message);
 		$("#help_ask_create_pb2").text(x.help_ask_create_pb2.message);
 		$("#signout_text")[0].innerText = x.signout_text.message;
-		$("#call_tab")[0].title = x.call_tab.message;
+		//$("#call_tab")[0].title = x.call_tab.message;
 		$("#history_tab")[0].title = x.history_tab.message;
 		$("#pref_tab")[0].title = x.pref_tab.message;
 		$("#destination")[0].placeholder = x.phone_num.message;
-		$("#clicktodial")[0].lastChild.remove();
-		$("#clicktodial")[0].innerHTML += x.clicktodialbox.message;	//broke checkbutton to fuck, dont find different way
-		$("#notifications")[0].lastChild.remove();
-		$("#notifications")[0].innerHTML += x.notificationsbox.message;
-		$("#texttospeech")[0].lastChild.remove();
-		$("#texttospeech")[0].innerHTML += x.texttospeechbox.message;
-		$("#any_phone")[0].innerText = x.any_phone.message;
-		$("#robutton")[0].title = x.robutton.message;
-		$("#cfabutton")[0].title = x.cfabutton.message;
+		//$("#clicktodial")[0].lastChild.remove();
+		//$("#clicktodial")[0].innerHTML += x.clicktodialbox.message;	//broke checkbutton to fuck, dont find different way
+		// $("#notifications")[0].lastChild.remove();
+		// $("#notifications")[0].innerHTML += x.notificationsbox.message;
+		// $("#texttospeech")[0].lastChild.remove();
+		// $("#texttospeech")[0].innerHTML += x.texttospeechbox.message;
+		//$("#any_phone")[0].innerText = x.any_phone.message;
+		// $("#robutton")[0].title = x.robutton.message;
+		// $("#cfabutton")[0].title = x.cfabutton.message;
 		$("#dndbutton")[0].title = x.dndbutton.message;
 		$("#about")[0].innerText = x.about.message;
 	}catch(e){};
 
 	//Repair checkboxes
-	$('#clicktodialbox').on('click', (e)=>{	  localStorage["clicktodial"]  = e.target.checked;});
-	$('#notificationsbox').on('click', (e)=>{ localStorage["notification"] = e.target.checked;});
-	$('#texttospeechbox').on('click', (e)=>{  localStorage["texttospeech"] = e.target.checked;});
-	$("#clicktodialbox")[0].checked = localStorage["clicktodial"] == "true";
-	$("#notificationsbox")[0].checked = localStorage["notifications"] == "true";
-	$("#texttospeechbox")[0].checked = localStorage["texttospeech"] == "true";
+	//$('#clicktodialbox').on('click', (e)=>{	  localStorage["clicktodial"]  = e.target.checked;});
+	// $('#notificationsbox').on('click', (e)=>{ localStorage["notification"] = e.target.checked;});
+	// $('#texttospeechbox').on('click', (e)=>{  localStorage["texttospeech"] = e.target.checked;});
+	// $("#clicktodialbox")[0].checked = localStorage["clicktodial"] == "true";
+	// $("#notificationsbox")[0].checked = localStorage["notifications"] == "true";
+	// $("#texttospeechbox")[0].checked = localStorage["texttospeech"] == "true";
 }
 
-function switch_lang_handler(){
-	localStorage.lang = $("#language").val();
+function switch_lang_handler(lang){
+	localStorage.lang = lang;
 	var message = { type : "UPDATE_LOCALIZATION"};
 	chrome.runtime.sendMessage(message, ()=>{});
 	window.setTimeout(localize, 500);
@@ -588,22 +596,6 @@ function call_btn(){
 	chrome.runtime.sendMessage(message, ()=>{});
 }
 
-function drawDevices(){
-	console.log("devices drawed.");
-	var devices = JSON.parse(localStorage["devices"]);
-
-	for(var d in devices) {
-		$("#devices").append('<option value=' + devices[d].num + ' id='+ devices[d].id +'>' + devices[d].name  +'</option>');
-	};
-
-	$("#devices").on("change", function(dev){
-		localStorage["active_device"] = dev.currentTarget.selectedOptions[0].id;
-		console.log("device changed.");
-		localStorage["devIndex"] = document.getElementById("devices").selectedIndex;
-	});
-
-	document.getElementById("devices").selectedIndex = localStorage["devIndex"];
-}
 
 function hhmmssToString(hh, mm, ss) {
 	var ret = ss;
@@ -655,5 +647,82 @@ function showMessage(message){
 	$("#error_msg").fadeOut(7000);
 }
 
+/*Example input: [{shortName: "ru", fullName:"Russian"}, {shortName: "en", fullName:"English"}]*/
+function createLanguagesContextMenuItem(list){
+	var langs = {name: "Language", items: {}};
+	for(var i = 0; i < list.length; i++) {
+		langs.items[list[i].shortName] = {
+			name: list[i].fullName, 
+			type: 'radio', 
+			radio: 'radio_lang', 
+			value: list[i].shortName,
+			//icon: "images/" + list[i].shortName +"-flag.png",
+			icon: "edit",
+			selected: localStorage["lang"] == list[i].shortName,
+			events: {
+				click: (e)=>{ switch_lang_handler(e.currentTarget.value); }
+			}
+		};
+	}
+	
+	return langs;
+}
+
+function createDevicesContextMenuItem(){
+	var devices = JSON.parse(localStorage["devices"]);
+	var device_items = {name: "Active device", items: {}};
+	
+	for(var i in devices) {
+		device_items.items[devices[i].num] = {
+			name: devices[i].name, 
+			type: 'radio', 
+			radio: 'radio_dev', 
+			value: devices[i].id,
+			//icon: "images/" + list[i].shortName +"-flag.png",
+			selected: localStorage["active_device"] == devices[i].id,
+			events: {
+				click: (e)=>{ localStorage["active_device"] = e.currentTarget.value;}}
+		};
+	}
+
+	return device_items;
+};
+
+function drawContextMenu(items){
+	$.contextMenu({
+		selector: '#options', 
+		trigger: 'left',
+		// callback: function(key, options) {
+		// 	var m = "clicked: " + key;
+		// 	window.console && console.log(m) || alert(m); 
+		// },
+		items: items
+	});
+}
+
+function createClickToDialContextMenuItem(){
+	var ctd_item = {
+		name: "Enable Click to Dial",
+		type: 'checkbox',
+                selected: localStorage["clicktodial"]=="true",
+		events: {
+			click: (e)=>{ localStorage["clicktodial"] = !(localStorage["clicktodial"] == "true"); }
+		}
+	};
+	
+	return ctd_item;
+}
 
 document.addEventListener('DOMContentLoaded', restoreTabs);
+
+// function drawDevices(){
+// 	console.log("devices drawed.");
+
+// 	$("#devices").on("change", function(dev){
+// 		localStorage["active_device"] = dev.currentTarget.selectedOptions[0].id;
+// 		console.log("device changed.");
+// 		localStorage["devIndex"] = document.getElementById("devices").selectedIndex;
+// 	});
+
+// 	document.getElementById("devices").selectedIndex = localStorage["devIndex"];
+// }

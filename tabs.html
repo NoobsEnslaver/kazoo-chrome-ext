@@ -20,6 +20,9 @@
 		<meta charset="utf-8">
 		<link rel="stylesheet" type="text/css" href="style.css" />
 		<link rel="stylesheet" href="jquery-ui.css" />
+		<link rel="stylesheet" href="jquery.contextMenu.css" />
+		<!-- <link rel="stylesheet" href="theme.css" /> -->
+		
 		<style>
 			.ui-autocomplete{
 			max-height: 100px;
@@ -30,26 +33,13 @@
 		</style>
 	</head>
 	<body>
-		<div id="name"></div>
-
 		<div id="signout_link_tabs">
+			<div id="name"></div>
 			<div id="signout">
 				<a href="#" tabindex="-1" id="signout_text">sign out</a>
 			</div>
 		</div>
-		<div id="tabs">
-			<ul>
-				<li><a href="#dialer"><span><img
-								     src="images/call.png" id="call_tab" title="Call"></span></a></li>
-				<li><a href="#messages"><span><img
-								       src="images/messages.png" id="msg_tab" title="Messages"></span></a></li>
-				<li><a href="#phonebook"><span><img src="images/phonebook.png" id="phonebook_tab" title="Phone book"></span></a></li>
-				<li><a href="#history"><span><img
-								      src="images/history.png" id="history_tab" title="History"></span></a></li>
-				<li><a href="#preferences"><span><img
-									  src="images/preferences.png" id="pref_tab" title="Preferences"></span></a></li>
-			</ul>
-			<div id="dialer">
+		<div id="dialer">
 				<div class="ui-widget">
 					<input id="destination" placeholder="Phone number" />
 				</div>
@@ -71,9 +61,9 @@
 							<td><button id="btn9" style="width:60px;height:27px">9</button></td>
 						</tr>
 						<tr>
-							<td><button id="btn10" style="width:60px;height:27px">+</button></td>
-							<td><button id="btn11" style="width:60px;height:27px">0</button></td>
-							<td><button id="btn12" style="width:60px;height:27px"><img src="images/answer.png" style="width:20px;height:20px"></button></td>
+							<td><button id="btn10" style="width:60px;height:27px;margin-bottom: 6px;">+</button></td>
+							<td><button id="btn11" style="width:60px;height:27px;margin-bottom: 6px;">0</button></td>
+							<td><button id="btn12" style="width:60px;height:27px;margin-bottom: 6px;"><img src="images/answer.png" style="width:20px;height:20px"></button></td>
 						</tr>
 					</table>
 				</div>
@@ -81,7 +71,22 @@
 					<table id="calls">
 					</table>
 				</div>
-			</div>
+		</div>
+		<!-- <br /> -->
+		<div id="tabs">
+			<ul>
+				<!-- <li><a href="#dialer"><span><img -->
+				<!-- 				     src="images/call.png" id="call_tab" title="Call"></span></a></li> -->
+				<li><a href="#messages"><span><img
+								       src="images/messages.png" id="msg_tab" title="Messages"></span></a></li>
+				<li><a href="#phonebook"><span><img src="images/phonebook.png" id="phonebook_tab" title="Phone book"></span></a></li>
+				<li><a href="#history"><span><img
+								      src="images/history.png" id="history_tab" title="History"></span></a></li>
+				<li><a href="#preferences"><span><img
+									  src="images/preferences.png" id="pref_tab" title="Preferences"></span></a></li>
+				<li><a href="#preferences"><span><img
+									  src="images/preferences.png" id="pref_tab" title="Preferences"></span></a></li>
+			</ul>
 			<div id="history">
 				<div id="calllogs">
 					<table id="calllogentries">
@@ -116,42 +121,46 @@
 			</div>
 			
 			<div id="preferences">
-				<div id="clicktodial">
-					<input id="clicktodialbox" type="checkbox" checked />&nbsp;
-				</div>
-				<br />
- 				<div id="notifications">
-					<input id="notificationsbox" type="checkbox" unchecked disabled />&nbsp;
-				</div>
-				<div id="texttospeech">
-					<input id="texttospeechbox" type="checkbox" unchecked disabled />&nbsp;
-				</div>
+				<!-- <div id="clicktodial"> -->
+				<!-- 	<input id="clicktodialbox" type="checkbox" checked />&nbsp; -->
+				<!-- </div> -->
+				<!-- <br /> -->
+ 				<!-- <div id="notifications"> -->
+				<!-- 	<input id="notificationsbox" type="checkbox" unchecked disabled />&nbsp; -->
+				<!-- </div> -->
+				<!-- <div id="texttospeech"> -->
+				<!-- 	<input id="texttospeechbox" type="checkbox" unchecked disabled />&nbsp; -->
+				<!-- </div> -->
 
-				<select id="language" >
-					<option value="ru">Русский</option>
-					<option value="en">English</option>
-				</select> <br />
-
+				<!-- <select id="language" > -->
+				<!-- 	<option value="ru">Русский</option> -->
+				<!-- 	<option value="en">English</option> -->
+				<!-- </select> <br /> -->
+				Comming soon
 			</div>
 		</div>
 		<div id="toolbar">
-			<select align="left" id="devices">
-				<option value="0" id="any_phone">Any phone</option>
-			</select>
-			<img id="robutton" src="images/remoteoffice_disabled.png" title="Remote Office" />
-			<img id="cfabutton" src="images/callforward_disabled.png" title="Call Forwarding Always" />
-			<img id="dndbutton" src="images/dnd_normal.png" title="Do Not Disturb" />
+			<!-- <select align="left" id="devices"> -->
+			<!-- 	<option value="0" id="any_phone">Any phone</option> -->
+			<!-- </select> -->
+			<!-- <img id="robutton" src="images/remoteoffice_disabled.png" title="Remote Office" class="tray_icons" /> -->
+			<img id="cfabutton" src="images/callforward_disabled.png" title="Call Forwarding Always" class="tray_icons" />
+			<img id="dndbutton" src="images/dnd_normal.png" title="Do Not Disturb" class="tray_icons" />
+			<img id="options" src="images/options.png" title="Options" class="tray_icons" />
+			<img id="about" src="images/about.png" title="About" class="tray_icons" />
+			<!-- <div id="whitespace_below_toolbar"> -->
+			<!-- 	<div id="error_msg" style="color:red;">&nbsp;&nbsp;</div> -->
+			<!-- </div> -->
+			<!-- <div id="about_link_tabs"> -->
+			<!-- 	<a href="#" tabindex="-1" id="about">about</a> -->
+			<!-- </div> -->
 		</div>
-		<div id="whitespace_below_toolbar">
-			<div id="error_msg" style="color:red;">&nbsp;&nbsp;</div>
-		</div>
-		<div id="about_link_tabs">
-			<a href="#" tabindex="-1" id="about">about</a>
-		</div>
+
 	</body>
 	<script src="jquery.js"></script>
+	<script src="jquery.contextMenu.js"></script>
 	<script src="jquery-ui.js"></script>
 	<script src="jquery.base64.js"></script>
 	<script type="text/javascript" src="log.js"></script>
-	<script src="dotabs.js"></script>
+	<script src="dotabs.js"></script>	
 </html>

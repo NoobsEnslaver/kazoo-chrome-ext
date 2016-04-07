@@ -122,9 +122,9 @@ ul.ui-autocomplete {
 #about_link_tabs a {
 	color: #333333;
 	outline: none;
-	position: absolute;
-	right: 2px;
-	bottom: 4px;
+	/* position: absolute; */
+	/* right: 2px; */
+	/* bottom: 4px; */
 }
 
 #about_link_options a {
@@ -232,12 +232,13 @@ ul.ui-autocomplete {
 }
 
 #signout_link_tabs {
-	color: #333333;
+    	background-color: #44647F;
+	color: whitesmoke;
 	height: 17px;
 }
 
 #signout a {
-	color: #333333;
+	color: whitesmoke;
 	outline: none;
 	position: absolute;
 	top: 1px;
@@ -257,6 +258,8 @@ ul.ui-autocomplete {
 #dialer {
 	font-size: 8pt;
 	margin: 0 auto;
+	border: 1px solid #6494AF;
+	border-bottom-style: none;
 }
 
 #history {
@@ -282,6 +285,7 @@ ul.ui-autocomplete {
 	height: 90%;
 	border-color: #34647F;
 	margin: 0 auto;
+	border-top-style: none;
 }
 
 #tabs li {
@@ -289,48 +293,55 @@ ul.ui-autocomplete {
 }
 
 #toolbar {
-	height: 20px;
-	width: 278px;
-	background-color: #F4F4F4;
-	border-width: .1em;
-	border-style: solid;
-	border-color: #34647F;
+    /* height: 20px; */
+	/* width: 278px; */
+	background-color: #44647F;
+	/* border-width: .1em; */
+	/* border-style: solid; */
+	/* border-color: #34647F; */
+	text-align: right;
 	border-top-style: none;
 	position: abosolute;
-	bottom: 10;
-	left: 20;
+	/* bottom: 0; */
+	/* left: 0; */
 }
 
-#whitespace_below_toolbar {
-	height: 14px;
-	width: 278px;
-	background-color: #FFFFFF;
-	position: abosolute;
-	bottom: 10;
-	left: 20;
+/* #whitespace_below_toolbar { */
+/* 	height: 14px; */
+/* 	width: 278px; */
+/* 	background-color: #FFFFFF; */
+/* 	position: abosolute; */
+/* 	bottom: 10; */
+/* 	left: 20; */
+/* } */
+
+.tray_icons{
+    width: 20px;
+    height:20px;
+    margin: 2px;
 }
 
 #dndbutton {
-	position: absolute;
-	bottom: 15px;
-	left: 230px;
-	cursor: pointer;
+	/* position: absolute; */
+	/* bottom: 15px; */
+	/* left: 230px; */
+	/* cursor: pointer; */
 }
 
 #cfabutton {
-	position: absolute;
-	bottom: 15px;
-	left: 130px;
-	cursor: pointer;
-	display: none;
+	/* position: absolute; */
+	/* bottom: 15px; */
+	/* left: 130px; */
+	/* cursor: pointer; */
+	/* display: none; */
 }
 
 #robutton {
-	position: absolute;
-	bottom: 15px;
-	left: 100px;
-	cursor: pointer;
-	display: none;
+	/* position: absolute; */
+	/* bottom: 15px; */
+	/* left: 100px; */
+	/* cursor: pointer; */
+	/* display: none; */
 }
 
 #clicktodial {
