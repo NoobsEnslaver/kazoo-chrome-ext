@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright 2016, SIPLABS LLC.
 Copyright 2013, BroadSoft, Inc.
 
@@ -7,7 +7,7 @@ you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
- 
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "ASIS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,12 +41,14 @@ function signin() {
 
 	localStorage["connectionStatus"] = "";
 	chrome.runtime.sendMessage({type : "BG_RESTART"});
-	
+
 	wait(()=>{
-		if (localStorage["connectionStatus"] == "signedIn")
+		if (localStorage["connectionStatus"] == "signedIn"){
 			top.location.assign("tabs.html");
-		return (localStorage["connectionStatus"] == "signedIn") || (localStorage["connectionStatus"] == "authFailed");
+		}
 		
+		return (localStorage["connectionStatus"] == "signedIn") || (localStorage["connectionStatus"] == "authFailed");
+
 	}, { timeout_callback: ()=>{
 		showMessage("Connection timeout");
 	}});
@@ -54,12 +56,12 @@ function signin() {
 
 function wait(predicate, options){
 	if (predicate()) return;
-	
-	options = options || {};	
+
+	options = options || {};
 	options.sample_time = options.sample_time || 100;
 	options.timeout = isFinite(options.timeout)?(options.timeout - options.sample_time): 3000;
 	options.timeout_callback= options.timeout_callback || function(){};
-	
+
 	if (options.timeout > 0) {
 		window.setTimeout(wait, options.sample_time, predicate, options);
 	}else {
@@ -82,7 +84,23 @@ function restoreOptions() {
 			$('#signin').trigger('click');
 		}
 	});
+	$(".language__img").on("click", function() {
+		$(".language__ul").css("top", "-" + ($(".language__li").size() - 1) * 2 + "rem").toggle(300);
+	});
+	$(".multiselect__select").on("change", function() {
+		if ($(this).val() !== "default") {
+			if ($(this).val() == "new") {
+				$(this).hide();
+				$(".multiselect__input").show().focus();
+			} else {
 
+			}
+		}
+	});
+	$(".multiselect__input").on("dblclick", function() {
+		$(this).hide();
+		$(".multiselect__select").val("default").show().focus();
+	});
 	$("#en-flag").on("click", flag_click_handler);
 	$("#ru-flag").on("click", flag_click_handler);
 
@@ -120,6 +138,7 @@ function restoreOptions() {
 }
 
 function flag_click_handler(e){
+	$(".language__ul").toggle(300);
 	localStorage.lang = e.currentTarget.id.substring(0,2);
 	var message = { type : "UPDATE_LOCALIZATION"};
 	chrome.runtime.sendMessage(message, ()=>{});
@@ -164,12 +183,12 @@ function localize(){
 		$("#username")[0].placeholder = x.username.message;
 		$("#password")[0].placeholder = x.password.message;
 		$("#signin")[0].innerText = x.signin.message;
-		$("#about")[0].innerText = x.about.message;
+		$("#about img").attr("title", x.about.message).attr("alt", x.about.message);
 	}catch(e){}
 }
 
 // about
-document.querySelector('#about_link_options').addEventListener('click', showAboutBox);
+document.querySelector('#about').addEventListener('click', showAboutBox);
 
 document.addEventListener('DOMContentLoaded', restoreOptions);
 document.querySelector('#signin').addEventListener('click', signin);

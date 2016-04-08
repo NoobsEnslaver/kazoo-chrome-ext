@@ -15,35 +15,190 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 html {
-	height: 220px;
+  font-size: 100%;
 }
 
 body {
-	font-family: sans-serif;
-	margin: 0px;
-	padding: 0px;
-	width: 280px;
-	height: 220px;
-	overflow: hidden;
-	text-align: center;
+  font-family: sans-serif;
+  margin: 0px;
+  padding: 0px;
+  overflow: hidden;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 a {
-	font-size: 8pt;
+  font-size: 0.9rem;
 }
-
-input {
-	font-size: 8pt;
+input,
+.multiselect__select {
+  display: inline-block;
+  width: 100%;
+  line-height: 2rem;
+  height: 2rem;
+  font-size: 0.9rem;
+  outline: none;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  padding-left: 6px;
+  color: #555555;
+  box-sizing: border-box;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  -webkit-transition: border linear 0.2s, box-shadow linear 0.2s;
+  transition: border linear 0.2s, box-shadow linear 0.2s;
+}
+.multiselect__select {
+  padding-left: 2px;
+  cursor: pointer;
+}
+input:focus,
+.multiselect__select:focus {
+  border-color: rgba(82, 168, 236, 0.8);
+  outline: 0;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 2px rgba(34, 204, 255, 0.6);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 2px rgba(34, 204, 255, 0.6);
+}
+.multiselect__input {
+  display: none;
+}
+.box {
+  width: 49%;
+  padding: 12px;
+  padding-bottom: 10px;
+  display: inline-block;
+  box-sizing: border-box;
+}
+.logo {
+  width: 49%;
+  line-height: 100vh;
+  text-align: center;
+  display: inline-block;
+  vertical-align: top;
+  box-sizing: border-box;
+}
+.logo__brand {
+  width: 80%;
+  vertical-align: middle;
+  display: inline-block;
+  box-sizing: border-box;
+}
+.box__wrap {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+  padding: 20px;
+  border: 2px solid #35b;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+.wrap_input {
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+.wrap_btn {
+  background-color: #35b;
+  color: #fff;
+  border: 0;
+  display: inline-block;
+  text-align: center;
+  width: 100%;
+  font-size: 0.9rem;
+  line-height: 1.9rem;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.about,
+.about:link,
+.about:active {
+  display: inline-block;
+  outline: none;
+  text-decoration: none;
+  vertical-align: top;
+  box-sizing: border-box;
+}
+.about__img {
+  width: 2rem;
+  height: 2rem;
+  box-sizing: border-box;
+}
+.box__sign {
+  width: 100%;
+  text-align: right;
+  margin-bottom: 12px;
+  color: #333333;
+  font-size: 0.9rem;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+.botmenu {
+  width: 100%;
+  text-align: right;
+  box-sizing: border-box;
+}
+.language {
+  position: relative;
+  display: inline-block;
+  margin-right: 12px;
+  vertical-align: top;
+  box-sizing: border-box;
+}
+.language__img {
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.language__ul {
+  position: absolute;
+  display: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 12px;
+  top: -20px;
+  right: 2.5rem;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.language__li {
+  list-style: none;
+  list-style-image: none;
+  text-align: left;
+  display: inline-block;
+  color: #ccc;
+  padding-left: 1rem;
+  min-width: 7rem;
+  border-bottom: 1px solid #9f9f9f;
+  line-height: 2rem;
+  margin: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  cursor: pointer;
+  box-sizing: border-box;
+  -webkit-transition: all ease 0.3s;
+  transition: all ease 0.3s;
+}
+.language__li:last-child {
+  border-bottom: none !important;
+}
+.language__li:hover {
+  color: #fff;
+  border-bottom: 1px solid #d7d7d7;
+  background-color: rgba(0, 0, 0, 0.86);
+  -webkit-transition: all ease 0.3s;
+  transition: all ease 0.3s;
 }
 
 button {
-	font-size: 8pt;
+  font-size: 0.9rem;
 }
 
 legend {
-	font-size: 8pt;
-	font-weight: bold;
-	text-align: left;
+  font-size: 0.9rem;
+  font-weight: bold;
+  text-align: left;
 }
 
 fieldset {
@@ -52,7 +207,7 @@ fieldset {
 }
 
 td {
-	font-size: 8pt;
+  font-size: 0.9rem;
 	padding: 0px;
 	margin: 0px;
 }
@@ -63,23 +218,14 @@ ul.ui-autocomplete {
 
 #statusWrapper {
 	height: 22px;
-	font-size: 8pt;
 	margin: 2px;
+  font-size: 0.9rem;
 }
 
 #name {
-	font-size: 10pt;
-	font-weight: bold;
-	float: left;
-}
-
-#signin_label {
-	color: #333333;
-	font-size: 8pt;
-	font-weight: bold;
-	position: absolute;
-	top: 4px;
-	left: 13px;
+  font-size: 10pt;
+  font-weight: bold;
+  float: left;
 }
 
 #about_label {
@@ -101,13 +247,13 @@ ul.ui-autocomplete {
 
 #about_text {
 	text-align: left;
-	font-size: 8pt;
 	position: absolute;
 	top: 5px;
 	left: 10px;
 	height: 110px;
 	width: 230px;
 	overflow: auto;
+  font-size: 0.9rem;
 }
 
 #about_text p {
@@ -152,83 +298,8 @@ ul.ui-autocomplete {
     	background-color: #44748F;
 }
 
-#settings {
-	font-size: 8pt;
-	position: absolute;
-	top: 18px;
-	left: 13px;
-	width: 250px;
-	height: 185px;
-	border: 2px solid #6494AF;
-}
-
 #services {
-	font-size: 8pt;
-}
-
-#settings input {
-	width: 190px;
-}
-
-#flags {
-	position: relative;
-	top: 18px;
-	float: right;
-	right: 20px;
-	z-index: 999;
-}
-
-#flags img {
-    width: 18px;
-    height: 16px;
-}
-
-#urldiv {
-	position: absolute;
-	top: 20px;
-	left: 15px;
-	width: 220px;
-}
-
-#accnamediv {
-	position: absolute;
-	top: 60px;
-	left: 15px;
-	width: 220px;
-}
-
-#usernamediv {
-	position: absolute;
-	top: 85px;
-	left: 15px;
-	width: 220px;
-}
-
-#passworddiv {
-	position: absolute;
-	top: 110px;
-	left: 15px;
-	width: 220px;
-}
-
-#status {
-	position: absolute;
-	top: 128px;
-	left: 15px;
-	width: 220px;
-}
-
-#signin {
-	background-color: #34647F;
-	color: white;
-	border: 0;
-	width: 150px;
-	font-size: 8pt;
-	height: 30px;
-	cursor: pointer;
-	position: absolute;
-	top: 145px;
-	left: 50px;
+  font-size: 0.9rem;
 }
 
 #signout_link_tabs {
@@ -250,13 +321,13 @@ ul.ui-autocomplete {
 }
 
 #status {
-	font-size: 8pt;
-	margin: 2px;
-	color: #9C0C0C;;
+  font-size: 0.9rem;
+  margin: 8px;
+  color: #9C0C0C;
 }
 
 #dialer {
-	font-size: 8pt;
+  font-size: 0.9rem;
 	margin: 0 auto;
 	border: 1px solid #6494AF;
 	border-bottom-style: none;
@@ -272,7 +343,7 @@ ul.ui-autocomplete {
 
 
 #messages {
-	font-size: 8pt;
+  font-size: 0.9rem;
 	margin: 2px;
 }
 
