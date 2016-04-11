@@ -2,6 +2,8 @@
 	"appName": { "message": "Siplabs Dialer for Google Chrome™" },
 	"appDesc": {"message": "A Google Chrome™ extension that provides Kazoo telephony integration." },
 	"signin_label": {"message": "Sign In"},
+	"choose_url": {"message": "Choose connection"},
+	"new_url": {"message": "New connection"},
 	"url": {"message": "Enter URL"},
 	"accname": {"message": "Enter your account name"},
 	"username": {"message": "Enter your user name"},

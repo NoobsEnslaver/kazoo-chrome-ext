@@ -21,14 +21,12 @@ limitations under the License.
 		<link rel="stylesheet" href="style.css" />
 	</head>
 
-	<body style="width: 540px">
+	<body>
 		<div class="logo">
 			<img src="images/logo-example.png" alt="logo" class="logo__brand" />
 		</div>
 
 		<div class="box">
-			<div id="signin_label" class="box__sign">Sign In</div>
-
 			<div id="settings" class="box__wrap">
 				<div id="urldiv" class="multiselect wrap_input">
 					<select id="url_select" tabindex="1" class="multiselect__select">
@@ -36,20 +34,12 @@ limitations under the License.
 						<option value="new">New connection</option>
 					</select>
 
-					<input id="url" tabindex="1" class="multiselect__input" placeholder="Enter new URL" title="Double click to get options" />
+					<input id="url" class="multiselect__input" placeholder="Enter new URL" title="Double click to get options" />
 				</div>
 
-				<div id="accnamediv" class="wrap_input">
-					<input id="accname" tabindex="2" placeholder="Enter your account name" />
-				</div>
-
-				<div id="usernamediv" class="wrap_input">
-					<input id="username" tabindex="3" placeholder="Enter your username" />
-				</div>
-
-				<div id="passworddiv" class="wrap_input">
-					<input type="password" tabindex="4" id="password" placeholder="Enter your password" />
-				</div>
+				<input id="accname" class="wrap_input" tabindex="2" placeholder="Enter your account name" />
+				<input id="username" class="wrap_input" tabindex="3" placeholder="Enter your username" />
+				<input type="password" class="wrap_input" tabindex="4" id="password" placeholder="Enter your password" />
 
 				<div id="status">&nbsp;&nbsp;</div>
 

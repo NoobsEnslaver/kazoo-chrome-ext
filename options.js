@@ -26,8 +26,35 @@ function showMessage(message, fadeOut) {
 	}
 }
 
+function addConnection(url) {
+	var connect = {}, connections, addConnect = true;
+
+	connect[url] = {
+		acc: $("#accname").val(),
+		user: $("#username").val()
+	};
+
+	if (localStorage["connections"] != null) {
+		connections = $.parseJSON(localStorage["connections"]);
+
+		$.each(connections, function(i, item) {
+			if (i == url && item.acc == connect[url].acc && item.user == connect[url].user) {
+				addConnect = false;
+				return false;
+			}
+		});
+	} else {
+		connections = {};
+	}
+
+	if (addConnect) {
+		connections[url] = connect[url];
+		localStorage["connections"] = JSON.stringify(connections);
+	}
+}
+
 function signin() {
-	var url = $("#url").val();
+	var url = ($("#url_select").val() == "new") ? $("#url").val() : $("#url_select").val();
 	localStorage["url"] = (url[url.length-1] == '/')? url: url + '/';
 	localStorage["username"] = $("#username").val();
 	localStorage["accname"] = $("#accname").val();
@@ -40,13 +67,16 @@ function signin() {
 	localStorage["errorMessage"] = "";
 
 	localStorage["connectionStatus"] = "";
+
 	chrome.runtime.sendMessage({type : "BG_RESTART"});
 
 	wait(()=>{
 		if (localStorage["connectionStatus"] == "signedIn"){
 			top.location.assign("tabs.html");
+
+			addConnection(url);
 		}
-		
+
 		return (localStorage["connectionStatus"] == "signedIn") || (localStorage["connectionStatus"] == "authFailed");
 
 	}, { timeout_callback: ()=>{
@@ -77,40 +107,62 @@ function showGUI(name) {
 }
 
 function restoreOptions() {
+	var connections;
 	localize();
-	$("#url").focus();
+	$("#url_select").focus();
 	$(document).keypress(function(event) {
 		if (event.keyCode == 13) {
 			$('#signin').trigger('click');
 		}
 	});
+
 	$(".language__img").on("click", function() {
 		$(".language__ul").css("top", "-" + ($(".language__li").size() - 1) * 2 + "rem").toggle(300);
 	});
+	$(".language__li").on("click", flag_click_handler);
+
+	if (localStorage["connections"] != null) {
+		connections = JSON.parse(localStorage["connections"]);
+
+		$.each(connections, function(i, connect) {
+			$(".multiselect__select").append($("<option>", {
+				value: i,
+				text: i
+			}).attr("dataacc", connect.acc).attr("datauser", connect.user));
+		});
+	}
+
 	$(".multiselect__select").on("change", function() {
 		if ($(this).val() !== "default") {
-			if ($(this).val() == "new") {
+			if ($(this).val() === "new") {
 				$(this).hide();
+				$("#url").val("");
+				$("#accname").val("");
+				$("#username").val("");
+				$("#password").val("");
 				$(".multiselect__input").show().focus();
 			} else {
-
+				$("#accname").val($('option:selected', this).attr("dataacc"));
+				$("#username").val($('option:selected', this).attr("datauser"));
 			}
+		} else {
+			$("#accname").val("");
+			$("#username").val("");
+			$("#password").val("");
 		}
 	});
 	$(".multiselect__input").on("dblclick", function() {
 		$(this).hide();
 		$(".multiselect__select").val("default").show().focus();
 	});
-	$("#en-flag").on("click", flag_click_handler);
-	$("#ru-flag").on("click", flag_click_handler);
 
 	var error = localStorage["errorMessage"];
+	$("#password").val("");
 	if (localStorage["errorMessage"] != undefined && localStorage["errorMessage"] != ""){
 		chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
 		$("#url").val(localStorage["url"]);
 		$("#username").val(localStorage["username"]);
 		$("#accname").val(localStorage["accname"]);
-		$("#password").val("");
 		localStorage["connectionStatus"] = "signedOut";
 	} else {
 		var url = localStorage["url"];
@@ -177,14 +229,18 @@ function localize(){
 	try{
 		var x = JSON.parse(localStorage["localization"]);
 
-		$("#signin_label")[0].innerText = x.signin_label.message;
-		$("#url")[0].placeholder = x.url.message;
-		$("#accname")[0].placeholder = x.accname.message;
-		$("#username")[0].placeholder = x.username.message;
-		$("#password")[0].placeholder = x.password.message;
-		$("#signin")[0].innerText = x.signin.message;
+		$("#signin_label").text(x.signin_label.message);
+		$("#url_select option[value='default']").text(x.choose_url.message);
+		$("#url_select option[value='new']").text(x.new_url.message);
+		$("#url").attr("placeholder", x.url.message);
+		$("#accname").attr("placeholder", x.accname.message);
+		$("#username").attr("placeholder", x.username.message);
+		$("#password").	attr("placeholder", x.password.message);
+		$("#signin").text(x.signin.message);
 		$("#about img").attr("title", x.about.message).attr("alt", x.about.message);
-	}catch(e){}
+	}catch(e){
+		console.log(e);
+	}
 }
 
 // about

@@ -1,5 +1,5 @@
-/* 
-Copyright 2016, SIPLABS LLC.	
+/*
+Copyright 2016, SIPLABS LLC.
 Copyright 2013, BroadSoft, Inc.
 
 Licensed under the Apache License,Version 2.0 (the "License");
@@ -7,7 +7,7 @@ you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
- 
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "ASIS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -60,7 +60,7 @@ function onMessage(request, sender, sendResponse) {
 			status : status
 		});
 		break;
-		
+
 	case "IS_CLICK_TO_DIAL_ENABLED":
 		sendResponse({
 			status : localStorage["clicktodial"]
@@ -68,7 +68,7 @@ function onMessage(request, sender, sendResponse) {
 		break;
 
 	case "BG_RESTART":
-		contentLoaded();		
+		contentLoaded();
 		break;
 
 	case "UPDATE_LOCALIZATION":
@@ -120,6 +120,8 @@ function updateLocalization(){
 		    fail( ( )=> { localStorage["localization"] = JSON.stringify({ "appName":{message: chrome.i18n.getMessage("appName")},
 										  "appDesc":{message: chrome.i18n.getMessage("appDesc")},
 										  "signin_label":{message: chrome.i18n.getMessage("signin_label")},
+										  "choose_url":{message: chrome.i18n.getMessage("choose_url")},
+										  "new_url":{message: chrome.i18n.getMessage("new_url")},
 										  "url":{message: chrome.i18n.getMessage("url")},
 										  "accname":{message: chrome.i18n.getMessage("accname")},
 										  "username":{message: chrome.i18n.getMessage("username")},
@@ -288,7 +290,7 @@ function authorize(){
 					updateVoiceMails();
 					updatePhoneBook();
 
-					window.setInterval(authorize, 60*60*1000); // update auth-token every hour	
+					window.setInterval(authorize, 60*60*1000); // update auth-token every hour
 					window.setInterval(updateVoiceMails, 30*1000);
 				},
 				error: error_handler
@@ -353,7 +355,7 @@ function updateVoiceMails(){
 function substract(a, b)
 {
 	var c = a.map(JSON.stringify);
-	var d = b.map(JSON.stringify);	
+	var d = b.map(JSON.stringify);
 	var res = c.filter((n)=>{ return !d.includes(n);});
 
 	return res.map(JSON.parse);

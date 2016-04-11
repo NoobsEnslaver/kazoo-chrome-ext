@@ -2,6 +2,8 @@
 	"appName": { "message": "Менеджер звонков от Siplabs" },
 	"appDesc": {"message": "Расширение Google Chrome™, предоставляющее доступ к серверам телефонии Kazoo." },
 	"signin_label": {"message": "Войти"},
+	"choose_url": {"message": "Выберите подключение"},
+	"new_url": {"message": "Новое подключение"},
 	"url": {"message": "Адрес сервера"},
 	"accname": {"message": "Имя аккаунта"},
 	"username": {"message": "Имя пользователя"},
