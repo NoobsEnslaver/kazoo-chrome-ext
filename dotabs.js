@@ -51,6 +51,8 @@ document.querySelector('#about').addEventListener('click',
 // due to an authentication error or some other error, then retain some
 // information.
 function signout(manual) {
+	clearInterval(localStorage.auth_daemon_id);
+	clearInterval(localStorage.vm_daemon_id);
 	localStorage["name"] = "";
 	localStorage["currentTab"] = "";
 	localStorage["connectionStatus"] = "signedOut";
@@ -130,7 +132,10 @@ function restoreTabs() {
 	$("#tabs").tabs(
 		{
 			activate : function(event, ui) {
-				if (ui.newPanel.attr("id") == "history") {
+				var new_panel_id = ui.newPanel.attr("id");
+
+				switch(new_panel_id){
+				case "history":
 					localStorage["currentTab"] = "history";
 					var list;
 					try{
@@ -165,12 +170,9 @@ function restoreTabs() {
 						$("#calllogentries").append(row);
 					}
 					$("#calllogentries").on("click", history_handler);
-				} else if (ui.newPanel.attr("id") == "dialer") {
-					localStorage["currentTab"] = "dialer";
-					$('#destination').focus();
-				} else if (ui.newPanel.attr("id") == "preferences") {
-					localStorage["currentTab"] = "preferences";
-				} else if (ui.newPanel.attr("id") == "messages") {
+					break;
+
+				case "messages":
 					localStorage["currentTab"] = "messages";
 					var msg_list;
 					try{
@@ -178,16 +180,43 @@ function restoreTabs() {
 					}catch(e){
 						msg_list = [];
 					}
-					
+
 					$("#msgtable").empty();
-					for ( var i = 0; i < msg_list.length; i++) {
-						var new_row = create_box_row(msg_list[i].name, msg_list[i].mailbox, msg_list[i].messages, !msg_list[i].old, msg_list[i].id);
-						new_row.onclick = showVMMessages;
-						$("#msgtable").append(new_row);
-						msg_list[i].old = true;
+					switch(msg_list.length){
+					case 0:
+						var p1, img, h2;
+						
+						p1= document.createElement("p");
+						h2= document.createElement("h3");
+						h2.innerText = "You have no voicemailboxes yet";
+						p1.appendChild(h2);
+						img = document.createElement("img");
+
+						img.src = "images/no_voicemailbox.jpg";
+						img.width = 250;
+
+						$("#msgtable").append(p1);
+						$("#msgtable").append(img);
+						break;
+
+					case 1:
+						showVMMessages({currentTarget: {id: msg_list[0].id}});
+						break;
+
+					default:
+						for ( var i = 0; i < msg_list.length; i++) {
+							var new_row = create_box_row(msg_list[i].name, msg_list[i].mailbox, msg_list[i].messages, !msg_list[i].old, msg_list[i].id);
+							new_row.onclick = showVMMessages;
+							$("#msgtable").append(new_row);
+							msg_list[i].old = true;
+						}
+						break;
 					}
-					localStorage["vm_boxes"] = JSON.stringify(msg_list);
-				} else if (ui.newPanel.attr("id") == "phonebook") {
+					
+					localStorage["vm_boxes"] = JSON.stringify(msg_list);					
+					break;
+
+				case "phonebook":					
 					localStorage["currentTab"] = "phonebook";
 
 					if (localStorage["phone_book"] == "NONE") {
@@ -214,25 +243,30 @@ function restoreTabs() {
 						for ( var z = 0; z < pb_list.length; z++) {
 							create_default_pb_row(pb_list[z].value.name, pb_list[z].value.phone, pb_list[z].id, z);
 						}
-					}
+					}				
+					break;
+
+				case "preferences":
+					localStorage["currentTab"] = "preferences";
+					break;
 				}
 			}
 		});
 
 	// restore current tab
 	switch(localStorage["currentTab"]){
-	case "dialer":
-		$("#tabs").tabs("option", "active", 0);
-		$('#destination').focus();
-		break;				
 	case "messages":
 		$("#tabs").tabs("option", "active", 1);
+		$("#tabs").tabs("option", "active", 0);
+		if (localStorage.connectionStatus == "signedIn") {
+			chrome.browserAction.setIcon({path: "images/logo_online_128x128.png"});
+		}
 		break;		
 	case "phonebook":
-		$("#tabs").tabs("option", "active", 2);
+		$("#tabs").tabs("option", "active", 1);
 		break;
 	case "history":
-		$("#tabs").tabs("option", "active", 3);
+		$("#tabs").tabs("option", "active", 2);
 		break;
 	case "preferences":
 		$("#tabs").tabs("option", "active", 4);
@@ -243,7 +277,8 @@ function restoreTabs() {
 		break;
 	}
 
-	set_popup_heigth(localStorage["popup_heigth"]);
+	var popup_heigth = localStorage["popup_heigth"] || 480;
+	set_popup_heigth(popup_heigth);
 	var resizer = document.getElementById("toolbar");
 	resizer.ondragstart = (e)=>{return false;};
 	resizer.onmousedown = (e)=>{
@@ -302,18 +337,37 @@ function showVMMessages(e){
 	}catch(e){
 		media_list = [];
 	}
+	
 	$("#msgtable").empty();
-	for ( var i = 0; i < media_list[vmbox_id].messages.length; i++) {
-		var new_info_row = create_info_media_row(media_list[vmbox_id].messages[i].from,
-							 media_list[vmbox_id].messages[i].caller_id_number,
-							 media_list[vmbox_id].messages[i].caller_id_name,
-							 vmbox_id,
-							 media_list[vmbox_id].messages[i].media_id );
-		var new_player_row = create_play_media_row(vmbox_id, media_list[vmbox_id].messages[i].media_id);
+	if (media_list[vmbox_id].messages.length == 0) {
+		// No voicemails message				TODO
+		var p1, img, h2;
+		
+		p1= document.createElement("p");
+		h2= document.createElement("h3");
+		h2.innerText = "You have no voicemails yet";
+		p1.appendChild(h2);
+		img = document.createElement("img");
 
-		$("#msgtable").append(new_info_row);
-		$("#msgtable").append(new_player_row);
+		img.src = "images/no_voicemailbox.jpg";
+		img.width = 250;
+
+		$("#msgtable").append(p1);
+		$("#msgtable").append(img);
+	}else{
+		for ( var i = 0; i < media_list[vmbox_id].messages.length; i++) {
+			var new_info_row = create_info_media_row(media_list[vmbox_id].messages[i].from,
+								 media_list[vmbox_id].messages[i].caller_id_number,
+								 media_list[vmbox_id].messages[i].caller_id_name,
+								 vmbox_id,
+								 media_list[vmbox_id].messages[i].media_id );
+			var new_player_row = create_play_media_row(vmbox_id, media_list[vmbox_id].messages[i].media_id);
+
+			$("#msgtable").append(new_info_row);
+			$("#msgtable").append(new_player_row);
+		}
 	}
+	
 }
 
 function create_play_media_row(vmbox_id, media_id){
@@ -373,11 +427,17 @@ function create_input_pb_row(){
 	image.src = "images/add.png";
 	image.onclick = (e)=>{
 		var row = create_default_pb_row($("#pb_new_name").val(),  $("#pb_new_phone").val(), Math.random());
-		$("#phonebookentries").append(row);							
+		$("#phonebookentries").append(row);						
 		chrome.runtime.sendMessage({
 			type: "PHONE_BOOK_ADD_ENTRY",
 			name: $("#pb_new_name").val(),
-			phone: $("#pb_new_phone").val() + "" }, ()=>{});
+			phone: $("#pb_new_phone").val() + "" }, (e)=>{
+				var event = new KeyboardEvent('input');
+				$("#pb_new_name").val("");
+				$("#pb_new_phone").val("");
+				document.querySelector('#pb_new_name').dispatchEvent(event);
+				document.querySelector('#pb_new_phone').dispatchEvent(event);
+			});
 	};
 
 	col1.appendChild(input1);
@@ -465,6 +525,7 @@ function create_box_row(name, phone, count, is_new, id){
 function text_input_handler_phones(e){
 	var table = $("#phonebookentries");
 	var template = e.currentTarget.value + "";
+	template = template.replace("+", "\\+");
 	table.children().children().map((index, object)=>{
 		if(index == 0) return;
 		var text = object.childNodes[1].childNodes[0].textContent;
@@ -628,7 +689,12 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 
 	if (a.type == "error") {
 		var error_code = a.data.status || a.data.error;
-		switch(error_code){
+		switch(error_code + ""){
+		case "0":
+			showMessage("Bad server url.");
+			break;
+			
+		case "400":
 		case "401":
 			showMessage("Authorization error.");
 			break;

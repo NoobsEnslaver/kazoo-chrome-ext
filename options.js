@@ -159,7 +159,7 @@ function restoreOptions() {
 	var error = localStorage["errorMessage"];
 	$("#password").val("");
 	if (localStorage["errorMessage"] != undefined && localStorage["errorMessage"] != ""){
-		chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
+		//chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
 		$("#url").val(localStorage["url"]);
 		$("#username").val(localStorage["username"]);
 		$("#accname").val(localStorage["accname"]);
@@ -179,7 +179,7 @@ function restoreOptions() {
 		}
 		try {
 			if (localStorage["connectionStatus"] == "signedIn") {
-				chrome.browserAction.setIcon({path: "images/logo_online_128x128.png"});
+				//chrome.browserAction.setIcon({path: "images/logo_online_128x128.png"});
 				top.location.assign("tabs.html");
 			}
 		} catch (error) {
@@ -211,19 +211,25 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 	if (!a.sender == "KAZOO") return;
 
 	if (a.type == "error") {
-		var error_code = a.data.status;
-		switch(error_code){
-		case 400:
-		case 401:
+		var error_code = a.data.status || a.data.error;
+		switch(error_code + ""){
+		case "0":
+			showMessage("Bad server url.");
+			break;
+			
+		case "400":
+		case "401":
 			showMessage("Authorization error.");
 			break;
 
 		default:
-			showMessage("Unknown error.");
+			showMessage(a.data.statusText + " (" + a.data.status  + ")");
+			console.log(a);
 			break;
 		}
 	}
 });
+
 
 function localize(){
 	try{

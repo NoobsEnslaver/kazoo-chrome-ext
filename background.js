@@ -85,6 +85,7 @@ function onMessage(request, sender, sendResponse) {
 		break;
 
 	case "PHONE_BOOK_ADD_ENTRY":
+		sendResponse("");
 		phoneBookAddEntry(request.name, request.phone);
 		break;
 
@@ -244,16 +245,17 @@ function incrementErrorCount(error_code){
 	try{
 		errors = JSON.parse(localStorage["errors"]);
 	}catch(e){}
-	errors[error_code] = (errors[error_code] + 1) || 1;
+	errors[error_code] = errors[error_code] || 0;
+	errors[error_code] += 1;
 	errors["last_modify"] = Date.now();
 	window.setTimeout(()=>{
 		if (! localStorage["errors"]) return;
 		var errors = JSON.parse(localStorage["errors"]);
 		if (Date.now() - errors["last_modify"] >= 5000) {
-			localStorage.removeItem('errors');
+			delete(localStorage.errors);
 		}
 	}, 5000);
-	localStorage["errors"] = JSON.stringify(errors[error_code]);
+	localStorage["errors"] = JSON.stringify(errors);
 	return errors[error_code];
 }
 
@@ -290,8 +292,9 @@ function authorize(){
 					updateVoiceMails();
 					updatePhoneBook();
 
-					window.setInterval(authorize, 60*60*1000); // update auth-token every hour
-					window.setInterval(updateVoiceMails, 30*1000);
+					localStorage.auth_daemon_id = window.setInterval(authorize, 60*60*1000); // update auth-token every hour
+					localStorage.vm_daemon_id = window.setInterval(updateVoiceMails, 30*1000);
+					
 				},
 				error: error_handler
 			});
