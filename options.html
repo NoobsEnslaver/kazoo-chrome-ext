@@ -28,24 +28,20 @@ limitations under the License.
 
 		<div class="box">
 			<div id="settings" class="box__wrap">
-				<div id="urldiv" class="multiselect wrap_input">
-					<select id="url_select" tabindex="1" class="multiselect__select">
-						<option value="default">Choose connection</option>
-						<option value="new">New connection</option>
-					</select>
+				<select id="connection_select" tabindex="1" class="multiselect__select wrap_input">
+					<option value="default">Choose connection</option>
+					<option value="new">New connection</option>
+				</select>
+				<input id="connection" class="multiselect__input wrap_input" placeholder="Enter new connection name" title="Double click to get options" />
 
-					<input id="url" class="multiselect__input" placeholder="Enter new URL" title="Double click to get options" />
-				</div>
-
-				<input id="accname" class="wrap_input" tabindex="2" placeholder="Enter your account name" />
-				<input id="username" class="wrap_input" tabindex="3" placeholder="Enter your username" />
-				<input type="password" class="wrap_input" tabindex="4" id="password" placeholder="Enter your password" />
+				<input id="url" class="wrap_input" tabindex="2" placeholder="Enter URL" />
+				<input id="accname" class="wrap_input" tabindex="3" placeholder="Enter your account name" />
+				<input id="username" class="wrap_input" tabindex="4" placeholder="Enter your username" />
+				<input id="password" type="password" class="wrap_input" tabindex="5" placeholder="Enter your password" />
 
 				<div id="status">&nbsp;&nbsp;</div>
 
-				<div>
-					<button id="signin" class="wrap_btn" tabindex="4">Sign In</button>
-				</div>
+				<button id="signin" class="wrap_btn" tabindex="6">Sign In</button>
 			</div>
 
 			<div class="botmenu">

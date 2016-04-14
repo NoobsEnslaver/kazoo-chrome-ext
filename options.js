@@ -26,10 +26,11 @@ function showMessage(message, fadeOut) {
 	}
 }
 
-function addConnection(url) {
+function addConnection(connection) {
 	var connect = {}, connections, addConnect = true;
 
-	connect[url] = {
+	connect[connection] = {
+		url: $("#url").val(),
 		acc: $("#accname").val(),
 		user: $("#username").val()
 	};
@@ -38,7 +39,7 @@ function addConnection(url) {
 		connections = $.parseJSON(localStorage["connections"]);
 
 		$.each(connections, function(i, item) {
-			if (i == url && item.acc == connect[url].acc && item.user == connect[url].user) {
+			if (i == connection || item.url == connect[connection].url && item.acc == connect[connection].acc && item.user == connect[connection].user) {
 				addConnect = false;
 				return false;
 			}
@@ -48,13 +49,18 @@ function addConnection(url) {
 	}
 
 	if (addConnect) {
-		connections[url] = connect[url];
+		$(".multiselect__select").append($("<option>", {
+			value: connection,
+			text: connection
+		}).attr("acc", connect[connection].acc).attr("user", connect[connection].user).attr("url", connect[connection].url));
+		connections[connection] = connect[connection];
 		localStorage["connections"] = JSON.stringify(connections);
 	}
 }
 
 function signin() {
-	var url = ($("#url_select").val() == "new") ? $("#url").val() : $("#url_select").val();
+	var url = $("#url").val();
+	var connection = ($("#connection_select").val() == "new") ? $("#connection").val() : $("#connection_select").val();
 	localStorage["url"] = (url[url.length-1] == '/')? url: url + '/';
 	localStorage["username"] = $("#username").val();
 	localStorage["accname"] = $("#accname").val();
@@ -74,7 +80,7 @@ function signin() {
 		if (localStorage["connectionStatus"] == "signedIn"){
 			top.location.assign("tabs.html");
 
-			addConnection(url);
+			addConnection(connection);
 		}
 
 		return (localStorage["connectionStatus"] == "signedIn") || (localStorage["connectionStatus"] == "authFailed");
@@ -109,7 +115,7 @@ function showGUI(name) {
 function restoreOptions() {
 	var connections;
 	localize();
-	$("#url_select").focus();
+	$("#server_select").focus();
 	$(document).keypress(function(event) {
 		if (event.keyCode == 13) {
 			$('#signin').trigger('click');
@@ -128,7 +134,7 @@ function restoreOptions() {
 			$(".multiselect__select").append($("<option>", {
 				value: i,
 				text: i
-			}).attr("dataacc", connect.acc).attr("datauser", connect.user));
+			}).attr("acc", connect.acc).attr("user", connect.user).attr("url", connect.url));
 		});
 	}
 
@@ -137,15 +143,18 @@ function restoreOptions() {
 			if ($(this).val() === "new") {
 				$(this).hide();
 				$("#url").val("");
+				$("#connection").val("");
 				$("#accname").val("");
 				$("#username").val("");
 				$("#password").val("");
 				$(".multiselect__input").show().focus();
 			} else {
-				$("#accname").val($('option:selected', this).attr("dataacc"));
-				$("#username").val($('option:selected', this).attr("datauser"));
+				$("#url").val($('option:selected', this).attr("url"));
+				$("#accname").val($('option:selected', this).attr("acc"));
+				$("#username").val($('option:selected', this).attr("user"));
 			}
 		} else {
+			$("#url").val("");
 			$("#accname").val("");
 			$("#username").val("");
 			$("#password").val("");
@@ -153,6 +162,12 @@ function restoreOptions() {
 	});
 	$(".multiselect__input").on("dblclick", function() {
 		$(this).hide();
+
+		if ($(this).val() != "") {
+			$("#password").val("");
+			addConnection($(this).val());
+		}
+
 		$(".multiselect__select").val("default").show().focus();
 	});
 
@@ -165,18 +180,18 @@ function restoreOptions() {
 		$("#accname").val(localStorage["accname"]);
 		localStorage["connectionStatus"] = "signedOut";
 	} else {
-		var url = localStorage["url"];
-		var username = localStorage["username"];
-		var accname = localStorage["accname"];
-		if (url) {
-			$("#url").val(url);
-		}
-		if (username) {
-			$("#username").val(username);
-		}
-		if (accname){
-			$("#accname").val(accname);
-		}
+		// var url = localStorage["url"];
+		// var username = localStorage["username"];
+		// var accname = localStorage["accname"];
+		// if (url) {
+		// 	$("#url").val(url);
+		// }
+		// if (username) {
+		// 	$("#username").val(username);
+		// }
+		// if (accname){
+		// 	$("#accname").val(accname);
+		// }
 		try {
 			if (localStorage["connectionStatus"] == "signedIn") {
 				//chrome.browserAction.setIcon({path: "images/logo_online_128x128.png"});
@@ -216,7 +231,7 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 		case "0":
 			showMessage("Bad server url.");
 			break;
-			
+
 		case "400":
 		case "401":
 			showMessage("Authorization error.");
@@ -236,8 +251,8 @@ function localize(){
 		var x = JSON.parse(localStorage["localization"]);
 
 		$("#signin_label").text(x.signin_label.message);
-		$("#url_select option[value='default']").text(x.choose_url.message);
-		$("#url_select option[value='new']").text(x.new_url.message);
+		$("#connection_select option[value='default']").text(x.choose_url.message);
+		$("#connection_select option[value='new']").text(x.new_url.message);
 		$("#url").attr("placeholder", x.url.message);
 		$("#accname").attr("placeholder", x.accname.message);
 		$("#username").attr("placeholder", x.username.message);
