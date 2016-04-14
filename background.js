@@ -17,7 +17,7 @@ limitations under the License.
 
 var MODULE = "background.js";
 var KAZOO = {};
-
+var SOCKET = {};
 
 function onMessage(request, sender, sendResponse) {
 	var type = request.type;
@@ -67,7 +67,15 @@ function onMessage(request, sender, sendResponse) {
 		});
 		break;
 
+	case "IS_ON_CALL_NOTIFICATION_ENABLED":
+		if (localStorage.callNotificationsEnabled) {
+			sendResponse();
+		}
+		break;
+
 	case "BG_RESTART":
+		KAZOO = {};
+		SOCKET = {};
 		contentLoaded();
 		break;
 
@@ -244,7 +252,9 @@ function incrementErrorCount(error_code){
 	var errors = {};
 	try{
 		errors = JSON.parse(localStorage["errors"]);
-	}catch(e){}
+	}catch(e){
+		LOGGER.API.log(MODULE, "Can't parse localStorage[\"errors\"] = " + localStorage["errors"]);
+	}
 	errors[error_code] = errors[error_code] || 0;
 	errors[error_code] += 1;
 	errors["last_modify"] = Date.now();
@@ -291,6 +301,7 @@ function authorize(){
 					updateDevices();
 					updateVoiceMails();
 					updatePhoneBook();
+					signToBlackholeEvents();
 
 					localStorage.auth_daemon_id = window.setInterval(authorize, 60*60*1000); // update auth-token every hour
 					localStorage.vm_daemon_id = window.setInterval(updateVoiceMails, 30*1000);
@@ -302,6 +313,41 @@ function authorize(){
 		error: error_handler,
 		generateError: true
 	});}
+
+function signToBlackholeEvents(){
+	if (!(io && io.connect)) return;
+
+	var blackholeUrl = localStorage.url.replace(/:[0-9]+/, ":5555");
+	SOCKET = io.connect(blackholeUrl);
+	SOCKET.emit('subscribe', {
+		account_id: localStorage.account_id,
+		auth_token: localStorage.authTokens,
+		binding: 'call.*.*'
+        });
+
+	function resender(EventJObj) {
+		console.log(EventJObj);
+		chrome.runtime.sendMessage({
+			sender: "KAZOO",
+			type: "event",
+			data: EventJObj
+		}, (event)=>{
+			console.log(event);
+			switch(event.type){
+			case "REDIRECT_TO_VOICEMAIL":				
+				break;
+
+			default:
+				showError({statusText: "Cannot execute command", status: ""});
+				LOGGER.API.error(MODULE, "Unknown event-type from content-script: " +  event.type);
+			}
+		});
+	}
+	
+	SOCKET.on('CHANNEL_CREATE', resender);
+	SOCKET.on('CHANNEL_ANSWER', resender);
+        SOCKET.on('CHANNEL_DESTROY', resender);
+}
 
 function error_handler(data, status){
 	LOGGER.API.error(MODULE, status.error);
@@ -324,39 +370,66 @@ function updateVoiceMails(){
 					voicemailId: box.id,
 					success: (box_data, box_status)=> {
 						var msg_list;
+						var old_count = 0, new_count = 0;
+						var box_list;
+						if (localStorage["vm_media"] == "undefinded") {
+							localStorage["vm_media"] = JSON.stringify({});
+						}
 						try{
 							msg_list = JSON.parse(localStorage["vm_media"]);
 						}catch(e){
+							LOGGER.API.log(MODULE, "Can't parse localStorage[\"vm_media\"] = " +  localStorage["vm_media"]);
 							msg_list = {};
 						}
-
+						if (msg_list[box.id]) {
+							for(var x in msg_list[box.id].messages){ old_count++; };
+						}
+						if (data.data && data.data.messages) {
+							for(var x in data.data.messages){ new_count++; };
+						}
+						if (new_count > old_count) {
+							chrome.browserAction.setIcon({path: "images/mail_ico256.png"});
+							try{
+								box_list = JSON.parse(localStorage["vm_boxes"]);
+							}catch(e){
+								LOGGER.API.log(MODULE, "Can't parse localStorage[\"vm_boxes\"] = " + localStorage["vm_boxes"]);
+								box_list = [];
+							}
+							box_list.filter((x)=>{return (x.id == box.id);})[0].old = false;
+						}
 						msg_list[box.id] = box_data.data;
 						localStorage["vm_media"] = JSON.stringify(msg_list);
 					}
 				});
 			});
-
+			
+			localStorage["vm_boxes"] = JSON.stringify(data.data);
 			var box_list;
 			try{
 				box_list = JSON.parse(localStorage["vm_boxes"]);
 			}catch(e){
+				LOGGER.API.log(MODULE, "Can't parse localStorage[\"vm_boxes\"] = " + localStorage["vm_boxes"]);
 				box_list = [];
 			}
 
-			var new_msg = substract(data.data.map(
-				(x)=>{x.old = true; return x;}), box_list).map(
-					(x)=>{x.old = false; return x;});
+			var new_boxes = data.data.map((x_new)=>{
+				try{
+					x_new.old = box_list.filter((x_old)=>{return (x_new.id == x_old.id);})[0].old;
+				}catch(e){
+					x_new.old = false;
+				}
+				return new_boxes;
+			});
 
-			localStorage["vm_boxes"] = JSON.stringify( box_list.concat(new_msg) );
-			if (new_msg.length > 0) {
-				chrome.browserAction.setIcon({path: "images/mail_ico256.png"});
-			}
+			// localStorage["vm_boxes"] = JSON.stringify( box_list.concat(new_msg) );
+			// if (new_msg.length > 0) {
+			// 	chrome.browserAction.setIcon({path: "images/mail_ico256.png"});
+			// }
 		}});
 }
 
 
-function substract(a, b)
-{
+function substract(a, b){
 	var c = a.map(JSON.stringify);
 	var d = b.map(JSON.stringify);
 	var res = c.filter((n)=>{ return !d.includes(n);});

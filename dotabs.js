@@ -137,10 +137,14 @@ function restoreTabs() {
 				switch(new_panel_id){
 				case "history":
 					localStorage["currentTab"] = "history";
+					if (localStorage.history == "undefinded") {
+						localStorage.history = JSON.stringify([]);
+					}
 					var list;
 					try{
 						list = JSON.parse(localStorage["history"]);
 					}catch(e){
+						LOGGER.API.log(MODULE, "Can't parse localStorage[\"history\"] = " + localStorage["history"]);
 						list = [];
 					}
 					list.sort(function(a, b) {
@@ -178,6 +182,7 @@ function restoreTabs() {
 					try{
 						msg_list = JSON.parse(localStorage["vm_boxes"]);
 					}catch(e){
+						LOGGER.API.log(MODULE, "Can't parse localStorage[\"vm_boxes\"] = " + localStorage["vm_boxes"]);
 						msg_list = [];
 					}
 
@@ -229,8 +234,9 @@ function restoreTabs() {
 						
 						var pb_list;
 						try{
-							pb_list = JSON.parse(localStorage["phone_book"]);	
+							pb_list = JSON.parse(localStorage["phone_book"]);
 						}catch(e){
+							LOGGER.API.log(MODULE, "Can't parse localStorage[\"phone_book\"] = " + localStorage["phone_book"]);
 							pb_list = [];
 						}
 
@@ -318,6 +324,7 @@ function restoreTabs() {
 	contextMenu["Language"] = createLanguagesContextMenuItem([{shortName: "ru", fullName:"Russian"}, {shortName: "en", fullName:"English"}]);
 	contextMenu["Active device"] = createDevicesContextMenuItem();
 	contextMenu["Click to dial"] = createClickToDialContextMenuItem();
+	contextMenu["Enable notifications"] = createEnableNotificationsContextMenuItem();
 	contextMenu["sep1"] = "---------";
 	
 	contextMenu["Quit"] = {name: "Quit"};
@@ -327,6 +334,7 @@ function restoreTabs() {
 	localize();
 }
 
+
 function showVMMessages(e){
 	var vmbox_id = e.currentTarget.id;
 	console.log(vmbox_id);
@@ -335,12 +343,14 @@ function showVMMessages(e){
 	try{
 		media_list = JSON.parse(localStorage["vm_media"]);
 	}catch(e){
+		LOGGER.API.log(MODULE, "Can't parse localStorage[\"vm_media\"] = " + localStorage["vm_media"]);
 		media_list = [];
 	}
 	
 	$("#msgtable").empty();
-	if (media_list[vmbox_id].messages.length == 0) {
-		// No voicemails message				TODO
+	if (media_list[vmbox_id] &&
+	    media_list[vmbox_id].messages &&
+	    media_list[vmbox_id].messages.length == 0) {
 		var p1, img, h2;
 		
 		p1= document.createElement("p");
@@ -404,6 +414,7 @@ function create_input_pb_row(){
 	try{
 		translate = JSON.parse(localStorage["localization"]);
 	}catch(e){
+		LOGGER.API.log(MODULE, "Can't parse localStorage[\"localization\"] = " + localStorage["localization"]);
 		translate = {
 			"pb_name_placeholder": {"message": "name"},
 			"pb_phone_placeholder": {"message": "phone number"}
@@ -611,30 +622,14 @@ function localize(){
 		$("#help_ask_create_pb").text(x.help_ask_create_pb.message);
 		$("#help_ask_create_pb2").text(x.help_ask_create_pb2.message);
 		$("#signout_text")[0].innerText = x.signout_text.message;
-		//$("#call_tab")[0].title = x.call_tab.message;
 		$("#history_tab")[0].title = x.history_tab.message;
 		$("#pref_tab")[0].title = x.pref_tab.message;
 		$("#destination")[0].placeholder = x.phone_num.message;
-		//$("#clicktodial")[0].lastChild.remove();
-		//$("#clicktodial")[0].innerHTML += x.clicktodialbox.message;	//broke checkbutton to fuck, dont find different way
-		// $("#notifications")[0].lastChild.remove();
-		// $("#notifications")[0].innerHTML += x.notificationsbox.message;
-		// $("#texttospeech")[0].lastChild.remove();
-		// $("#texttospeech")[0].innerHTML += x.texttospeechbox.message;
-		//$("#any_phone")[0].innerText = x.any_phone.message;
-		// $("#robutton")[0].title = x.robutton.message;
-		// $("#cfabutton")[0].title = x.cfabutton.message;
 		$("#dndbutton")[0].title = x.dndbutton.message;
-		$("#about")[0].innerText = x.about.message;
-	}catch(e){};
-
-	//Repair checkboxes
-	//$('#clicktodialbox').on('click', (e)=>{	  localStorage["clicktodial"]  = e.target.checked;});
-	// $('#notificationsbox').on('click', (e)=>{ localStorage["notification"] = e.target.checked;});
-	// $('#texttospeechbox').on('click', (e)=>{  localStorage["texttospeech"] = e.target.checked;});
-	// $("#clicktodialbox")[0].checked = localStorage["clicktodial"] == "true";
-	// $("#notificationsbox")[0].checked = localStorage["notifications"] == "true";
-	// $("#texttospeechbox")[0].checked = localStorage["texttospeech"] == "true";
+		// $("#about")[0].innerText = x.about.message;
+	}catch(e){
+		LOGGER.API.log(MODULE, "Localization error: " +  e);
+	};
 }
 
 function switch_lang_handler(lang){
@@ -758,10 +753,6 @@ function drawContextMenu(items){
 	$.contextMenu({
 		selector: '#options', 
 		trigger: 'left',
-		// callback: function(key, options) {
-		// 	var m = "clicked: " + key;
-		// 	window.console && console.log(m) || alert(m); 
-		// },
 		items: items
 	});
 }
@@ -779,16 +770,17 @@ function createClickToDialContextMenuItem(){
 	return ctd_item;
 }
 
+function createEnableNotificationsContextMenuItem(){
+	var ctd_item = {
+		name: "Enable notificatons",
+		type: 'checkbox',
+                selected: localStorage.callNotificationsEnabled,
+		events: {
+			click: (e)=>{ localStorage.callNotificationsEnabled = !(localStorage.callNotificationsEnabled == "true"); }
+		}
+	};
+	
+	return ctd_item;
+}
+
 document.addEventListener('DOMContentLoaded', restoreTabs);
-
-// function drawDevices(){
-// 	console.log("devices drawed.");
-
-// 	$("#devices").on("change", function(dev){
-// 		localStorage["active_device"] = dev.currentTarget.selectedOptions[0].id;
-// 		console.log("device changed.");
-// 		localStorage["devIndex"] = document.getElementById("devices").selectedIndex;
-// 	});
-
-// 	document.getElementById("devices").selectedIndex = localStorage["devIndex"];
-// }
