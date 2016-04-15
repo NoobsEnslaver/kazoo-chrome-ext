@@ -18,6 +18,8 @@ limitations under the License.
 var MODULE = "background.js";
 var KAZOO = {};
 var SOCKET = {};
+var AUTH_DAEMON_ID;
+var VM_DAEMON_ID;
 
 function onMessage(request, sender, sendResponse) {
 	var type = request.type;
@@ -76,6 +78,8 @@ function onMessage(request, sender, sendResponse) {
 	case "BG_RESTART":
 		KAZOO = {};
 		SOCKET = {};
+		clearInterval(AUTH_DAEMON_ID);
+		clearInterval(VM_DAEMON_ID);
 		contentLoaded();
 		break;
 
@@ -303,8 +307,8 @@ function authorize(){
 					updatePhoneBook();
 					signToBlackholeEvents();
 
-					localStorage.auth_daemon_id = window.setInterval(authorize, 60*60*1000); // update auth-token every hour
-					localStorage.vm_daemon_id = window.setInterval(updateVoiceMails, 30*1000);
+					AUTH_DAEMON_ID = window.setInterval(authorize, 60*60*1000); // update auth-token every hour
+					VM_DAEMON_ID = window.setInterval(updateVoiceMails, 30*1000);
 					
 				},
 				error: error_handler
@@ -324,23 +328,29 @@ function signToBlackholeEvents(){
 		auth_token: localStorage.authTokens,
 		binding: 'call.*.*'
         });
-
+	
 	function resender(EventJObj) {
 		console.log(EventJObj);
-		chrome.runtime.sendMessage({
-			sender: "KAZOO",
-			type: "event",
-			data: EventJObj
-		}, (event)=>{
-			console.log(event);
-			switch(event.type){
-			case "REDIRECT_TO_VOICEMAIL":				
-				break;
+		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+			chrome.tabs.sendMessage(tabs[0].id, {
+				sender: "KAZOO",
+				type: "event",
+				data: EventJObj
+			}, (event)=>{
+				console.log(event);
+				switch(event.type){
+				case "REDIRECT_TO_VOICEMAIL":
+					// TODO
+					break;
 
-			default:
-				showError({statusText: "Cannot execute command", status: ""});
-				LOGGER.API.error(MODULE, "Unknown event-type from content-script: " +  event.type);
-			}
+				case "DO_NOTHING":
+					break;
+
+				default:
+					showError({statusText: "Cannot execute command", status: ""});
+					LOGGER.API.log(MODULE, "Unknown event-type from content-script: " +  event.type);
+				}
+			});
 		});
 	}
 	
@@ -348,6 +358,9 @@ function signToBlackholeEvents(){
 	SOCKET.on('CHANNEL_ANSWER', resender);
         SOCKET.on('CHANNEL_DESTROY', resender);
 }
+
+
+
 
 function error_handler(data, status){
 	LOGGER.API.error(MODULE, status.error);
@@ -370,9 +383,7 @@ function updateVoiceMails(){
 					voicemailId: box.id,
 					success: (box_data, box_status)=> {
 						var msg_list;
-						var old_count = 0, new_count = 0;
-						var box_list;
-						if (localStorage["vm_media"] == "undefinded") {
+						if (!localStorage["vm_media"]) {
 							localStorage["vm_media"] = JSON.stringify({});
 						}
 						try{
@@ -381,30 +392,16 @@ function updateVoiceMails(){
 							LOGGER.API.log(MODULE, "Can't parse localStorage[\"vm_media\"] = " +  localStorage["vm_media"]);
 							msg_list = {};
 						}
-						if (msg_list[box.id]) {
-							for(var x in msg_list[box.id].messages){ old_count++; };
-						}
-						if (data.data && data.data.messages) {
-							for(var x in data.data.messages){ new_count++; };
-						}
-						if (new_count > old_count) {
-							chrome.browserAction.setIcon({path: "images/mail_ico256.png"});
-							try{
-								box_list = JSON.parse(localStorage["vm_boxes"]);
-							}catch(e){
-								LOGGER.API.log(MODULE, "Can't parse localStorage[\"vm_boxes\"] = " + localStorage["vm_boxes"]);
-								box_list = [];
-							}
-							box_list.filter((x)=>{return (x.id == box.id);})[0].old = false;
-						}
 						msg_list[box.id] = box_data.data;
 						localStorage["vm_media"] = JSON.stringify(msg_list);
 					}
 				});
 			});
 			
-			localStorage["vm_boxes"] = JSON.stringify(data.data);
 			var box_list;
+			if(!localStorage["vm_boxes"]){
+				localStorage["vm_boxes"] = JSON.stringify([]);
+			}
 			try{
 				box_list = JSON.parse(localStorage["vm_boxes"]);
 			}catch(e){
@@ -413,18 +410,19 @@ function updateVoiceMails(){
 			}
 
 			var new_boxes = data.data.map((x_new)=>{
+				x_new.old = true;
 				try{
-					x_new.old = box_list.filter((x_old)=>{return (x_new.id == x_old.id);})[0].old;
+					var new_message_received = (box_list.filter((x_old)=>{return (x_new.id == x_old.id);})[0].messages < x_new.messages);
+					if (new_message_received) {
+						x_new.old = false;
+						chrome.browserAction.setIcon({path: "images/mail_ico256.png"});
+					}
 				}catch(e){
 					x_new.old = false;
 				}
-				return new_boxes;
-			});
-
-			// localStorage["vm_boxes"] = JSON.stringify( box_list.concat(new_msg) );
-			// if (new_msg.length > 0) {
-			// 	chrome.browserAction.setIcon({path: "images/mail_ico256.png"});
-			// }
+				return x_new;
+			});			
+			localStorage["vm_boxes"] = JSON.stringify(new_boxes);
 		}});
 }
 

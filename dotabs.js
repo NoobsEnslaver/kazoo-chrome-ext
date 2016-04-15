@@ -51,25 +51,28 @@ document.querySelector('#about').addEventListener('click',
 // due to an authentication error or some other error, then retain some
 // information.
 function signout(manual) {
-	clearInterval(localStorage.auth_daemon_id);
-	clearInterval(localStorage.vm_daemon_id);
-	localStorage["name"] = "";
-	localStorage["currentTab"] = "";
-	localStorage["connectionStatus"] = "signedOut";
-	localStorage["credentials"] = "";
-	localStorage["account_id"] = "";
-	localStorage["user_id"] = "";
+	
+	localStorage.removeItem("vm_daemon_id");
+	localStorage.removeItem("auth_daemon_id");
+	localStorage.removeItem("authTokens");
+	localStorage.removeItem("name");
+	localStorage.removeItem("currentTab");
+	localStorage.removeItem("connectionStatus");
+	localStorage.removeItem("credentials");
+	localStorage.removeItem("account_id");
+	localStorage.removeItem("user_id");
 	if (manual) {
-		localStorage["phone_book"]= "NONE";
-		localStorage["history"] = JSON.stringify([]);
-		localStorage["devices"] = JSON.stringify([]);
-		localStorage["username"] = "";
-		localStorage["accname"] = "";
-		localStorage["clicktodial"] = "";
-		localStorage["notifications"] = "";
-		localStorage["texttospeech"] = "";
-		localStorage["errorMessage"] = "";
+		localStorage.removeItem("phone_book");
+		localStorage.removeItem("history");
+		localStorage.removeItem("devices");
+		localStorage.removeItem("username");
+		localStorage.removeItem("accname");
+		localStorage.removeItem("clicktodial");
+		localStorage.removeItem("notifications");
+		localStorage.removeItem("texttospeech");
+		localStorage.removeItem("errorMessage");
 		localStorage.removeItem('vm_boxes');
+		localStorage.removeItem("vm_media");
 	}
 	top.location.assign("options.html");
 	chrome.runtime.sendMessage({type : "BG_RESTART"}, ()=>{});
@@ -137,10 +140,10 @@ function restoreTabs() {
 				switch(new_panel_id){
 				case "history":
 					localStorage["currentTab"] = "history";
-					if (localStorage.history == "undefinded") {
+					var list;
+					if (!localStorage.history) {
 						localStorage.history = JSON.stringify([]);
 					}
-					var list;
 					try{
 						list = JSON.parse(localStorage["history"]);
 					}catch(e){
@@ -730,9 +733,17 @@ function createLanguagesContextMenuItem(list){
 }
 
 function createDevicesContextMenuItem(){
-	var devices = JSON.parse(localStorage["devices"]);
-	var device_items = {name: "Active device", items: {}};
 	
+	var devices = JSON.parse(localStorage["devices"]);
+
+	try{
+		devices = JSON.parse(localStorage["devices"]);
+	}catch(e){
+		LOGGER.API.log(MODULE, "Can't parse localStorage[\"devices\"] = " + localStorage["devices"]);
+		devices = {};
+	}
+
+	var device_items = {name: "Active device", items: {}};	
 	for(var i in devices) {
 		device_items.items[devices[i].num] = {
 			name: devices[i].name, 
@@ -745,6 +756,16 @@ function createDevicesContextMenuItem(){
 				click: (e)=>{ localStorage["active_device"] = e.currentTarget.value;}}
 		};
 	}
+	device_items.items["any_phone"] = {
+		name: "Auto", 
+		type: 'radio', 
+		radio: 'radio_dev', 
+		value: "any_phone",
+		//icon: "images/" + list[i].shortName +"-flag.png",
+		selected: (localStorage["active_device"] == "any_phone") || (localStorage["active_device"] == "") || !localStorage["active_device"],
+		events: {
+			click: (e)=>{ localStorage["active_device"] = e.currentTarget.value;}}
+	};
 
 	return device_items;
 };
@@ -753,7 +774,19 @@ function drawContextMenu(items){
 	$.contextMenu({
 		selector: '#options', 
 		trigger: 'left',
-		items: items
+		items: items,
+		events: {
+			show: function(opt) {
+				var data = {
+					"Click to dial": (localStorage["clicktodial"] == "true"),
+					"Enable notifications": (localStorage.callNotificationsEnabled == "true"),
+					"radio_dev": (localStorage["active_device"] == "" || localStorage["active_device"] == "any_phone" || !localStorage["active_device"])?
+						"any_phone" : localStorage["active_device"],
+					"radio_lang": localStorage["lang"]
+				};
+				$.contextMenu.setInputValues(opt, data);
+			}
+		}
 	});
 }
 
@@ -762,8 +795,8 @@ function createClickToDialContextMenuItem(){
 		name: "Enable Click to Dial",
 		type: 'checkbox',
                 selected: localStorage["clicktodial"]=="true",
-		events: {
-			click: (e)=>{ localStorage["clicktodial"] = !(localStorage["clicktodial"] == "true"); }
+		events: { click: (e)=>{
+				localStorage["clicktodial"] = !(localStorage["clicktodial"] == "true"); }
 		}
 	};
 	
@@ -774,9 +807,9 @@ function createEnableNotificationsContextMenuItem(){
 	var ctd_item = {
 		name: "Enable notificatons",
 		type: 'checkbox',
-                selected: localStorage.callNotificationsEnabled,
-		events: {
-			click: (e)=>{ localStorage.callNotificationsEnabled = !(localStorage.callNotificationsEnabled == "true"); }
+                selected: localStorage.callNotificationsEnabled=="true",
+		events: { click: (e)=>{
+				localStorage.callNotificationsEnabled = !(localStorage.callNotificationsEnabled == "true"); }
 		}
 	};
 	
