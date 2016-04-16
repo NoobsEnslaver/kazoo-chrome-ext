@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright 2016, SIPLABS LLC.
 Copyright 2013, BroadSoft, Inc.
 
@@ -7,7 +7,7 @@ you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
- 
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "ASIS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,9 @@ limitations under the License.
  */
 var message = {
 	type : "IS_CLICK_TO_DIAL_ENABLED"
+};
+var messageCallNotification = {
+	type : "IS_ON_CALL_NOTIFICATION_ENABLED"
 };
 
 function sendCallMessage(number) {
@@ -82,13 +85,6 @@ chrome.runtime.sendMessage(message, function(response) {
 
 		console.log("found " + targets.length + " telphone number links");
 
-		var s = document.createElement("script");
-		s.src = chrome.extension.getURL("injected.js");
-		s.onload = function() {
-			this.parentNode.removeChild(this);
-		};
-		(document.head || document.documentElement).appendChild(s);
-
 		window.addEventListener("message", function(event) {
 			if (event.source != window) {
 				return;
@@ -101,4 +97,59 @@ chrome.runtime.sendMessage(message, function(response) {
 			}
 		});
 	}
+});
+
+
+chrome.runtime.sendMessage(messageCallNotification, function(response) {
+	$("body").append($("<div>", {class: "call"}).load(chrome.extension.getURL("injected.html"), function() {
+		$("body").on("click", ".call__overlay", function() {
+			// When user click to overlay
+
+			closeWindowNotifications()
+		});
+		$("body").on("click", ".callup__take", function() {
+			// When user click to get call
+
+			closeWindowNotifications()
+		});
+		$("body").on("click", ".callup__reject", function() {
+			// When user click to reject call
+
+			closeWindowNotifications()
+		});
+
+
+		$("body").on("mouseover", ".callup", function() {
+			$(".callup").css("animation", "none");
+		});
+		$("body").on("mouseleave", ".callup", function() {
+			$(".callup").css("animation", "blink infinite 1.2s linear");
+		});
+
+		$(".call__audio").attr("src", chrome.extension.getURL("audio1.mp3"));
+
+
+		function closeWindowNotifications() {
+			$(".call__audio")[0].pause();
+			$(".call__audio")[0].currentTime = 0;
+			$(".call").filter(function() {return $(this).css("display") != "none"}).toggle(400, function() {
+				$(".callup").css("animation", "none");
+			});
+		}
+	}));
+
+	chrome.runtime.onMessage.addListener(function(message, x, callback) {
+		if (message.type === "event") {
+			switch (message.data) {
+				case "CHANNEL_CREATE":
+				case "CHANNEL_ANSWER":
+				case "CHANNEL_DESTROY":
+					$(".call").filter(function() {return $(this).css("display") == "none"}).toggle(400, function() {
+						$(".callup").css("animation", "blink infinite 1.2s linear");
+					});
+					$(".call__audio")[0].play();
+					break;
+			}
+		}
+	});
 });

@@ -175,9 +175,9 @@ function restoreOptions() {
 	$("#password").val("");
 	if (localStorage["errorMessage"] != undefined && localStorage["errorMessage"] != ""){
 		//chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
-		$("#url").val(localStorage["url"]);
-		$("#username").val(localStorage["username"]);
-		$("#accname").val(localStorage["accname"]);
+		// $("#url").val(localStorage["url"]);
+		// $("#username").val(localStorage["username"]);
+		// $("#accname").val(localStorage["accname"]);
 		localStorage["connectionStatus"] = "signedOut";
 	} else {
 		// var url = localStorage["url"];
@@ -251,14 +251,21 @@ function localize(){
 		var x = JSON.parse(localStorage["localization"]);
 
 		$("#signin_label").text(x.signin_label.message);
-		$("#connection_select option[value='default']").text(x.choose_url.message);
-		$("#connection_select option[value='new']").text(x.new_url.message);
+		$("#connection_select option[value='default']").text(x.choose_connection.message);
+		$("#connection_select option[value='new']").text(x.new_connection.message);
+		$("#connection").attr("placeholder", x.connection.message);
 		$("#url").attr("placeholder", x.url.message);
 		$("#accname").attr("placeholder", x.accname.message);
 		$("#username").attr("placeholder", x.username.message);
 		$("#password").	attr("placeholder", x.password.message);
 		$("#signin").text(x.signin.message);
 		$("#about img").attr("title", x.about.message).attr("alt", x.about.message);
+		$(".language__img").attr("title", x.lang.message).attr("alt", x.lang.message);
+
+		$(".language__li").removeClass("language__li-active");
+		if (localStorage.lang != null) {
+			$("#" + localStorage.lang + "-flag").addClass("language__li-active");
+		}
 	}catch(e){
 		console.log(e);
 	}

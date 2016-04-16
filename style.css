@@ -67,7 +67,7 @@ a {
   margin-bottom: 20px;
   box-sizing: border-box;
 }
-input,
+.input,
 .multiselect__select {
   display: inline-block;
   width: 100%;
@@ -89,7 +89,7 @@ input,
   padding-left: 2px;
   cursor: pointer;
 }
-input:focus,
+.input:focus,
 .multiselect__select:focus {
   border-color: rgba(82, 168, 236, 0.8);
   outline: 0;
@@ -165,21 +165,29 @@ input:focus,
   border-bottom: 1px solid #9f9f9f;
   line-height: 2rem;
   margin: 0;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.7);
   cursor: pointer;
   box-sizing: border-box;
-  -webkit-transition: all ease 0.3s;
   transition: all ease 0.3s;
 }
 .language__li:last-child {
   border-bottom: none !important;
 }
+.language__li-active {
+  color: #eee;
+  border-bottom: 1px solid #ccc;
+  background-color: rgba(0, 0, 0, 0.8);
+  transition: all ease 0.3s;
+}
 .language__li:hover {
   color: #fff;
   border-bottom: 1px solid #d7d7d7;
   background-color: rgba(0, 0, 0, 0.86);
-  -webkit-transition: all ease 0.3s;
   transition: all ease 0.3s;
+}
+
+.context-menu-input > label > input[type="checkbox"], .context-menu-input > label > input[type="radio"] {
+	top: -2px !important;
 }
 
 button {

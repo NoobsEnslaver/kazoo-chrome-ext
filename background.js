@@ -133,9 +133,11 @@ function updateLocalization(){
 		    fail( ( )=> { localStorage["localization"] = JSON.stringify({ "appName":{message: chrome.i18n.getMessage("appName")},
 										  "appDesc":{message: chrome.i18n.getMessage("appDesc")},
 										  "signin_label":{message: chrome.i18n.getMessage("signin_label")},
-										  "choose_url":{message: chrome.i18n.getMessage("choose_url")},
-										  "new_url":{message: chrome.i18n.getMessage("new_url")},
+										  "enter_connection":{message: chrome.i18n.getMessage("enter_connection")},
+										  "choose_connection":{message: chrome.i18n.getMessage("choose_connection")},
+										  "new_connection":{message: chrome.i18n.getMessage("new_connection")},
 										  "url":{message: chrome.i18n.getMessage("url")},
+										  "lang":{message: chrome.i18n.getMessage("lang")},
 										  "accname":{message: chrome.i18n.getMessage("accname")},
 										  "username":{message: chrome.i18n.getMessage("username")},
 										  "password":{message: chrome.i18n.getMessage("password")},
@@ -309,7 +311,7 @@ function authorize(){
 
 					AUTH_DAEMON_ID = window.setInterval(authorize, 60*60*1000); // update auth-token every hour
 					VM_DAEMON_ID = window.setInterval(updateVoiceMails, 30*1000);
-					
+
 				},
 				error: error_handler
 			});
@@ -328,7 +330,7 @@ function signToBlackholeEvents(){
 		auth_token: localStorage.authTokens,
 		binding: 'call.*.*'
         });
-	
+
 	function resender(EventJObj) {
 		console.log(EventJObj);
 		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -353,7 +355,7 @@ function signToBlackholeEvents(){
 			});
 		});
 	}
-	
+
 	SOCKET.on('CHANNEL_CREATE', resender);
 	SOCKET.on('CHANNEL_ANSWER', resender);
         SOCKET.on('CHANNEL_DESTROY', resender);
@@ -397,7 +399,7 @@ function updateVoiceMails(){
 					}
 				});
 			});
-			
+
 			var box_list;
 			if(!localStorage["vm_boxes"]){
 				localStorage["vm_boxes"] = JSON.stringify([]);
@@ -421,7 +423,7 @@ function updateVoiceMails(){
 					x_new.old = false;
 				}
 				return x_new;
-			});			
+			});
 			localStorage["vm_boxes"] = JSON.stringify(new_boxes);
 		}});
 }
