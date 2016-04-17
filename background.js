@@ -112,8 +112,8 @@ function onMessage(request, sender, sendResponse) {
 }
 
 function phoneBookAddEntry(name, phone){
-	if (name.length > 0 && phone.length > 0) {
-		var list_id =JSON.parse(localStorage["phone_book"])[0].value.list_id;
+	if (name.length > 0 && phone.length > 0 && localStorage["phoneBookListId"]) {
+		var list_id = localStorage["phoneBookListId"];
 		KAZOO.lists.addEntry({account_id: localStorage["account_id"],
 				      success: updatePhoneBook,
 				      list_id: list_id,
@@ -159,7 +159,8 @@ function updateLocalization(){
 }
 
 function phoneBookRemoveEntry(entry_id){
-	var list_id =JSON.parse(localStorage["phone_book"])[0].value.list_id;
+	if(!localStorage["phoneBookListId"]) return;
+	var list_id = localStorage["phoneBookListId"];
 	KAZOO.lists.deleteEntry({account_id: localStorage["account_id"],
 				 success: updatePhoneBook,
 				 list_id: list_id,
@@ -189,6 +190,7 @@ function updatePhoneBook(){
 	KAZOO.lists.getLists({account_id: localStorage["account_id"], success: (data, status)=>{
 		var phone_book = data.data.find((x)=>{return ( x.name == "Phone book");});
 		if (phone_book) {
+			localStorage["phoneBookListId"] = phone_book.id;
 			KAZOO.lists.getEntries({account_id: localStorage["account_id"], list_id: phone_book.id, success:(d, s)=>{
 				localStorage["phone_book"] = JSON.stringify(d.data);
 			}});
