@@ -101,21 +101,29 @@ chrome.runtime.sendMessage(message, function(response) {
 
 
 chrome.runtime.sendMessage(messageCallNotification, function(response) {
+	var globalCallbak, dataCallback = {type: ""}, closeWindowNotifications = null;
+
 	$("body").append($("<div>", {class: "call"}).load(chrome.extension.getURL("injected.html"), function() {
 		$("body").on("click", ".call__overlay", function() {
 			// When user click to overlay
 
-			closeWindowNotifications()
+			dataCallback.type = "reject";
+			globalCallbak && globalCallbak(dataCallback);
+			closeWindowNotifications();
 		});
 		$("body").on("click", ".callup__take", function() {
 			// When user click to get call
 
-			closeWindowNotifications()
+			dataCallback.type = "take";
+			globalCallbak && globalCallbak(dataCallback);
+			closeWindowNotifications();
 		});
 		$("body").on("click", ".callup__reject", function() {
 			// When user click to reject call
 
-			closeWindowNotifications()
+			dataCallback.type = "reject";
+			globalCallbak && globalCallbak(dataCallback);
+			closeWindowNotifications();
 		});
 
 
@@ -129,7 +137,7 @@ chrome.runtime.sendMessage(messageCallNotification, function(response) {
 		$(".call__audio").attr("src", chrome.extension.getURL("audio1.mp3"));
 
 
-		function closeWindowNotifications() {
+		closeWindowNotifications = function() {
 			$(".call__audio")[0].pause();
 			$(".call__audio")[0].currentTime = 0;
 			$(".call").filter(function() {return $(this).css("display") != "none"}).toggle(400, function() {
@@ -139,15 +147,26 @@ chrome.runtime.sendMessage(messageCallNotification, function(response) {
 	}));
 
 	chrome.runtime.onMessage.addListener(function(message, x, callback) {
+		globalCallbak = callback || null;
+
 		if (message.type === "event") {
 			switch (message.data) {
 				case "CHANNEL_CREATE":
-				case "CHANNEL_ANSWER":
-				case "CHANNEL_DESTROY":
 					$(".call").filter(function() {return $(this).css("display") == "none"}).toggle(400, function() {
 						$(".callup").css("animation", "blink infinite 1.2s linear");
 					});
 					$(".call__audio")[0].play();
+					break;
+
+				case "CHANNEL_ANSWER":
+					closeWindowNotifications && closeWindowNotifications();
+					break;
+
+				case "CHANNEL_DESTROY":
+					closeWindowNotifications && closeWindowNotifications();
+					break;
+
+				default:
 					break;
 			}
 		}
