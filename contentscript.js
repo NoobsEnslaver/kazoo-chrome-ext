@@ -17,9 +17,9 @@ limitations under the License.
 var message = {
 	type : "IS_CLICK_TO_DIAL_ENABLED"
 };
-var messageCallNotification = {
-	type : "IS_ON_CALL_NOTIFICATION_ENABLED"
-};
+// var messageCallNotification = {
+// 	type : "IS_ON_CALL_NOTIFICATION_ENABLED"
+// };
 
 function sendCallMessage(number) {
 	var message = {
@@ -100,75 +100,56 @@ chrome.runtime.sendMessage(message, function(response) {
 });
 
 
-chrome.runtime.sendMessage(messageCallNotification, function(response) {
-	var globalCallbak, dataCallback = {type: ""}, closeWindowNotifications = null;
-
-	$("body").append($("<div>", {class: "call"}).load(chrome.extension.getURL("injected.html"), function() {
-		$("body").on("click", ".call__overlay", function() {
-			// When user click to overlay
-
-			dataCallback.type = "reject";
-			globalCallbak && globalCallbak(dataCallback);
-			closeWindowNotifications();
-		});
-		$("body").on("click", ".callup__take", function() {
-			// When user click to get call
-
-			dataCallback.type = "take";
-			globalCallbak && globalCallbak(dataCallback);
-			closeWindowNotifications();
-		});
-		$("body").on("click", ".callup__reject", function() {
-			// When user click to reject call
-
-			dataCallback.type = "reject";
-			globalCallbak && globalCallbak(dataCallback);
-			closeWindowNotifications();
-		});
-
-
-		$("body").on("mouseover", ".callup", function() {
-			$(".callup").css("animation", "none");
-		});
-		$("body").on("mouseleave", ".callup", function() {
-			$(".callup").css("animation", "blink infinite 1.2s linear");
-		});
-
-		$(".call__audio").attr("src", chrome.extension.getURL("audio1.mp3"));
-
-
-		closeWindowNotifications = function() {
-			$(".call__audio")[0].pause();
-			$(".call__audio")[0].currentTime = 0;
-			$(".call").filter(function() {return $(this).css("display") != "none"}).toggle(400, function() {
-				$(".callup").css("animation", "none");
-			});
-		}
-	}));
-
-	chrome.runtime.onMessage.addListener(function(message, x, callback) {
-		globalCallbak = callback || null;
-
-		if (message.type === "event") {
-			switch (message.data) {
-				case "CHANNEL_CREATE":
-					$(".call").filter(function() {return $(this).css("display") == "none"}).toggle(400, function() {
-						$(".callup").css("animation", "blink infinite 1.2s linear");
-					});
-					$(".call__audio")[0].play();
-					break;
-
-				case "CHANNEL_ANSWER":
-					closeWindowNotifications && closeWindowNotifications();
-					break;
-
-				case "CHANNEL_DESTROY":
-					closeWindowNotifications && closeWindowNotifications();
-					break;
-
-				default:
-					break;
-			}
-		}
+//chrome.runtime.sendMessage(messageCallNotification, function(response) {
+function closeWindowNotifications() {
+	$(".call__audio")[0].pause();
+	$(".call__audio")[0].currentTime = 0;
+	$(".call").filter(function() {return $(this).css("display") != "none";}).toggle(400, function() {
+		$(".callup").css("animation", "none");
 	});
+}
+
+$("body").append($("<div>", {class: "call"}).load(chrome.extension.getURL("injected.html"), function() {
+	function sendAndClose(message){
+		return ()=>{
+			chrome.runtime.sendMessage({type: "BLACKHOLE_USER_ACTION", data: message}, (x)=>{});
+			closeWindowNotifications();
+		};
+	}
+	
+	$("body").on("click", ".call__overlay",  sendAndClose("OVERLAY"));
+	$("body").on("click", ".callup__take",   sendAndClose("TAKE"));
+	$("body").on("click", ".callup__reject", sendAndClose("REJECT"));
+	$("body").on("mouseover", ".callup",  ()=>{ $(".callup").css("animation", "none");});
+	$("body").on("mouseleave", ".callup", ()=>{ $(".callup").css("animation", "blink infinite 1.2s linear");});
+	$(".call__audio").attr("src", chrome.extension.getURL("audio1.mp3"));
+}));
+
+chrome.runtime.onMessage.addListener((message, sender, callback)=>{
+	if (message.sender === "KAZOO" &&
+	    message.type === "event") {
+		switch (message.data["Event-Name"]) {
+		case "CHANNEL_CREATE":
+			if (message.data["Call-Direction"] === "outbound" ||
+			    message.data["Call-Direction"] === "inbound") { 	// FIXME
+				$(".call").filter(function() {return $(this).css("display") == "none";}).toggle(400, function() {
+					$(".callup").css("animation", "blink infinite 1.2s linear");
+				});
+				$(".call__audio")[0].play();
+			}
+			break;
+			
+		case "CHANNEL_ANSWER":
+			closeWindowNotifications && closeWindowNotifications();
+			break;
+
+		case "CHANNEL_DESTROY":
+			closeWindowNotifications && closeWindowNotifications();
+			break;
+
+		default:
+			break;
+		}
+	}
 });
+//});

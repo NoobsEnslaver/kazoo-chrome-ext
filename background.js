@@ -69,12 +69,6 @@ function onMessage(request, sender, sendResponse) {
 		});
 		break;
 
-	case "IS_ON_CALL_NOTIFICATION_ENABLED":
-		if (localStorage.callNotificationsEnabled) {
-			sendResponse();
-		}
-		break;
-
 	case "BG_RESTART":
 		KAZOO = {};
 		SOCKET = {};
@@ -107,6 +101,12 @@ function onMessage(request, sender, sendResponse) {
 
 	case "SWITCH_DND":
 		switchDND();
+		break;
+
+		
+	case "BLACKHOLE_USER_ACTION":
+		blackholeUserActionHandler(request.data);
+		// console.log(request.data);
 		break;
 	}
 }
@@ -334,27 +334,20 @@ function signToBlackholeEvents(){
         });
 
 	function resender(EventJObj) {
-		console.log(EventJObj);
-		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+		if(localStorage.callNotificationsEnabled != "true") return;
+		var last_time = 0;
+		try{
+			last_time = parseInt(localStorage[EventJObj["Event-Name"]]);
+		}catch(e){ }
+		if (Date.now() - last_time < 1000) return;
+		
+		localStorage[EventJObj["Event-Name"]] = Date.now();
+		chrome.tabs.query({active: true}, function(tabs) {
 			chrome.tabs.sendMessage(tabs[0].id, {
 				sender: "KAZOO",
 				type: "event",
 				data: EventJObj
-			}, (event)=>{
-				console.log(event);
-				switch(event.type){
-				case "REDIRECT_TO_VOICEMAIL":
-					// TODO
-					break;
-
-				case "DO_NOTHING":
-					break;
-
-				default:
-					showError({statusText: "Cannot execute command", status: ""});
-					LOGGER.API.log(MODULE, "Unknown event-type from content-script: " +  event.type);
-				}
-			});
+			}, ()=>{});
 		});
 	}
 
@@ -437,6 +430,26 @@ function substract(a, b){
 	var res = c.filter((n)=>{ return !d.includes(n);});
 
 	return res.map(JSON.parse);
+}
+
+function blackholeUserActionHandler(action){
+	switch(action){
+	case "TAKE":
+		alert("Received");
+		break;
+
+	case "OVERLAY":
+		alert("Overlay");
+		break;
+
+	case "REJECT":
+		alert("Rejected");
+		break;
+
+	default:
+		showError({statusText: "Cannot execute command", status: ""});
+		LOGGER.API.log(MODULE, "Unknown event-type from content-script: " +  event.type);
+	}
 }
 
 chrome.extension.onMessage.addListener(onMessage);
