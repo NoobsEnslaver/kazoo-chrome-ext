@@ -78,8 +78,6 @@ function signout(manual) {
 	chrome.runtime.sendMessage({type : "BG_RESTART"}, ()=>{});
 }
 
-
-
 function announceServiceState(service, value) {
 	if (textToSpeechEnabled() == "true") {
 		if (value == "true") {
@@ -141,9 +139,6 @@ function restoreTabs() {
 				case "history":
 					localStorage["currentTab"] = "history";
 					var list;
-					if (!localStorage.history) {
-						localStorage.history = JSON.stringify([]);
-					}
 					try{
 						list = JSON.parse(localStorage["history"]);
 					}catch(e){
@@ -327,7 +322,7 @@ function restoreTabs() {
 	contextMenu["Language"] = createLanguagesContextMenuItem([{shortName: "ru", fullName:"Russian"}, {shortName: "en", fullName:"English"}]);
 	contextMenu["Active device"] = createDevicesContextMenuItem();
 	contextMenu["Click to dial"] = createClickToDialContextMenuItem();
-	contextMenu["Enable notifications"] = createEnableNotificationsContextMenuItem();
+	contextMenu["On call behavior"] = createOnCallBehaviorContextMenuItem();
 	contextMenu["sep1"] = "---------";
 	
 	contextMenu["Quit"] = {name: "Quit"};
@@ -612,8 +607,8 @@ function updateDNDButtonImage(){
 }
 
 function dnd_btn_handler(){
-	chrome.runtime.sendMessage({type : "SWITCH_DND"}, ()=>{});	
-	window.setTimeout(updateDNDButtonImage, 500);
+	$("#dndbutton")[0].src = "images/logo_wait_128x128.gif";
+	chrome.runtime.sendMessage({type : "SWITCH_DND"}, updateDNDButtonImage);
 }
 
 function localize(){
@@ -635,7 +630,7 @@ function localize(){
 	};
 }
 
-function switch_lang_handler(lang){
+function switch_lang_handler(lang){ // FIXME
 	localStorage.lang = lang;
 	var message = { type : "UPDATE_LOCALIZATION"};
 	chrome.runtime.sendMessage(message, ()=>{});
@@ -691,6 +686,10 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 		case "0":
 			showMessage("Bad server url.");
 			break;
+
+		case "429":
+			showMessage("Too many requests.");
+			break;
 			
 		case "400":
 		case "401":
@@ -708,7 +707,7 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 function showMessage(message){
 	$("#error_msg").text(message);
 	$("#error_msg").fadeIn();
-	$("#error_msg").fadeOut(7000);
+	$("#error_msg").fadeOut(5000);
 }
 
 /*Example input: [{shortName: "ru", fullName:"Russian"}, {shortName: "en", fullName:"English"}]*/
@@ -732,15 +731,12 @@ function createLanguagesContextMenuItem(list){
 	return langs;
 }
 
-function createDevicesContextMenuItem(){
-	
-	var devices = JSON.parse(localStorage["devices"]);
-
+function createDevicesContextMenuItem(){	
+	var devices = {};
 	try{
 		devices = JSON.parse(localStorage["devices"]);
 	}catch(e){
 		LOGGER.API.log(MODULE, "Can't parse localStorage[\"devices\"] = " + localStorage["devices"]);
-		devices = {};
 	}
 
 	var device_items = {name: "Active device", items: {}};	
@@ -779,7 +775,8 @@ function drawContextMenu(items){
 			show: function(opt) {
 				var data = {
 					"Click to dial": (localStorage["clicktodial"] == "true"),
-					"Enable notifications": (localStorage.callNotificationsEnabled == "true"),
+					"inbound_notify": (localStorage.inboundCallNotificationsEnabled == "true"),
+					"outbound_notify": (localStorage.outboundCallNotificationsEnabled == "true"),
 					"radio_dev": (localStorage["active_device"] == "" || localStorage["active_device"] == "any_phone" || !localStorage["active_device"])?
 						"any_phone" : localStorage["active_device"],
 					"radio_lang": localStorage["lang"]
@@ -803,17 +800,46 @@ function createClickToDialContextMenuItem(){
 	return ctd_item;
 }
 
-function createEnableNotificationsContextMenuItem(){
-	var ctd_item = {
-		name: "Enable notificatons",
+function createOnCallBehaviorContextMenuItem(){
+	var options = {name: "On call behavior", items: {}};	
+
+	options.items["inbound_notify"] = {
+		name: "On inbound call notification",
 		type: 'checkbox',
-                selected: localStorage.callNotificationsEnabled=="true",
+                selected: localStorage.inboundCallNotificationsEnabled=="true",
 		events: { click: (e)=>{
-				localStorage.callNotificationsEnabled = !(localStorage.callNotificationsEnabled == "true"); }
+			localStorage.inboundCallNotificationsEnabled = !(localStorage.inboundCallNotificationsEnabled == "true"); }
+			}
+	};
+
+	options.items["outbound_notify"] = {
+		name: "On outbound call notification",
+		type: 'checkbox',
+                selected: localStorage.outboundCallNotificationsEnabled=="true",
+		events: { click: (e)=>{
+			localStorage.outboundCallNotificationsEnabled = !(localStorage.outboundCallNotificationsEnabled == "true"); }
+			}
+	};
+	options.items["sep2"] = "---------";
+	options.items["customize_profile_viewer"] = {
+		name: "Customize profile viewer",
+		callback: (e)=>{
+			var message = "Введите адрес вашего сайта, которому будут переданы все необходимые параметры звонка. \n" +
+			    "Поддерживаемые  параметры: \n";
+			var pkg_dump = {};
+			try{
+				pkg_dump = JSON.parse(localStorage["pkg_dump"]);
+			   }catch(e){}
+			for(var name in pkg_dump){
+				message += "{{"+ name + "}}, ";
+			}
+			if(message.length > 0)
+				message = message.slice(0, -2);
+			localStorage["custom_profile_page"] = prompt(message, localStorage["custom_profile_page"]);
 		}
 	};
 	
-	return ctd_item;
+	return options;
 }
 
 document.addEventListener('DOMContentLoaded', restoreTabs);

@@ -130,13 +130,10 @@ chrome.runtime.onMessage.addListener((message, sender, callback)=>{
 	    message.type === "event") {
 		switch (message.data["Event-Name"]) {
 		case "CHANNEL_CREATE":
-			if (message.data["Call-Direction"] === "outbound" ||
-			    message.data["Call-Direction"] === "inbound") { 	// FIXME
-				$(".call").filter(function() {return $(this).css("display") == "none";}).toggle(400, function() {
-					$(".callup").css("animation", "blink infinite 1.2s linear");
-				});
-				$(".call__audio")[0].play();
-			}
+			$(".call").filter(function() {return $(this).css("display") == "none";}).toggle(400, function() {
+				$(".callup").css("animation", "blink infinite 1.2s linear");
+			});
+			$(".call__audio")[0].play();
 			break;
 			
 		case "CHANNEL_ANSWER":

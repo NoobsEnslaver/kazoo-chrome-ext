@@ -25,6 +25,7 @@ function onMessage(request, sender, sendResponse) {
 	var type = request.type;
 	switch (type){
 	case "CALL":
+		if(is_too_fast("last_call_time", 3000)) return;
 		var destination = request.text.replace(/[- \(\)\.]/g, "");
 		var status = "ok";
 		try {
@@ -100,7 +101,7 @@ function onMessage(request, sender, sendResponse) {
 		break;
 
 	case "SWITCH_DND":
-		switchDND();
+		switchDND(sendResponse);
 		break;
 
 		
@@ -160,6 +161,7 @@ function updateLocalization(){
 
 function phoneBookRemoveEntry(entry_id){
 	if(!localStorage["phoneBookListId"]) return;
+	if(is_too_fast()) return;
 	var list_id = localStorage["phoneBookListId"];
 	KAZOO.lists.deleteEntry({account_id: localStorage["account_id"],
 				 success: updatePhoneBook,
@@ -169,24 +171,28 @@ function phoneBookRemoveEntry(entry_id){
 }
 
 function createPhoneBook(){
+	if(is_too_fast()) return;
 	KAZOO.lists.addList({account_id: localStorage["account_id"],
 			     success: updatePhoneBook,
 			     data:{ name: "Phone book" }});
 }
 
-function switchDND(){
+function switchDND(update_ico_callback){
+	if(is_too_fast()) return;
 	KAZOO.user.get({userId: localStorage['user_id'], account_id: localStorage['account_id'],
 			success: (data, status)=>{
 				if(!(data.data.do_not_disturb && data.data.do_not_disturb.enabled)){
 					data.data.do_not_disturb = {enabled: false};
 				}
 				data.data.do_not_disturb.enabled = !data.data.do_not_disturb.enabled;
-				KAZOO.user.update({data: data.data, userId: localStorage['user_id'], account_id: localStorage['account_id'],success:(a,b)=>{}});
-				localStorage.dnd = !data.data.do_not_disturb.enabled;
+				localStorage.dnd = data.data.do_not_disturb.enabled;
+				KAZOO.user.update({data: data.data, userId: localStorage['user_id'], account_id: localStorage['account_id'],
+						   success:(a,b)=>{ update_ico_callback(); }});
 			}});
 }
 
 function updatePhoneBook(){
+	if(is_too_fast()) return;
 	KAZOO.lists.getLists({account_id: localStorage["account_id"], success: (data, status)=>{
 		var phone_book = data.data.find((x)=>{return ( x.name == "Phone book");});
 		if (phone_book) {
@@ -201,6 +207,7 @@ function updatePhoneBook(){
 }
 
 function updateDevices(){
+	if(is_too_fast()) return;
 	KAZOO.device.list({
 		account_id: localStorage["account_id"],
 		success: (data, status)=>{
@@ -219,8 +226,8 @@ function updateDevices(){
 		}});
 };
 
-
 function contentLoaded() {
+	prepareToStart();
 	updateLocalization();
 	if (!(localStorage["url"] && localStorage["username"] && localStorage["accname"] && localStorage["credentials"])){
 		chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
@@ -256,6 +263,32 @@ function contentLoaded() {
 	authorize();
 }
 
+function prepareToStart(){
+	if (!localStorage["errors"]) {
+		localStorage["errors"] = JSON.stringify({});
+	}
+	if (!localStorage["vm_media"]) {
+		localStorage["vm_media"] = JSON.stringify({});
+	}
+	if(!localStorage["vm_boxes"]){
+		localStorage["vm_boxes"] = JSON.stringify([]);
+	}
+	if (!localStorage["history"]) {
+		localStorage["history"] = JSON.stringify([]);
+	}
+	if (!localStorage["pkg_dump"]) {
+		var preset = {
+			"Call-Direction": "",
+			"Event-Name": ""
+		};
+		localStorage["pkg_dump"] = JSON.stringify(preset);
+	}
+	if (!localStorage["custom_profile_page"]) {
+		localStorage["custom_profile_page"] = "https://google.com/search?q={{user_id}}%20{{account_id}}";
+	}
+	
+}
+
 function incrementErrorCount(error_code){
 	var errors = {};
 	try{
@@ -286,6 +319,7 @@ function showError(data){
 }
 
 function authorize(){
+	if(is_too_fast()) return;
 	localStorage["connectionStatus"] = "inProgress";
 	chrome.browserAction.setIcon({path: "images/logo_wait_128x128.gif"});
 	KAZOO.auth.userAuth({
@@ -322,7 +356,20 @@ function authorize(){
 		generateError: true
 	});}
 
+function flatten(o) {
+	var prefix = arguments[1] || "", out = arguments[2] || {}, name;
+	for (name in o) {
+		if (o.hasOwnProperty(name)) {
+			typeof o[name] === "object" ? flatten(o[name], prefix + name + '.', out) : 
+                                out[prefix + name] = o[name];
+		}
+	}
+	return out;
+}
+
+
 function signToBlackholeEvents(){
+	if(is_too_fast()) return;
 	if (!(io && io.connect)) return;
 
 	var blackholeUrl = localStorage.url.replace(/:[0-9]+/, ":5555");
@@ -334,14 +381,20 @@ function signToBlackholeEvents(){
         });
 
 	function resender(EventJObj) {
-		if(localStorage.callNotificationsEnabled != "true") return;
-		var last_time = 0;
+		var old_pkg = {};
 		try{
-			last_time = parseInt(localStorage[EventJObj["Event-Name"]]);
-		}catch(e){ }
-		if (Date.now() - last_time < 1000) return;
+			old_pkg = JSON.parse(localStorage["pkg_dump"]);
+		}catch(e){};
+		localStorage["pkg_dump"] = Object.assign(old_pkg, flatten(EventJObj));
+		if(EventJObj["Call-Direction"] === "outbound" && localStorage.outboundCallNotificationsEnabled !== "true") return;
+		if(EventJObj["Call-Direction"] === "inbound" && localStorage.outboundCallNotificationsEnabled !== "true") return;
+		// var last_time = 0;
+		// try{
+		// 	last_time = parseInt(localStorage[EventJObj["Event-Name"]]);
+		// }catch(e){ }
+		// if (Date.now() - last_time < 1000) return;
 		
-		localStorage[EventJObj["Event-Name"]] = Date.now();
+		// localStorage[EventJObj["Event-Name"]] = Date.now();
 		chrome.tabs.query({active: true}, function(tabs) {
 			chrome.tabs.sendMessage(tabs[0].id, {
 				sender: "KAZOO",
@@ -356,8 +409,22 @@ function signToBlackholeEvents(){
         SOCKET.on('CHANNEL_DESTROY', resender);
 }
 
-
-
+function is_too_fast(event_name, timeout){
+	timeout = timeout || 1500;
+	event_name = event_name || arguments.callee.caller.name + "_last_call";
+	var last_time = 0;
+	try{
+		last_time = parseInt(localStorage[event_name]);
+	}catch(e){ }
+	if (Date.now() - last_time < timeout){
+		showError({statusText: "Too fast", status: arguments.callee.caller.name});
+		console.log("Too fast:" + arguments.callee.caller.name);
+		return true;
+	}else{
+		localStorage[event_name] = Date.now();
+		return false;
+	}
+}
 
 function error_handler(data, status){
 	LOGGER.API.error(MODULE, status.error);
@@ -370,6 +437,7 @@ function error_handler(data, status){
 }
 
 function updateVoiceMails(){
+	if(is_too_fast()) return;
 	KAZOO.voicemail.list({
 		filters: { filter_owner_id: localStorage["user_id"] },
 		account_id: localStorage["account_id"],
@@ -380,9 +448,6 @@ function updateVoiceMails(){
 					voicemailId: box.id,
 					success: (box_data, box_status)=> {
 						var msg_list;
-						if (!localStorage["vm_media"]) {
-							localStorage["vm_media"] = JSON.stringify({});
-						}
 						try{
 							msg_list = JSON.parse(localStorage["vm_media"]);
 						}catch(e){
@@ -396,9 +461,6 @@ function updateVoiceMails(){
 			});
 
 			var box_list;
-			if(!localStorage["vm_boxes"]){
-				localStorage["vm_boxes"] = JSON.stringify([]);
-			}
 			try{
 				box_list = JSON.parse(localStorage["vm_boxes"]);
 			}catch(e){
@@ -423,15 +485,6 @@ function updateVoiceMails(){
 		}});
 }
 
-
-function substract(a, b){
-	var c = a.map(JSON.stringify);
-	var d = b.map(JSON.stringify);
-	var res = c.filter((n)=>{ return !d.includes(n);});
-
-	return res.map(JSON.parse);
-}
-
 function blackholeUserActionHandler(action){
 	switch(action){
 	case "TAKE":
@@ -446,10 +499,23 @@ function blackholeUserActionHandler(action){
 		alert("Rejected");
 		break;
 
+	case "VIEW_PROFILE":
+		// get call information from somewhere,
+		// create new tab with "custom_profile_page"
+		break;
+		
 	default:
 		showError({statusText: "Cannot execute command", status: ""});
 		LOGGER.API.log(MODULE, "Unknown event-type from content-script: " +  event.type);
 	}
+}
+
+function substitute(str, data){
+	for(var replaceable in data){
+		str = str.replace(new RegExp("{{" + replaceable + "}}", 'g'), data[replaceable]);
+	}
+	
+	return str;
 }
 
 chrome.extension.onMessage.addListener(onMessage);
