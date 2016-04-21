@@ -1,4 +1,4 @@
-<!-- 
+<!--
      Copyright 2016, SIPLABS LLC.
      Copyright 2013, BroadSoft, Inc.
 
@@ -7,7 +7,7 @@
      You may obtain a copy of the License at
 
      http://www.apache.org/licenses/LICENSE-2.0
-     
+
      Unless required by applicable law or agreed to in writing, software
      distributed under the License is distributed on an "ASIS" BASIS,
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,7 @@
 		<link rel="stylesheet" href="jquery-ui.css" />
 		<link rel="stylesheet" href="jquery.contextMenu.css" />
 		<!-- <link rel="stylesheet" href="theme.css" /> -->
-		
+
 		<style>
 			.ui-autocomplete{
 			max-height: 100px;
@@ -41,29 +41,29 @@
 		</div>
 		<div id="dialer">
 				<div class="ui-widget">
-					<input id="destination" placeholder="Phone number" />
+					<input class="input" id="destination" placeholder="Phone number" />
 				</div>
 				<div align="center">
 					<table>
 						<tr>
-							<td><button id="btn1" style="width:60px;height:27px">1</button></td>
-							<td><button id="btn2" style="width:60px;height:27px">2</button></td>
-							<td><button id="btn3" style="width:60px;height:27px">3</button></td>
+							<td><button class="btn_added" id="btn1">1</button></td>
+							<td><button class="btn_added" id="btn2">2</button></td>
+							<td><button class="btn_added" id="btn3">3</button></td>
 						</tr>
 						<tr>
-							<td><button id="btn4" style="width:60px;height:27px">4</button></td>
-							<td><button id="btn5" style="width:60px;height:27px">5</button></td>
-							<td><button id="btn6" style="width:60px;height:27px">6</button></td>
+							<td><button class="btn_added" id="btn4">4</button></td>
+							<td><button class="btn_added" id="btn5">5</button></td>
+							<td><button class="btn_added" id="btn6">6</button></td>
 						</tr>
 						<tr>
-							<td><button id="btn7" style="width:60px;height:27px">7</button></td>
-							<td><button id="btn8" style="width:60px;height:27px">8</button></td>
-							<td><button id="btn9" style="width:60px;height:27px">9</button></td>
+							<td><button class="btn_added" id="btn7">7</button></td>
+							<td><button class="btn_added" id="btn8">8</button></td>
+							<td><button class="btn_added" id="btn9">9</button></td>
 						</tr>
 						<tr>
-							<td><button id="btn10" style="width:60px;height:27px;margin-bottom: 6px;">+</button></td>
-							<td><button id="btn11" style="width:60px;height:27px;margin-bottom: 6px;">0</button></td>
-							<td><button id="btn12" style="width:60px;height:27px;margin-bottom: 6px;"><img src="images/answer.png" style="width:20px;height:20px"></button></td>
+							<td><button class="btn_added" id="btn10" style="margin-bottom: 6px">+</button></td>
+							<td><button class="btn_added" id="btn11" style="margin-bottom: 6px">0</button></td>
+							<td><button id="btn12" style="width:60px;height:27px;margin-bottom: 6px;"><img src="images/answer.png" style="width:20px;height:20px;border-radius:50%"></button></td>
 						</tr>
 					</table>
 				</div>
@@ -95,7 +95,7 @@
 			</div>
 
 			<div id="phonebook">
-				<table id="phonebookentries">					
+				<table id="phonebookentries">
 				</table>
 				<div id="new_phonebook_msg">
 					<div><h3 id="help_ask_create_pb">Телефонной книги еще нет, возможно, вы хотите её </h3>
@@ -115,11 +115,11 @@
 
 			<div id="messages">
 
-				<table id="msgtable">
-				</table>
+				<div id="msgtable" class="mes">
+				</div>
 
 			</div>
-			
+
 			<div id="preferences">
 				<!-- <div id="clicktodial"> -->
 				<!-- 	<input id="clicktodialbox" type="checkbox" checked />&nbsp; -->
@@ -144,7 +144,7 @@
 			<img id="dndbutton" src="images/dnd_normal.png" title="Do Not Disturb" class="tray_icons" />
 			<img id="options" src="images/options.png" title="Options" class="tray_icons" />
 			<img id="about" src="images/about.png" title="About" class="tray_icons" />
-			<div id="error_msg" style="color:red;">&nbsp;&nbsp;</div>
+			<div id="error_msg">&nbsp;&nbsp;</div>
 		</div>
 
 	</body>
@@ -153,5 +153,5 @@
 	<script src="jquery-ui.js"></script>
 	<script src="jquery.base64.js"></script>
 	<script type="text/javascript" src="log.js"></script>
-	<script src="dotabs.js"></script>	
+	<script src="dotabs.js"></script>
 </html>

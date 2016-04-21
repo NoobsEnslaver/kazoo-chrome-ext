@@ -16,6 +16,7 @@ limitations under the License.
 */
 html {
 	font-size: 100%;
+	height: auto;
 }
 
 body {
@@ -23,6 +24,7 @@ body {
 	margin: 0px;
 	padding: 0px;
 	width: 540px;
+	height: auto;
 	overflow: hidden;
 	text-align: center;
 	box-sizing: border-box;
@@ -227,6 +229,140 @@ a {
 	background-color: #44748F;
 }
 
+
+
+.mes {
+	font-size: 0.72rem;
+	padding: 2px;
+	width: 100%;
+	overflow: auto;
+	box-sizing: border-box;
+	border-collapse: collapse;
+}
+.mes__row {
+	cursor: pointer;
+	border-bottom: 1px solid #F1F1F1;
+	box-sizing: border-box;
+}
+.mes__row:hover {
+	background-color: #6494AF;
+}
+.mes__col {
+	padding: 4px;
+	display: inline-block;
+	text-align: left;
+	vertical-align: bottom;
+	line-height: 1.3rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	box-sizing: border-box;
+}
+.mes__p {
+	margin: 0px;
+	font-size: 0.8rem;
+	font-weight: bold;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	box-sizing: border-box;
+}
+.mes__col-1 {
+	width: 65%;
+}
+.mes__col-2 {
+	width: 20%;
+	text-align: center;
+}
+.mes__col-3 {
+	width: 15%;
+	text-align: right;
+}
+.mes__img {
+	margin-bottom: 3px;
+	vertical-align: bottom;
+}
+.mes__audio {
+	width: 100%;
+	display: none;
+	padding: 0;
+	box-sizing: border-box;
+}
+.mes__audio audio {
+	width: 100%;
+	padding: 0;
+	margin: 0px 0px 2px;
+	box-sizing: border-box;
+}
+.back {
+	margin-top: 10px;
+	background-color: #35b;
+	color: #fff;
+	border: 0;
+	display: inline-block;
+	text-align: center;
+	width: 100%;
+	font-size: 1rem;
+	line-height: 2rem;
+	cursor: pointer;
+	box-sizing: border-box;
+}
+.back:hover {
+	background-color: #44748F;
+}
+.btn_added {
+	width: 60px;
+	height: 27px
+}
+.ui-widget-content {
+	overflow-y: auto;
+}
+
+
+
+#toolbar {
+	position: relative;
+	background-color: #35b;
+	text-align: right;
+	border-top-style: none;
+	cursor: n-resize;
+}
+#toolbar img {
+	cursor: pointer;
+}
+#error_msg {
+	color: #f33;
+	display: inline-block;
+	font-size: 0.85rem;
+	position: absolute;
+	top: 6px;
+	left: 5px;
+}
+
+
+
+#signout_link_tabs {
+	background-color: #35b;
+	color: whitesmoke;
+	height: 1.1rem;
+	text-align: left;
+}
+#name {
+	font-size: 0.9rem;
+	line-height: 1.2rem;
+	margin-left: 8px;
+}
+#signout a {
+	color: whitesmoke;
+	outline: none;
+	position: absolute;
+	top: 0px;
+	right: 8px;
+    font-size: 0.9rem;
+    line-height: 1.2rem;
+}
+
+
 button {
 	font-size: 0.9rem;
 }
@@ -258,12 +394,6 @@ ul.ui-autocomplete {
 	font-size: 0.9rem;
 }
 
-#name {
-	font-size: 0.9rem;
-	font-weight: bold;
-	float: left;
-}
-
 #about_link_tabs a {
 	color: #333333;
 	outline: none;
@@ -284,18 +414,14 @@ ul.ui-autocomplete {
 	font-size: 0.9rem;
 }
 
-#signout_link_tabs {
-	background-color: #44647F;
-	color: whitesmoke;
-	height: 17px;
-}
-
 #signout a {
 	color: whitesmoke;
 	outline: none;
 	position: absolute;
-	top: 1px;
-	right: 2px;
+	top: 0px;
+	right: 8px;
+    font-size: 0.9rem;
+    line-height: 1.2rem;
 }
 
 #signin:hover {
@@ -324,10 +450,6 @@ ul.ui-autocomplete {
 }
 
 
-#messages {
-	font-size: 0.9rem;
-	margin: 2px;
-}
 
 #preferences {
 	font-size: 8pt;
@@ -339,236 +461,185 @@ ul.ui-autocomplete {
 	border-color: #34647F;
 	margin: 0 auto;
 	border-top-style: none;
+	overflow: hidden;
 }
 
 #tabs li {
 	background-color: #ffffff;
 }
 
-#toolbar {
-	/* height: 20px; */
-	/* width: 278px; */
-	background-color: #44647F;
-	/* border-width: .1em; */
-	/* border-style: solid; */
-	/* border-color: #34647F; */
-	text-align: right;
-	border-top-style: none;
-	position: abosolute;
-	/* bottom: 0; */
-	/* left: 0; */
+
+.tray_icons{
+	width: 20px;
+	height:20px;
+	margin: 2px;
 }
 
-/* #whitespace_below_toolbar { */
-	/* 	height: 14px; */
-	/* 	width: 278px; */
-	/* 	background-color: #FFFFFF; */
-	/* 	position: abosolute; */
-	/* 	bottom: 10; */
-	/* 	left: 20; */
-	/* } */
+#dndbutton {
+	/* position: absolute; */
+	/* bottom: 15px; */
+	/* left: 230px; */
+	/* cursor: pointer; */
+}
 
-	.tray_icons{
-		width: 20px;
-		height:20px;
-		margin: 2px;
-	}
+#cfabutton {
+	/* position: absolute; */
+	/* bottom: 15px; */
+	/* left: 130px; */
+	/* cursor: pointer; */
+	/* display: none; */
+}
 
-	#dndbutton {
-		/* position: absolute; */
-		/* bottom: 15px; */
-		/* left: 230px; */
-		/* cursor: pointer; */
-	}
+#robutton {
+	/* position: absolute; */
+	/* bottom: 15px; */
+	/* left: 100px; */
+	/* cursor: pointer; */
+	/* display: none; */
+}
 
-	#cfabutton {
-		/* position: absolute; */
-		/* bottom: 15px; */
-		/* left: 130px; */
-		/* cursor: pointer; */
-		/* display: none; */
-	}
+#clicktodial {
+	position: absolute;
+	left: 10px;
+	top: 50px;
+}
 
-	#robutton {
-		/* position: absolute; */
-		/* bottom: 15px; */
-		/* left: 100px; */
-		/* cursor: pointer; */
-		/* display: none; */
-	}
+#notifications {
+	position: absolute;
+	left: 10px;
+	top: 70px;
+}
 
-	#clicktodial {
-		position: absolute;
-		left: 10px;
-		top: 50px;
-	}
+#texttospeech {
+	position: absolute;
+	left: 10px;
+	top: 90px;
+}
 
-	#notifications {
-		position: absolute;
-		left: 10px;
-		top: 70px;
-	}
+#language {
+	position: absolute;
+	left: 75px;
+	top: 130px;
+	width: 120px;
+}
 
-	#texttospeech {
-		position: absolute;
-		left: 10px;
-		top: 90px;
-	}
+#destination {
+	width: 240px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
 
-	#language {
-		position: absolute;
-		left: 75px;
-		top: 130px;
-		width: 120px;
-	}
+#calllogs {
+	overflow: auto;
+	height: 100%;
+	padding-left: 5px;
+	padding-right: 5px;
+}
 
-	#destination {
-		width: 240px;
-		margin-top: 10px;
-		margin-bottom: 10px;
-	}
+#calllogentries {
+	width: 100%;
+	border-collapse: collapse;
+}
 
-	#calllogs {
-		overflow: auto;
-		height: 100%;
-		padding-left: 5px;
-		padding-right: 5px;
-	}
+#calllogentries tr td {
+	padding: 5px;
+	text-align: left;
+	vertical-align: bottom;
+	border-bottom: 1px solid #F1F1F1;
+	font-size: 9px;
+}
 
-	#calllogentries {
-		width: 100%;
-		border-collapse: collapse;
-	}
+#calllogentries tr td p {
+	margin: 0px;
+	font-size: 11px;
+	font-weight: bold;
+}
 
-	#calllogentries tr td {
-		padding: 5px;
-		text-align: left;
-		vertical-align: bottom;
-		border-bottom: 1px solid #F1F1F1;
-		font-size: 9px;
-	}
-
-	#calllogentries tr td p {
-		margin: 0px;
-		font-size: 11px;
-		font-weight: bold;
-	}
-
-	#calllogentries tr:hover {
-		background-color: #6494AF;
-	}
-
-	#messages {
-		overflow: auto;
-		height: 80%;
-		padding-left: 5px;
-		padding-right: 5px;
-	}
+#calllogentries tr:hover {
+	background-color: #6494AF;
+}
 
 
-	#msgtable {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	#msgtable tr td {
-		padding: 5px;
-		text-align: left;
-		vertical-align: bottom;
-		border-bottom: 1px solid #F1F1F1;
-		font-size: 9px;
-	}
-
-	#msgtable tr td p {
-		margin: 0px;
-		font-size: 11px;
-		font-weight: bold;
-	}
-
-	#msgtable tr:hover {
-		background-color: #6494AF;
-	}
-
-	/* ------ Phone Book --------  */
-	#phonebook {
-		overflow: auto;
-		height: 80%;
-		width: 280px;
-	}
+/* ------ Phone Book --------  */
+#phonebook {
+	overflow: auto;
+	height: 80%;
+	width: 280px;
+}
 
 
-	#phonebookentries {
-		width: 100%;
-		border-collapse: collapse;
-	}
+#phonebookentries {
+	width: 100%;
+	border-collapse: collapse;
+}
 
-	#phonebookentries tr td {
-		padding: 5px;
-		text-align: left;
-		vertical-align: bottom;
-		border-bottom: 1px solid #F1F1F1;
-		font-size: 9px;
-	}
+#phonebookentries tr td {
+	padding: 5px;
+	text-align: left;
+	vertical-align: bottom;
+	border-bottom: 1px solid #F1F1F1;
+	font-size: 9px;
+}
 
-	#phonebookentries tr td p {
-		margin: 0px;
-		font-size: 11px;
-		font-weight: bold;
-	}
+#phonebookentries tr td p {
+	margin: 0px;
+	font-size: 11px;
+	font-weight: bold;
+}
 
-	#phonebookentries tr:hover {
-		background-color: #6494AF;
-	}
-	/* ---- end Phone Book ------  */
+#phonebookentries tr:hover {
+	background-color: #6494AF;
+}
+/* ---- end Phone Book ------  */
 
-	#restartmessage {
-		font-size: 12px;
-		color: #359C0C;
-		position: absolute;
-		top: 85px;
-		left: 13px;
-	}
+#restartmessage {
+	font-size: 12px;
+	color: #359C0C;
+	position: absolute;
+	top: 85px;
+	left: 13px;
+}
 
-	#calls {
-		margin: 0 auto;
-		border-collapse: collapse;
-	}
+#calls {
+	margin: 0 auto;
+	border-collapse: collapse;
+}
 
-	#calls tr {
-		border-top: 1px solid #CCCCCC;
-		border-bottom: 1px solid #CCCCCC;
-	}
+#calls tr {
+	border-top: 1px solid #CCCCCC;
+	border-bottom: 1px solid #CCCCCC;
+}
 
-	#calls tr td {
-		padding-top: 2px;
-		padding-bottom: 2px;
-	}
+#calls tr td {
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
 
-	#calls tr td:first-child {
-		width: 196px;
-		text-align: left;
-	}
+#calls tr td:first-child {
+	width: 196px;
+	text-align: left;
+}
 
-	#calls tr td:first-child+td {
-		width: 24px;
-		text-align: right;
-	}
+#calls tr td:first-child+td {
+	width: 24px;
+	text-align: right;
+}
 
-	#calls tr td:first-child+td+td {
-		width: 24px;
-		text-align: right;
-	}
+#calls tr td:first-child+td+td {
+	width: 24px;
+	text-align: right;
+}
 
-	#calls tr td img {
-		padding: 1px;
-		vertical-align: middle;
-	}
+#calls tr td img {
+	padding: 1px;
+	vertical-align: middle;
+}
 
-	.nameAndNumber {
-		font-size: 10px;
-		font-weight: bold;
-	}
+.nameAndNumber {
+	font-size: 10px;
+	font-weight: bold;
+}
 
-	.callDuration {
-		font-size: 8px;
-	}
+.callDuration {
+	font-size: 8px;
+}

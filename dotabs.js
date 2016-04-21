@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright 2016, SIPLABS LLC.
 Copyright 2013, BroadSoft, Inc.
 
@@ -7,7 +7,7 @@ you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
- 
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "ASIS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,7 +51,7 @@ document.querySelector('#about').addEventListener('click',
 // due to an authentication error or some other error, then retain some
 // information.
 function signout(manual) {
-	
+
 	localStorage.removeItem("vm_daemon_id");
 	localStorage.removeItem("auth_daemon_id");
 	localStorage.removeItem("authTokens");
@@ -90,36 +90,15 @@ function announceServiceState(service, value) {
 	}
 }
 
-//Go up to parrents tree, looking for number.
-function phonebook_handler(e){
-	if (e) {
-		if (e.tagName) {
-			return 	e.tagName != "TR"? phonebook_handler(e.parentNode):
-				e.id == "phonebook_new_entry"? null:
-				chrome.runtime.sendMessage({
-					type : "CALL",
-					text : e.childNodes[1].textContent}, ()=>{});
-		} else
-		{
-			return e.target? phonebook_handler(e.target): null;
-		}
-	}
-	return null;
-}
-
 
 function history_handler(e){
-	if (e) {
-		if (e.tagName) {
-			return e.tagName != "TR"? history_handler(e.parentNode):
-				chrome.runtime.sendMessage({
-					type : "CALL",
-					text : e.childNodes[0].textContent}, ()=>{});
-		} else
-		{
-			return e.target? history_handler(e.target): null;
-		}
-	}
+	var tel = $(this).find("td:first-child() span").text();
+
+	chrome.runtime.sendMessage({
+		type : "CALL",
+		text : tel
+	}, ()=>{});
+
 	return null;
 }
 
@@ -155,7 +134,7 @@ function restoreTabs() {
 						var row = "<tr id='calllogentry" + i + "_"
 							    + list[i].number + "'>";
 						row = row + "<td><p>" + list[i].name
-							+ "</p>" + list[i].number + "</td>";
+						+ "</p><span>" + list[i].number + "</span></td>";
 						row = row + "<td>"
 							+ formatTimestamp(list[i].time)
 							+ "</td>";
@@ -171,7 +150,7 @@ function restoreTabs() {
 						}
 						$("#calllogentries").append(row);
 					}
-					$("#calllogentries").on("click", history_handler);
+					$("#calllogentries").on("click", "tr", history_handler);
 					break;
 
 				case "messages":
@@ -188,7 +167,7 @@ function restoreTabs() {
 					switch(msg_list.length){
 					case 0:
 						var p1, img, h2;
-						
+
 						p1= document.createElement("p");
 						h2= document.createElement("h3");
 						h2.innerText = "You have no voicemailboxes yet";
@@ -209,27 +188,27 @@ function restoreTabs() {
 					default:
 						for ( var i = 0; i < msg_list.length; i++) {
 							var new_row = create_box_row(msg_list[i].name, msg_list[i].mailbox, msg_list[i].messages, !msg_list[i].old, msg_list[i].id);
-							new_row.onclick = showVMMessages;
+							$(new_row).on("click", showVMMessages);
 							$("#msgtable").append(new_row);
 							msg_list[i].old = true;
 						}
 						break;
 					}
-					
-					localStorage["vm_boxes"] = JSON.stringify(msg_list);					
+
+					localStorage["vm_boxes"] = JSON.stringify(msg_list);
 					break;
 
-				case "phonebook":					
+				case "phonebook":
 					localStorage["currentTab"] = "phonebook";
 
 					if (localStorage["phone_book"] == "NONE") {
 						$("#phonebookentries")[0].style.display = "none";
 						$("#new_phonebook_msg")[0].style.display = "";
-						
+
 					}else {
 						$("#phonebookentries")[0].style.display = "";
 						$("#new_phonebook_msg")[0].style.display = "none";
-						
+
 						var pb_list;
 						try{
 							pb_list = JSON.parse(localStorage["phone_book"]);
@@ -243,11 +222,11 @@ function restoreTabs() {
 						// || <input name> | <input number> | <add button> ||
 						create_input_pb_row();
 						//Fill phonebook table
-						// || name | phone | remove_btn ||						
+						// || name | phone | remove_btn ||
 						for ( var z = 0; z < pb_list.length; z++) {
 							create_default_pb_row(pb_list[z].value.name, pb_list[z].value.phone, pb_list[z].id, z);
 						}
-					}				
+					}
 					break;
 
 				case "preferences":
@@ -265,7 +244,7 @@ function restoreTabs() {
 		if (localStorage.connectionStatus == "signedIn") {
 			chrome.browserAction.setIcon({path: "images/logo_online_128x128.png"});
 		}
-		break;		
+		break;
 	case "phonebook":
 		$("#tabs").tabs("option", "active", 1);
 		break;
@@ -284,34 +263,31 @@ function restoreTabs() {
 	var popup_heigth = localStorage["popup_heigth"] || 480;
 	set_popup_heigth(popup_heigth);
 	var resizer = document.getElementById("toolbar");
-	resizer.ondragstart = (e)=>{return false;};
 	resizer.onmousedown = (e)=>{
-		resizer.onmousemove = (e)=>{			
-			if (e.pageY < 250 || e.pageY > 550) return;
+		$("body").css("-webkit-user-select", "none");
+		window.getSelection().removeAllRanges();
+		resizer.onmousemove = (e)=>{
+			if (e.pageY < 250 || e.pageY > 580) return;
 			var new_len = (e.pageY - 50) ;
 			set_popup_heigth(new_len);
 			localStorage["popup_heigth"] = new_len;
+			e.preventDefault();
 		};
 		resizer.onmouseup = (e)=>{
 			resizer.onmousemove = null;
 		};
+		resizer.onmouseout = (e)=>{
+			resizer.onmousemove = null;
+			$("body").css("-webkit-user-select", "auto");
+		};
+		e.preventDefault();
 	};
 
-	$("#btn1").on("click", btn_handler);
-	$("#btn2").on("click", btn_handler);
-	$("#btn3").on("click", btn_handler);
-	$("#btn4").on("click", btn_handler);
-	$("#btn5").on("click", btn_handler);
-	$("#btn6").on("click", btn_handler);
-	$("#btn7").on("click", btn_handler);
-	$("#btn8").on("click", btn_handler);
-	$("#btn9").on("click", btn_handler);
-	$("#btn10").on("click", btn_handler);
-	$("#btn11").on("click", btn_handler);
+	$(".btn_added").on("click", btn_handler);
 	$("#btn12").on("click", call_btn);
 
 	$("#create_phonebook_btn").on('click', create_phonebook_handler);
-	
+
 	$("#language").val(localStorage.lang);
 	$("#language").on("change", switch_lang_handler);
 
@@ -324,9 +300,9 @@ function restoreTabs() {
 	contextMenu["Click to dial"] = createClickToDialContextMenuItem();
 	contextMenu["On call behavior"] = createOnCallBehaviorContextMenuItem();
 	contextMenu["sep1"] = "---------";
-	
+
 	contextMenu["Quit"] = {name: "Quit"};
-	
+
 	drawContextMenu(contextMenu);
 	updatePhoneBook();
 	localize();
@@ -335,8 +311,7 @@ function restoreTabs() {
 
 function showVMMessages(e){
 	var vmbox_id = e.currentTarget.id;
-	console.log(vmbox_id);
-	var media_list;
+	var media_list, audio;
 
 	try{
 		media_list = JSON.parse(localStorage["vm_media"]);
@@ -344,13 +319,13 @@ function showVMMessages(e){
 		LOGGER.API.log(MODULE, "Can't parse localStorage[\"vm_media\"] = " + localStorage["vm_media"]);
 		media_list = [];
 	}
-	
+
 	$("#msgtable").empty();
 	if (media_list[vmbox_id] &&
 	    media_list[vmbox_id].messages &&
 	    media_list[vmbox_id].messages.length == 0) {
 		var p1, img, h2;
-		
+
 		p1= document.createElement("p");
 		h2= document.createElement("h3");
 		h2.innerText = "You have no voicemails yet";
@@ -362,7 +337,7 @@ function showVMMessages(e){
 
 		$("#msgtable").append(p1);
 		$("#msgtable").append(img);
-	}else{
+	} else {
 		for ( var i = 0; i < media_list[vmbox_id].messages.length; i++) {
 			var new_info_row = create_info_media_row(media_list[vmbox_id].messages[i].from,
 								 media_list[vmbox_id].messages[i].caller_id_number,
@@ -371,32 +346,31 @@ function showVMMessages(e){
 								 media_list[vmbox_id].messages[i].media_id );
 			var new_player_row = create_play_media_row(vmbox_id, media_list[vmbox_id].messages[i].media_id);
 
+			$(new_info_row).append(new_player_row);
 			$("#msgtable").append(new_info_row);
-			$("#msgtable").append(new_player_row);
 		}
 	}
-	
+	$("#msgtable").on("click", ".mes__row", function() {
+		audio = $(this).find("audio");
+		$(audio)[0].pause();
+		$(audio)[0].currentTime = 0;
+		$(audio).closest(".mes__audio").toggle(300);
+	});
+	$("#msgtable").append("<div class='back'>Back</div>");
+	$(".back").one("click", function() {
+		$("#msgtable").off("click", ".mes__row");
+		$("#tabs").tabs("option", "active", 1);
+		$("#tabs").tabs("option", "active", 0);
+	});
 }
 
 function create_play_media_row(vmbox_id, media_id){
-	var row1, col1, audio, source;
-	row1 = document.createElement("tr");
-	col1 = document.createElement("td");
-	audio = document.createElement("audio");
-	audio.style.width = "260px";
-	source = document.createElement("source");
-	source.src = localStorage["url"] + "v2/accounts/" +
-		localStorage["account_id"]+ "/vmboxes/" +
-		vmbox_id + "/messages/" + media_id +
-		"/raw?auth_token="+ localStorage["authTokens"];
-	source.type = "audio/ogg";
-	audio.appendChild(source);
-	audio.controls = "true";
-	col1.appendChild(audio);
-	col1.colSpan = 4;
-	row1.appendChild(col1);
+	var src = localStorage["url"] + "v2/accounts/" +
+			localStorage["account_id"]+ "/vmboxes/" +
+			vmbox_id + "/messages/" + media_id +
+			"/raw?auth_token="+ localStorage["authTokens"];
 
-	return row1;
+	return $("<div class='mes__audio'><audio controls='true'><source type='audio/ogg' src='" + src + "' /></audio></div>");
 }
 
 function set_popup_heigth(new_len){
@@ -406,7 +380,7 @@ function set_popup_heigth(new_len){
 	$("#history")[0].style.height = (new_len- 190) + "px";
 }
 
-function create_input_pb_row(){	
+function create_input_pb_row(){
 	var input_field, col1, col2, col3, input1, input2, image;
 	var translate;
 	try{
@@ -418,7 +392,7 @@ function create_input_pb_row(){
 			"pb_phone_placeholder": {"message": "phone number"}
 		};
 	}
-	
+
 	input_field = document.createElement("tr");
 	col1 = document.createElement("td");
 	col2 = document.createElement("td");
@@ -436,7 +410,7 @@ function create_input_pb_row(){
 	image.src = "images/add.png";
 	image.onclick = (e)=>{
 		var row = create_default_pb_row($("#pb_new_name").val(),  $("#pb_new_phone").val(), Math.random());
-		$("#phonebookentries").append(row);						
+		$("#phonebookentries").append(row);
 		chrome.runtime.sendMessage({
 			type: "PHONE_BOOK_ADD_ENTRY",
 			name: $("#pb_new_name").val(),
@@ -452,7 +426,7 @@ function create_input_pb_row(){
 	col1.appendChild(input1);
 	col2.appendChild(input2);
 	col3.appendChild(image);
-	
+
 	input_field.appendChild(col1);
 	input_field.appendChild(col2);
 	input_field.appendChild(col3);
@@ -478,56 +452,45 @@ function text_input_handler_names(e){
 }
 
 function create_info_media_row(from, number, name, box_id, media_id){
-	var row, col1, col2, col3, col4, p1, img;
-	row = document.createElement("tr");
-	col1 = document.createElement("td");
-	col2 = document.createElement("td");
-	col3 = document.createElement("td");
-	col4 = document.createElement("td");
-	p1= document.createElement("p");
-	img = document.createElement("img");
+	var row, col1, col2, col3, p1, img;
+	row = $("<div class='mes__row'></div>");
+	col1 = $("<div class='mes__col mes__col-1'></div>");
+	col2 = $("<div class='mes__col mes__col-2'></div>");
+	col3 = $("<div class='mes__col mes__col-3'></div>");
+	p1= $("<p class='mes__p'></p>");
+	img = $("<img class='mes__img' />");
 
-	p1.innerText = from;
-	img.src = "images/remove.png";
-	col1.innerText = number;
-	col1.appendChild(p1);
-	col2.innerText = name;
-	col4.appendChild(img);
-	col4.style = "text-align:right !important";
+	$(p1).text(from).attr("title", from);
+	$(img).attr("src", "images/remove.png");
+	$(col1).text(number).attr("title", number);
+	$(col1).append(p1);
+	$(col2).text(name).attr("title", name);
+	$(col3).append(img);
 
-	row.appendChild(col1);
-	row.appendChild(col2);
-	row.appendChild(col3);
-	row.appendChild(col4);
+	$(row).append(col1).append(col2).append(col3);
 
 	return row;
 }
 
 function create_box_row(name, phone, count, is_new, id){
-	var row, col1, col2, col3, col4, p1, img;
-	row = document.createElement("tr");
-	col1 = document.createElement("td");
-	col2 = document.createElement("td");
-	col3 = document.createElement("td");
-	col4 = document.createElement("td");
-	p1= document.createElement("p");
-	img = document.createElement("img");
+	var row, col1, col2, col3, p1, img;
+	row = $("<div class='mes__row'></div>");
+	col1 = $("<div class='mes__col mes__col-1'></div>");
+	col2 = $("<div class='mes__col mes__col-2'></div>");
+	col3 = $("<div class='mes__col mes__col-3'></div>");
+	p1= $("<p class='mes__p'></p>");
+	img = $("<img class='mes__img' />");
 
-	p1.innerText = name;
-	img.src = "images/msg_" + (is_new?"new":"old") +  ".png";
-	col1.innerText = phone;
-	col1.appendChild(p1);
-	col2.innerText = count;
-	col4.appendChild(img);
-	col4.style = "text-align:right !important";
+	$(p1).text(name).attr("title", name);
+	$(img).attr("src", "images/msg_" + (is_new ? "new" : "old") + ".png");
+	$(col1).text(phone).attr("title", phone);
+	$(col1).append(p1);
+	$(col2).text(count);
+	$(col3).append(img);
 
-	row.appendChild(col1);
-	row.appendChild(col2);
-	row.appendChild(col3);
-	row.appendChild(col4);
-	row.id = id;
+	$(row).append(col1).append(col2).append(col3);
+	$(row).attr("id", id);
 
-	//$("#msgtable").append(row);
 	return row;
 }
 
@@ -570,7 +533,7 @@ function create_default_pb_row(name, phone, id, index){
 	};
 	col1.appendChild(p1);
 	col2.appendChild(p2);
-	col3.appendChild(img);							
+	col3.appendChild(img);
 	col1.onclick = (e)=>{
 		chrome.runtime.sendMessage({
 			type : "CALL",
@@ -581,7 +544,7 @@ function create_default_pb_row(name, phone, id, index){
 			type : "CALL",
 			text : e.currentTarget.childNodes[0].innerText }, ()=>{});
 	};
-	
+
 	row.id = "calllogentry'" + index + "_" + name;
 	row.appendChild(col1);
 	row.appendChild(col2);
@@ -690,7 +653,7 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 		case "429":
 			showMessage("Too many requests.");
 			break;
-			
+
 		case "400":
 		case "401":
 			showMessage("Authorization error.");
@@ -705,7 +668,7 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 });
 
 function showMessage(message){
-	$("#error_msg").text(message);
+	$("#error_msg").text(message).attr("title", message);
 	$("#error_msg").fadeIn();
 	$("#error_msg").fadeOut(5000);
 }
@@ -715,9 +678,9 @@ function createLanguagesContextMenuItem(list){
 	var langs = {name: "Language", items: {}};
 	for(var i = 0; i < list.length; i++) {
 		langs.items[list[i].shortName] = {
-			name: list[i].fullName, 
-			type: 'radio', 
-			radio: 'radio_lang', 
+			name: list[i].fullName,
+			type: 'radio',
+			radio: 'radio_lang',
 			value: list[i].shortName,
 			//icon: "images/" + list[i].shortName +"-flag.png",
 			icon: "edit",
@@ -727,11 +690,11 @@ function createLanguagesContextMenuItem(list){
 			}
 		};
 	}
-	
+
 	return langs;
 }
 
-function createDevicesContextMenuItem(){	
+function createDevicesContextMenuItem(){
 	var devices = {};
 	try{
 		devices = JSON.parse(localStorage["devices"]);
@@ -739,12 +702,12 @@ function createDevicesContextMenuItem(){
 		LOGGER.API.log(MODULE, "Can't parse localStorage[\"devices\"] = " + localStorage["devices"]);
 	}
 
-	var device_items = {name: "Active device", items: {}};	
+	var device_items = {name: "Active device", items: {}};
 	for(var i in devices) {
 		device_items.items[devices[i].num] = {
-			name: devices[i].name, 
-			type: 'radio', 
-			radio: 'radio_dev', 
+			name: devices[i].name,
+			type: 'radio',
+			radio: 'radio_dev',
 			value: devices[i].id,
 			//icon: "images/" + list[i].shortName +"-flag.png",
 			selected: localStorage["active_device"] == devices[i].id,
@@ -753,9 +716,9 @@ function createDevicesContextMenuItem(){
 		};
 	}
 	device_items.items["any_phone"] = {
-		name: "Auto", 
-		type: 'radio', 
-		radio: 'radio_dev', 
+		name: "Auto",
+		type: 'radio',
+		radio: 'radio_dev',
 		value: "any_phone",
 		//icon: "images/" + list[i].shortName +"-flag.png",
 		selected: (localStorage["active_device"] == "any_phone") || (localStorage["active_device"] == "") || !localStorage["active_device"],
@@ -768,7 +731,7 @@ function createDevicesContextMenuItem(){
 
 function drawContextMenu(items){
 	$.contextMenu({
-		selector: '#options', 
+		selector: '#options',
 		trigger: 'left',
 		items: items,
 		events: {
@@ -796,12 +759,12 @@ function createClickToDialContextMenuItem(){
 				localStorage["clicktodial"] = !(localStorage["clicktodial"] == "true"); }
 		}
 	};
-	
+
 	return ctd_item;
 }
 
 function createOnCallBehaviorContextMenuItem(){
-	var options = {name: "On call behavior", items: {}};	
+	var options = {name: "On call behavior", items: {}};
 
 	options.items["inbound_notify"] = {
 		name: "On inbound call notification",
@@ -838,7 +801,7 @@ function createOnCallBehaviorContextMenuItem(){
 			localStorage["custom_profile_page"] = prompt(message, localStorage["custom_profile_page"]);
 		}
 	};
-	
+
 	return options;
 }
 

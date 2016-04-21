@@ -104,7 +104,7 @@ function onMessage(request, sender, sendResponse) {
 		switchDND(sendResponse);
 		break;
 
-		
+
 	case "BLACKHOLE_USER_ACTION":
 		blackholeUserActionHandler(request.data);
 		// console.log(request.data);
@@ -286,7 +286,7 @@ function prepareToStart(){
 	if (!localStorage["custom_profile_page"]) {
 		localStorage["custom_profile_page"] = "https://google.com/search?q={{user_id}}%20{{account_id}}";
 	}
-	
+
 }
 
 function incrementErrorCount(error_code){
@@ -360,7 +360,7 @@ function flatten(o) {
 	var prefix = arguments[1] || "", out = arguments[2] || {}, name;
 	for (name in o) {
 		if (o.hasOwnProperty(name)) {
-			typeof o[name] === "object" ? flatten(o[name], prefix + name + '.', out) : 
+			typeof o[name] === "object" ? flatten(o[name], prefix + name + '.', out) :
                                 out[prefix + name] = o[name];
 		}
 	}
@@ -393,7 +393,7 @@ function signToBlackholeEvents(){
 		// 	last_time = parseInt(localStorage[EventJObj["Event-Name"]]);
 		// }catch(e){ }
 		// if (Date.now() - last_time < 1000) return;
-		
+
 		// localStorage[EventJObj["Event-Name"]] = Date.now();
 		chrome.tabs.query({active: true}, function(tabs) {
 			chrome.tabs.sendMessage(tabs[0].id, {
@@ -406,7 +406,7 @@ function signToBlackholeEvents(){
 
 	SOCKET.on('CHANNEL_CREATE', resender);
 	SOCKET.on('CHANNEL_ANSWER', resender);
-        SOCKET.on('CHANNEL_DESTROY', resender);
+    SOCKET.on('CHANNEL_DESTROY', resender);
 }
 
 function is_too_fast(event_name, timeout){
@@ -503,7 +503,7 @@ function blackholeUserActionHandler(action){
 		// get call information from somewhere,
 		// create new tab with "custom_profile_page"
 		break;
-		
+
 	default:
 		showError({statusText: "Cannot execute command", status: ""});
 		LOGGER.API.log(MODULE, "Unknown event-type from content-script: " +  event.type);
@@ -514,7 +514,7 @@ function substitute(str, data){
 	for(var replaceable in data){
 		str = str.replace(new RegExp("{{" + replaceable + "}}", 'g'), data[replaceable]);
 	}
-	
+
 	return str;
 }
 
