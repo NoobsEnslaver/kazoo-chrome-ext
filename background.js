@@ -28,37 +28,21 @@ function onMessage(request, sender, sendResponse) {
 		if(is_too_fast("last_call_time", 3000)) return;
 		var destination = request.text.replace(/[- \(\)\.]/g, "");
 		var status = "ok";
-		try {
-			if (!localStorage["history"]) {
-				localStorage["history"] = JSON.stringify([]);
-			}
-			var history = JSON.parse(localStorage["history"]);
-			history.push({
+		LOGGER.API.log(MODULE, "calling: " + destination);
+		if (localStorage["active_device"] && localStorage["active_device"] != "" && localStorage["active_device"] != "any_phone") {
+			KAZOO.device.quickcall({
 				number: destination,
-				time: Date.now(),
-				type: "outgoing",
-				name: ""
+				account_id: localStorage["account_id"],
+				deviceId: localStorage["active_device"]
 			});
-			localStorage["history"] = JSON.stringify(history);
-			LOGGER.API.log(MODULE, "calling: " + destination);
-			if (localStorage["active_device"] && localStorage["active_device"] != "" && localStorage["active_device"] != "any_phone") {
-				KAZOO.device.quickcall({
-					number: destination,
-					account_id: localStorage["account_id"],
-					deviceId: localStorage["active_device"]
-				});
-			}else{
-				KAZOO.user.quickcall({
-					number: destination,
-					account_id: localStorage["account_id"],
-					userId: localStorage["user_id"]
-				});
-			}
-
-		} catch (error) {
-			status = "error";
-			LOGGER.API.log(MODULE, "Exception in 'OnMessage': " + error);
+		}else{
+			KAZOO.user.quickcall({
+				number: destination,
+				account_id: localStorage["account_id"],
+				userId: localStorage["user_id"]
+			});
 		}
+
 		sendResponse({
 			status : status
 		});
@@ -290,12 +274,7 @@ function prepareToStart(){
 }
 
 function incrementErrorCount(error_code){
-	var errors = {};
-	try{
-		errors = JSON.parse(localStorage["errors"]);
-	}catch(e){
-		LOGGER.API.log(MODULE, "Can't parse localStorage[\"errors\"] = " + localStorage["errors"]);
-	}
+	var errors = storage.get("errors", {});
 	errors[error_code] = errors[error_code] || 0;
 	errors[error_code] += 1;
 	errors["last_modify"] = Date.now();
@@ -367,7 +346,7 @@ function flatten(o) {
 	return out;
 }
 
-
+var last_blackhole_pkg = {};
 function signToBlackholeEvents(){
 	if(is_too_fast()) return;
 	if (!(io && io.connect)) return;
@@ -381,27 +360,46 @@ function signToBlackholeEvents(){
         });
 
 	function resender(EventJObj) {
-		var old_pkg = {};
-		try{
-			old_pkg = JSON.parse(localStorage["pkg_dump"]);
-		}catch(e){};
-		localStorage["pkg_dump"] = Object.assign(old_pkg, flatten(EventJObj));
+		console.log(EventJObj);
+		storage.assign("pkg_dump", flatten(EventJObj));
+		var devices = storage.get("devices", []).map((x)=>{return x.id;});
+		if (is_too_fast(EventJObj["Event-Name"] + "_" + EventJObj["Call-Direction"])) return;
+		if (EventJObj["Event-Name"] === "CHANNEL_CREATE" &&
+		    EventJObj["Custom-Channel-Vars"]["Account-ID"] === localStorage["account_id"] &&
+		    devices.findIndex((x)=>{ return x == EventJObj["Custom-Channel-Vars"]["Authorizing-ID"];}) >= 0) {
+			var is_outgoing = EventJObj["Call-Direction"] === "inbound";
+			storage.push("history", {
+				number: is_outgoing? (EventJObj["Callee-ID-Number"] || EventJObj["To"].split('@')[0]):
+					(EventJObj["Caller-ID-Number"] || EventJObj["Other-Leg-Caller-ID-Number"] || EventJObj["From"].split('@')[0] || "unknown"),
+				time: Date.now(),
+				type: is_outgoing?"outgoing":"received",
+				name: is_outgoing? (EventJObj["Callee-ID-Name"] || EventJObj["To"].split('@')[0]):	// TODO: Name from phonebook
+					(EventJObj["Caller-ID-Name"] || EventJObj["Other-Leg-Caller-ID-Name"] || EventJObj["From"].split('@')[0] ||"unknown")
+			});
+		}
+		
+		
 		if(EventJObj["Call-Direction"] === "outbound" && localStorage.outboundCallNotificationsEnabled !== "true") return;
-		if(EventJObj["Call-Direction"] === "inbound" && localStorage.outboundCallNotificationsEnabled !== "true") return;
-		// var last_time = 0;
-		// try{
-		// 	last_time = parseInt(localStorage[EventJObj["Event-Name"]]);
-		// }catch(e){ }
-		// if (Date.now() - last_time < 1000) return;
+		if(EventJObj["Call-Direction"] === "inbound" && localStorage.inboundCallNotificationsEnabled !== "true") return;
+		if(EventJObj["Event-Name"] === "CHANNEL_CREATE") last_blackhole_pkg[EventJObj["Call-Direction"]] = EventJObj;
 
-		// localStorage[EventJObj["Event-Name"]] = Date.now();
-		chrome.tabs.query({active: true}, function(tabs) {
-			chrome.tabs.sendMessage(tabs[0].id, {
-				sender: "KAZOO",
-				type: "event",
-				data: EventJObj
+		if (!is_too_fast("send_" + EventJObj["Event-Name"])){
+
+			var notify = chrome.notifications.create("Push Call", {		// TODO: Disabling option
+				type: "basic",						// TODO: On click behavior
+				iconUrl: "images/hold.png",
+				title: "Incoming Call",
+				message: "User x calling"
 			}, ()=>{});
-		});
+
+			chrome.tabs.query({active: true}, function(tabs) {
+				chrome.tabs.sendMessage(tabs[0].id, {
+					sender: "KAZOO",
+					type: "event",
+					data: EventJObj
+				}, ()=>{});
+			});
+		}
 	}
 
 	SOCKET.on('CHANNEL_CREATE', resender);
@@ -409,13 +407,36 @@ function signToBlackholeEvents(){
     SOCKET.on('CHANNEL_DESTROY', resender);
 }
 
+var storage = {
+	get: function(key, def_val){
+		if(typeof(def_val) === "string")
+			return localStorage[key] || def_val;
+
+		var value = def_val;
+		try{
+			value = JSON.parse(localStorage[key]);
+		}catch(e){}
+		return value;
+	},
+	set: function(key, val){		
+		localStorage[key] = typeof(val) === "string"? val: JSON.stringify(val);
+	},
+	push: function(key, new_val){
+		var old_val = this.get(key, []);
+		old_val.push(new_val);
+		this.set(key, old_val);
+	},
+	assign: function(key, val){
+		if(typeof(val) !== "object") throw new Error("Assign for Objects only!");
+		var old_val = this.get(key, {});
+		this.set(key, Object.assign(old_val, val));
+	}
+};
+
 function is_too_fast(event_name, timeout){
 	timeout = timeout || 1500;
 	event_name = event_name || arguments.callee.caller.name + "_last_call";
-	var last_time = 0;
-	try{
-		last_time = parseInt(localStorage[event_name]);
-	}catch(e){ }
+	var last_time = storage.get(event_name, 0);
 	if (Date.now() - last_time < timeout){
 		showError({statusText: "Too fast", status: arguments.callee.caller.name});
 		console.log("Too fast:" + arguments.callee.caller.name);
@@ -447,27 +468,14 @@ function updateVoiceMails(){
 					account_id: localStorage["account_id"],
 					voicemailId: box.id,
 					success: (box_data, box_status)=> {
-						var msg_list;
-						try{
-							msg_list = JSON.parse(localStorage["vm_media"]);
-						}catch(e){
-							LOGGER.API.log(MODULE, "Can't parse localStorage[\"vm_media\"] = " +  localStorage["vm_media"]);
-							msg_list = {};
-						}
+						var msg_list = storage.get("vm_media", {});
 						msg_list[box.id] = box_data.data;
-						localStorage["vm_media"] = JSON.stringify(msg_list);
+						storage.set("vm_media", msg_list);
 					}
 				});
 			});
 
-			var box_list;
-			try{
-				box_list = JSON.parse(localStorage["vm_boxes"]);
-			}catch(e){
-				LOGGER.API.log(MODULE, "Can't parse localStorage[\"vm_boxes\"] = " + localStorage["vm_boxes"]);
-				box_list = [];
-			}
-
+			var box_list = storage.get("vm_boxes", []);
 			var new_boxes = data.data.map((x_new)=>{
 				x_new.old = true;
 				try{
@@ -500,8 +508,8 @@ function blackholeUserActionHandler(action){
 		break;
 
 	case "VIEW_PROFILE":
-		// get call information from somewhere,
-		// create new tab with "custom_profile_page"
+		var newURL = substitute(localStorage["custom_profile_page"], flatten(last_blackhole_pkg["inbound"])); // FIXME
+		chrome.tabs.create({ url: newURL });
 		break;
 
 	default:
@@ -528,13 +536,7 @@ chrome.contextMenus.create({
 		var re = new RegExp();
 		re.compile("(" + us + "|" + international + ")");
 
-		var localization;
-		try{
-			localization = JSON.parse(localStorage["localization"]);
-		}catch(e){
-			LOGGER.API.log(MODULE, "Localization error.");
-		};
-
+		var localization = storage.get("localization", {});
 		var phone = text.match(re);
 		if (phone) {
 			var name = prompt(localization.get_owner_name.message + " " +phone[0], localization.anonymous.message);

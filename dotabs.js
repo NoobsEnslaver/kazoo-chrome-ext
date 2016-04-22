@@ -117,13 +117,8 @@ function restoreTabs() {
 				switch(new_panel_id){
 				case "history":
 					localStorage["currentTab"] = "history";
-					var list;
-					try{
-						list = JSON.parse(localStorage["history"]);
-					}catch(e){
-						LOGGER.API.log(MODULE, "Can't parse localStorage[\"history\"] = " + localStorage["history"]);
-						list = [];
-					}
+					var list = storage.get("history", []);
+
 					list.sort(function(a, b) {
 						a = new Date(a.time);
 						b = new Date(b.time);
@@ -155,14 +150,7 @@ function restoreTabs() {
 
 				case "messages":
 					localStorage["currentTab"] = "messages";
-					var msg_list;
-					try{
-						msg_list = JSON.parse(localStorage["vm_boxes"]);
-					}catch(e){
-						LOGGER.API.log(MODULE, "Can't parse localStorage[\"vm_boxes\"] = " + localStorage["vm_boxes"]);
-						msg_list = [];
-					}
-
+					var msg_list = storage.get("vm_boxes", []);
 					$("#msgtable").empty();
 					switch(msg_list.length){
 					case 0:
@@ -208,15 +196,7 @@ function restoreTabs() {
 					}else {
 						$("#phonebookentries")[0].style.display = "";
 						$("#new_phonebook_msg")[0].style.display = "none";
-
-						var pb_list;
-						try{
-							pb_list = JSON.parse(localStorage["phone_book"]);
-						}catch(e){
-							LOGGER.API.log(MODULE, "Can't parse localStorage[\"phone_book\"] = " + localStorage["phone_book"]);
-							pb_list = [];
-						}
-
+						var pb_list = storage.get("phone_book", []);
 						$("#phonebookentries").empty();
 						// Create the first one table entry with input fields for creating new entries in phone book
 						// || <input name> | <input number> | <add button> ||
@@ -300,9 +280,13 @@ function restoreTabs() {
 	contextMenu["Click to dial"] = createClickToDialContextMenuItem();
 	contextMenu["On call behavior"] = createOnCallBehaviorContextMenuItem();
 	contextMenu["sep1"] = "---------";
-
-	contextMenu["Quit"] = {name: "Quit"};
-
+	contextMenu["Clear history"] = {
+		name: "Clear history",
+		callback: (x)=>{
+			localStorage.history = JSON.stringify([]);
+			$("#calllogentries").empty();
+		}
+	};
 	drawContextMenu(contextMenu);
 	updatePhoneBook();
 	localize();
@@ -311,15 +295,8 @@ function restoreTabs() {
 
 function showVMMessages(e){
 	var vmbox_id = e.currentTarget.id;
-	var media_list, audio;
-
-	try{
-		media_list = JSON.parse(localStorage["vm_media"]);
-	}catch(e){
-		LOGGER.API.log(MODULE, "Can't parse localStorage[\"vm_media\"] = " + localStorage["vm_media"]);
-		media_list = [];
-	}
-
+	var media_list = storage.get("vm_media", []);
+	
 	$("#msgtable").empty();
 	if (media_list[vmbox_id] &&
 	    media_list[vmbox_id].messages &&
@@ -382,17 +359,11 @@ function set_popup_heigth(new_len){
 
 function create_input_pb_row(){
 	var input_field, col1, col2, col3, input1, input2, image;
-	var translate;
-	try{
-		translate = JSON.parse(localStorage["localization"]);
-	}catch(e){
-		LOGGER.API.log(MODULE, "Can't parse localStorage[\"localization\"] = " + localStorage["localization"]);
-		translate = {
-			"pb_name_placeholder": {"message": "name"},
-			"pb_phone_placeholder": {"message": "phone number"}
-		};
-	}
-
+	var translate = storage.get("localization", {
+		"pb_name_placeholder": {"message": "name"},
+		"pb_phone_placeholder": {"message": "phone number"}
+	});
+	
 	input_field = document.createElement("tr");
 	col1 = document.createElement("td");
 	col2 = document.createElement("td");
@@ -576,7 +547,7 @@ function dnd_btn_handler(){
 
 function localize(){
 	try{
-		var x = JSON.parse(localStorage["localization"]);
+		var x = storage.get("localization", {});
 
 		$("#help_why").text(x.help_why.message);
 		$("#help_why")[0].title = x.help_why_answer.message;
@@ -694,15 +665,10 @@ function createLanguagesContextMenuItem(list){
 	return langs;
 }
 
-function createDevicesContextMenuItem(){
-	var devices = {};
-	try{
-		devices = JSON.parse(localStorage["devices"]);
-	}catch(e){
-		LOGGER.API.log(MODULE, "Can't parse localStorage[\"devices\"] = " + localStorage["devices"]);
-	}
 
-	var device_items = {name: "Active device", items: {}};
+function createDevicesContextMenuItem(){	
+	var devices = storage.get("devices", {});
+	var device_items = {name: "Active device", items: {}};	
 	for(var i in devices) {
 		device_items.items[devices[i].num] = {
 			name: devices[i].name,
@@ -789,20 +755,43 @@ function createOnCallBehaviorContextMenuItem(){
 		callback: (e)=>{
 			var message = "Введите адрес вашего сайта, которому будут переданы все необходимые параметры звонка. \n" +
 			    "Поддерживаемые  параметры: \n";
-			var pkg_dump = {};
-			try{
-				pkg_dump = JSON.parse(localStorage["pkg_dump"]);
-			   }catch(e){}
+			var pkg_dump = storage.get("pkg_dump", {});
 			for(var name in pkg_dump){
 				message += "{{"+ name + "}}, ";
 			}
-			if(message.length > 0)
+			if(message.length >= 2)
 				message = message.slice(0, -2);
-			localStorage["custom_profile_page"] = prompt(message, localStorage["custom_profile_page"]);
+			localStorage["custom_profile_page"] = prompt(message, localStorage["custom_profile_page"]) || localStorage["custom_profile_page"];
 		}
 	};
 
 	return options;
 }
+
+var storage = {
+	get: function(key, def_val){
+		if(typeof(def_val) === "string")
+			return localStorage[key] || def_val;
+
+		var value = def_val;
+		try{
+			value = JSON.parse(localStorage[key]);
+		}catch(e){}
+		return value;
+	},
+	set: function(key, val){		
+		localStorage[key] = typeof(val) === "string"? val: JSON.stringify(val);
+	},
+	push: function(key, new_val){
+		var old_val = this.get(key, []);
+		old_val.push(new_val);
+		this.set(key, old_val);
+	},
+	assign: function(key, val){
+		if(typeof(val) !== "object") throw new Error("Assign for Objects only!");
+		var old_val = this.get(key, {});
+		this.set(key, Object.assign(old_val, val));
+	}
+};
 
 document.addEventListener('DOMContentLoaded', restoreTabs);
