@@ -247,7 +247,7 @@ function restoreTabs() {
 		$("body").css("-webkit-user-select", "none");
 		window.getSelection().removeAllRanges();
 		resizer.onmousemove = (e)=>{
-			if (e.pageY < 250 || e.pageY > 580) return;
+			if (e.pageY < 250 || e.pageY > 570) return;
 			var new_len = (e.pageY - 50) ;
 			set_popup_heigth(new_len);
 			localStorage["popup_heigth"] = new_len;
@@ -265,6 +265,9 @@ function restoreTabs() {
 
 	$(".btn_added").on("click", btn_handler);
 	$("#btn12").on("click", call_btn);
+	$("#destination").on('keydown', function(e) {
+		if (e.which == 13) call_btn();
+	});
 
 	$("#create_phonebook_btn").on('click', create_phonebook_handler);
 
@@ -580,7 +583,7 @@ function call_btn(){
 		type : "CALL",
 		text : $("#destination")[0].value
 	};
-
+	$("#destination").val("");
 	chrome.runtime.sendMessage(message, ()=>{});
 }
 
@@ -653,9 +656,8 @@ function createLanguagesContextMenuItem(list){
 			type: 'radio',
 			radio: 'radio_lang',
 			value: list[i].shortName,
-			//icon: "images/" + list[i].shortName +"-flag.png",
-			icon: "edit",
-			selected: localStorage["lang"] == list[i].shortName,
+			//icon: "edit",
+			//selected: localStorage["lang"] == list[i].shortName,
 			events: {
 				click: (e)=>{ switch_lang_handler(e.currentTarget.value); }
 			}
@@ -675,8 +677,7 @@ function createDevicesContextMenuItem(){
 			type: 'radio',
 			radio: 'radio_dev',
 			value: devices[i].id,
-			//icon: "images/" + list[i].shortName +"-flag.png",
-			selected: localStorage["active_device"] == devices[i].id,
+			//selected: localStorage["active_device"] == devices[i].id,
 			events: {
 				click: (e)=>{ localStorage["active_device"] = e.currentTarget.value;}}
 		};
@@ -686,8 +687,7 @@ function createDevicesContextMenuItem(){
 		type: 'radio',
 		radio: 'radio_dev',
 		value: "any_phone",
-		//icon: "images/" + list[i].shortName +"-flag.png",
-		selected: (localStorage["active_device"] == "any_phone") || (localStorage["active_device"] == "") || !localStorage["active_device"],
+		//selected: (localStorage["active_device"] == "any_phone") || (localStorage["active_device"] == "") || !localStorage["active_device"],
 		events: {
 			click: (e)=>{ localStorage["active_device"] = e.currentTarget.value;}}
 	};
@@ -708,7 +708,9 @@ function drawContextMenu(items){
 					"outbound_notify": (localStorage.outboundCallNotificationsEnabled == "true"),
 					"radio_dev": (localStorage["active_device"] == "" || localStorage["active_device"] == "any_phone" || !localStorage["active_device"])?
 						"any_phone" : localStorage["active_device"],
-					"radio_lang": localStorage["lang"]
+					"radio_lang": localStorage["lang"],
+					"system_notify": localStorage.system_notification == "true",
+					"quickcall_notify": localStorage.onQuickCallNotifications == "true"
 				};
 				$.contextMenu.setInputValues(opt, data);
 			}
@@ -720,7 +722,7 @@ function createClickToDialContextMenuItem(){
 	var ctd_item = {
 		name: "Enable Click to Dial",
 		type: 'checkbox',
-                selected: localStorage["clicktodial"]=="true",
+                //selected: localStorage["clicktodial"]=="true",
 		events: { click: (e)=>{
 				localStorage["clicktodial"] = !(localStorage["clicktodial"] == "true"); }
 		}
@@ -735,7 +737,7 @@ function createOnCallBehaviorContextMenuItem(){
 	options.items["inbound_notify"] = {
 		name: "On inbound call notification",
 		type: 'checkbox',
-                selected: localStorage.inboundCallNotificationsEnabled=="true",
+                //selected: localStorage.inboundCallNotificationsEnabled=="true",
 		events: { click: (e)=>{
 			localStorage.inboundCallNotificationsEnabled = !(localStorage.inboundCallNotificationsEnabled == "true"); }
 			}
@@ -744,11 +746,29 @@ function createOnCallBehaviorContextMenuItem(){
 	options.items["outbound_notify"] = {
 		name: "On outbound call notification",
 		type: 'checkbox',
-                selected: localStorage.outboundCallNotificationsEnabled=="true",
+                //selected: localStorage.outboundCallNotificationsEnabled=="true",
 		events: { click: (e)=>{
 			localStorage.outboundCallNotificationsEnabled = !(localStorage.outboundCallNotificationsEnabled == "true"); }
 			}
 	};
+	options.items["system_notify"] = {
+		name: "System notification",
+		type: 'checkbox',
+                //selected: localStorage.system_notification === "true",
+		events: { click: (e)=>{
+			localStorage.system_notification = !(localStorage.system_notification == "true"); }
+			}
+	};
+	options.items["quickcall_notify"] = {
+		name: "QuickCall notification",
+		type: 'checkbox',
+                //selected: localStorage.system_notification === "true",
+		events: { click: (e)=>{
+			localStorage.onQuickCallNotifications = !(localStorage.onQuickCallNotifications == "true"); }
+			}
+	};
+
+	
 	options.items["sep2"] = "---------";
 	options.items["customize_profile_viewer"] = {
 		name: "Customize profile viewer",
@@ -757,7 +777,7 @@ function createOnCallBehaviorContextMenuItem(){
 			    "Поддерживаемые  параметры: \n";
 			var pkg_dump = storage.get("pkg_dump", {});
 			for(var name in pkg_dump){
-				message += "{{"+ name + "}}, ";
+				message +=  name + ", ";
 			}
 			if(message.length >= 2)
 				message = message.slice(0, -2);

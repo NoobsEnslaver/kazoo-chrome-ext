@@ -210,9 +210,20 @@ function updateDevices(){
 		}});
 };
 
+function reloadTabs(){
+	chrome.tabs.getAllInWindow((tabs)=>{
+		tabs.map((tab)=>{
+			if (!tab.url.startsWith("chrome:")) {
+				chrome.tabs.reload(tab.id);
+			}
+		});
+	});
+}
+
 function contentLoaded() {
 	prepareToStart();
 	updateLocalization();
+	reloadTabs();
 	if (!(localStorage["url"] && localStorage["username"] && localStorage["accname"] && localStorage["credentials"])){
 		chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
 		return;
@@ -361,37 +372,62 @@ function signToBlackholeEvents(){
 
 	function resender(EventJObj) {
 		console.log(EventJObj);
-		storage.assign("pkg_dump", flatten(EventJObj));
 		var devices = storage.get("devices", []).map((x)=>{return x.id;});
-		if (is_too_fast(EventJObj["Event-Name"] + "_" + EventJObj["Call-Direction"])) return;
-		if (EventJObj["Event-Name"] === "CHANNEL_CREATE" &&
-		    EventJObj["Custom-Channel-Vars"]["Account-ID"] === localStorage["account_id"] &&
-		    devices.findIndex((x)=>{ return x == EventJObj["Custom-Channel-Vars"]["Authorizing-ID"];}) >= 0) {
-			var is_outgoing = EventJObj["Call-Direction"] === "inbound";
+		if (is_too_fast(EventJObj["Event-Name"] + "_" + EventJObj["Call-Direction"]) ||
+		    !EventJObj["Custom-Channel-Vars"]["Account-ID"] === localStorage["account_id"] ||
+		    devices.findIndex((x)=>{ return x == EventJObj["Custom-Channel-Vars"]["Authorizing-ID"];}) < 0) return;
+		if (EventJObj["Event-Name"] === "CHANNEL_CREATE") {
+			storage.assign("pkg_dump", flatten(EventJObj));		// Dump blackhole package structure
+			var is_outgoing = // EventJObj["Caller-ID-Name"] === "Device QuickCall" ||
+				    EventJObj["Call-Direction"] === "inbound";
+			last_blackhole_pkg = EventJObj;
+
+			var number = is_outgoing? (EventJObj["Callee-ID-Number"] || EventJObj["To"].split('@')[0]):
+				    (EventJObj["Caller-ID-Number"] || EventJObj["Other-Leg-Caller-ID-Number"] || EventJObj["From"].split('@')[0] || "unknown");
+			var in_phone_book_name = storage.get("phone_book", []).find((x)=>{return (x.value.phone == number);});
+			var name = in_phone_book_name && in_phone_book_name.value && in_phone_book_name.value.name ? in_phone_book_name.value.name:
+				    is_outgoing? (EventJObj["Callee-ID-Name"] || EventJObj["To"].split('@')[0]):
+				    (EventJObj["Caller-ID-Name"] || EventJObj["Other-Leg-Caller-ID-Name"] || EventJObj["From"].split('@')[0] ||"unknown");
 			storage.push("history", {
-				number: is_outgoing? (EventJObj["Callee-ID-Number"] || EventJObj["To"].split('@')[0]):
-					(EventJObj["Caller-ID-Number"] || EventJObj["Other-Leg-Caller-ID-Number"] || EventJObj["From"].split('@')[0] || "unknown"),
+				number: number,
 				time: Date.now(),
 				type: is_outgoing?"outgoing":"received",
-				name: is_outgoing? (EventJObj["Callee-ID-Name"] || EventJObj["To"].split('@')[0]):	// TODO: Name from phonebook
-					(EventJObj["Caller-ID-Name"] || EventJObj["Other-Leg-Caller-ID-Name"] || EventJObj["From"].split('@')[0] ||"unknown")
+				name: name
 			});
+			if(is_outgoing && localStorage.outboundCallNotificationsEnabled !== "true") return;
+			if(!is_outgoing && localStorage.inboundCallNotificationsEnabled !== "true") return;
+			if(EventJObj["Caller-ID-Name"] === "Device QuickCall" && localStorage.onQuickCallNotifications !== "true") return;
+			
+			if(!is_outgoing && localStorage.system_notification === "true"){
+				chrome.notifications.create("Kazoo chrome extension push event", {
+					type: "basic",
+					iconUrl: "images/phone-push.png",
+					title: "Incoming Call",
+					//eventTime: 2000,
+					isClickable: true,
+					buttons: [{title:"OK"}, {title: "Cancel"}],
+					message: "User " + name + " ("+ number +")" + " calling",
+					contextMessage: "У попа была собака, он её любил, она съела кусок мяса - он её убил."
+				}, ()=>{});
+				chrome.notifications.onClicked.addListener((id)=>{
+					if(id !== "Kazoo chrome extension push event") return;
+					blackholeUserActionHandler("VIEW_PROFILE");
+				});
+				chrome.notifications.onButtonClicked.addListener((id, b_idx)=>{
+					if(id !== "Kazoo chrome extension push event") return;
+					if (b_idx === 0) {
+
+					}else{
+
+					}
+				});
+			}
 		}
-		
-		
-		if(EventJObj["Call-Direction"] === "outbound" && localStorage.outboundCallNotificationsEnabled !== "true") return;
-		if(EventJObj["Call-Direction"] === "inbound" && localStorage.inboundCallNotificationsEnabled !== "true") return;
-		if(EventJObj["Event-Name"] === "CHANNEL_CREATE") last_blackhole_pkg[EventJObj["Call-Direction"]] = EventJObj;
 
+		if (EventJObj["Event-Name"] === "CHANNEL_DESTROY")
+			chrome.notifications.clear("Kazoo chrome extension push event");
+		
 		if (!is_too_fast("send_" + EventJObj["Event-Name"])){
-
-			var notify = chrome.notifications.create("Push Call", {		// TODO: Disabling option
-				type: "basic",						// TODO: On click behavior
-				iconUrl: "images/hold.png",
-				title: "Incoming Call",
-				message: "User x calling"
-			}, ()=>{});
-
 			chrome.tabs.query({active: true}, function(tabs) {
 				chrome.tabs.sendMessage(tabs[0].id, {
 					sender: "KAZOO",
@@ -404,7 +440,7 @@ function signToBlackholeEvents(){
 
 	SOCKET.on('CHANNEL_CREATE', resender);
 	SOCKET.on('CHANNEL_ANSWER', resender);
-    SOCKET.on('CHANNEL_DESTROY', resender);
+	SOCKET.on('CHANNEL_DESTROY', resender);
 }
 
 var storage = {
@@ -508,7 +544,7 @@ function blackholeUserActionHandler(action){
 		break;
 
 	case "VIEW_PROFILE":
-		var newURL = substitute(localStorage["custom_profile_page"], flatten(last_blackhole_pkg["inbound"])); // FIXME
+		var newURL = substitute(localStorage["custom_profile_page"], flatten(last_blackhole_pkg));
 		chrome.tabs.create({ url: newURL });
 		break;
 
@@ -530,24 +566,28 @@ chrome.extension.onMessage.addListener(onMessage);
 document.addEventListener('DOMContentLoaded', ()=>{contentLoaded();});
 chrome.contextMenus.create({
 	onclick: (a,b)=>{
-		var text = a.selectionText;
-		var international = "(([+]?)([0-9][0-9]?)((\\.|-| )([0-9]{1,3}))((\\.|-| )([0-9]{1,4})){2,4})";
-		var us = "((([2-9][0-8][0-9])|([\(][2-9][0-8][0-9][\)]))(\\.|-| )?([2-9][0-9]{2})(\\.|-| )?([0-9]{4}))";
-		var re = new RegExp();
-		re.compile("(" + us + "|" + international + ")");
+		if(a.mediaType == "image"){
+			
+		}else{
+			var text = a.selectionText;
+			var international = "(([+]?)([0-9][0-9]?)((\\.|-| )([0-9]{1,3}))((\\.|-| )([0-9]{1,4})){2,4})";
+			var us = "((([2-9][0-8][0-9])|([\(][2-9][0-8][0-9][\)]))(\\.|-| )?([2-9][0-9]{2})(\\.|-| )?([0-9]{4}))";
+			var re = new RegExp();
+			re.compile("(" + us + "|" + international + ")");
 
-		var localization = storage.get("localization", {});
-		var phone = text.match(re);
-		if (phone) {
-			var name = prompt(localization.get_owner_name.message + " " +phone[0], localization.anonymous.message);
-			if (name) {
-				phoneBookAddEntry(name, phone[0]);
+			var localization = storage.get("localization", {});
+			var phone = text.match(re);
+			if (phone) {
+				var name = prompt(localization.get_owner_name.message + " " +phone[0], localization.anonymous.message);
+				if (name) {
+					phoneBookAddEntry(name, phone[0]);
+				}
+			} else {
+				alert(localization.cant_parse_number.message + " :(");
 			}
-		} else {
-			alert(localization.cant_parse_number.message + " :(");
-		}
+		}		
 	},
 	id: "add_phone",
 	title:"Add to phonebook",
-	contexts: ["selection"]
+	contexts: ["selection", "image"]
 });
