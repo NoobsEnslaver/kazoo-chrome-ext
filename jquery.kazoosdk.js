@@ -325,10 +325,12 @@
 			'updatePresence': { verb: 'POST', url: 'accounts/{account_id}/users/{userId}/presence' }
 		},
 		voicemail: {
-			'get': { verb: 'GET', url: 'accounts/{account_id}/vmboxes/{voicemailId}' },
+			'get': { verb: 'GET', url: 'accounts/{account_id}/vmboxes/{voicemailId}/messages' },
 			'create': { verb: 'PUT', url: 'accounts/{account_id}/vmboxes' },
 			'update': { verb: 'POST', url: 'accounts/{account_id}/vmboxes/{voicemailId}' },
-			'delete': { verb: 'DELETE', url: 'accounts/{account_id}/vmboxes/{voicemailId}' },
+			'delete_box': { verb: 'DELETE', url: 'accounts/{account_id}/vmboxes/{voicemailId}' },
+			'purge_box':  { verb: 'DELETE', url: 'accounts/{account_id}/vmboxes/{voicemailId}/messages' },
+			'delete': { verb: 'DELETE', url: 'accounts/{account_id}/vmboxes/{voicemailId}/messages/{msg_id}' },
 			'list': { verb: 'GET', url: 'accounts/{account_id}/vmboxes' }
 		},
 		webhooks: {

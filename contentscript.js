@@ -127,11 +127,13 @@ $("body").append($("<div>", {class: "call"}).load(chrome.extension.getURL("injec
 chrome.runtime.onMessage.addListener((message, sender, callback)=>{
 	if (message.sender === "KAZOO" &&
 	    message.type === "event") {
-		console.log(sumCall);
 		switch (message.data["Event-Name"]) {
 		case "CHANNEL_CREATE":
 			if (sumCall == 0) {
-				sumCall++;
+				sumCall++;				
+				$(".callup__number")[0].text = message.data.number;
+				$(".callup__name")[0].innerText = (message.data.in_phone_book_name? (message.data.in_phone_book_name + "(" + message.data.name + ")") : message.data.name);
+				
 				$(".call").filter(function() {return $(this).css("display") == "none";}).toggle(400, function() {
 					$(".callup").css("animation", "blink infinite 1.2s linear");
 					$(".call__audio")[0].play();

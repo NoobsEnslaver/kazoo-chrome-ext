@@ -174,24 +174,8 @@ function restoreOptions() {
 	var error = localStorage["errorMessage"];
 	$("#password").val("");
 	if (localStorage["errorMessage"] != undefined && localStorage["errorMessage"] != ""){
-		//chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
-		// $("#url").val(localStorage["url"]);
-		// $("#username").val(localStorage["username"]);
-		// $("#accname").val(localStorage["accname"]);
 		localStorage["connectionStatus"] = "signedOut";
 	} else {
-		// var url = localStorage["url"];
-		// var username = localStorage["username"];
-		// var accname = localStorage["accname"];
-		// if (url) {
-		// 	$("#url").val(url);
-		// }
-		// if (username) {
-		// 	$("#username").val(username);
-		// }
-		// if (accname){
-		// 	$("#accname").val(accname);
-		// }
 		try {
 			if (localStorage["connectionStatus"] == "signedIn") {
 				//chrome.browserAction.setIcon({path: "images/logo_online_128x128.png"});

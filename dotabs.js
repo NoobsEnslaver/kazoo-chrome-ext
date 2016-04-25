@@ -235,6 +235,7 @@ function restoreTabs() {
 		$("#tabs").tabs("option", "active", 4);
 		break;
 	default:
+		$("#tabs").tabs("option", "active", 1);
 		$("#tabs").tabs("option", "active", 0);
 		$('#destination').focus();
 		break;
@@ -298,12 +299,11 @@ function restoreTabs() {
 
 function showVMMessages(e){
 	var vmbox_id = e.currentTarget.id;
-	var media_list = storage.get("vm_media", []);
+	var media_list = storage.get("vm_media", {});
 	
 	$("#msgtable").empty();
-	if (media_list[vmbox_id] &&
-	    media_list[vmbox_id].messages &&
-	    media_list[vmbox_id].messages.length == 0) {
+	if(!media_list[vmbox_id]) return;
+	if (media_list[vmbox_id].length == 0) {
 		var p1, img, h2;
 
 		p1= document.createElement("p");
@@ -318,30 +318,31 @@ function showVMMessages(e){
 		$("#msgtable").append(p1);
 		$("#msgtable").append(img);
 	} else {
-		for ( var i = 0; i < media_list[vmbox_id].messages.length; i++) {
-			var new_info_row = create_info_media_row(media_list[vmbox_id].messages[i].from,
-								 media_list[vmbox_id].messages[i].caller_id_number,
-								 media_list[vmbox_id].messages[i].caller_id_name,
+		for ( var i = 0; i < media_list[vmbox_id].length; i++) {
+			var new_info_row = create_info_media_row(media_list[vmbox_id][i].from,
+								 media_list[vmbox_id][i].caller_id_number,
+								 media_list[vmbox_id][i].caller_id_name,
 								 vmbox_id,
-								 media_list[vmbox_id].messages[i].media_id );
-			var new_player_row = create_play_media_row(vmbox_id, media_list[vmbox_id].messages[i].media_id);
+								 media_list[vmbox_id][i].media_id );
+			var new_player_row = create_play_media_row(vmbox_id, media_list[vmbox_id][i].media_id);
 
 			$(new_info_row).append(new_player_row);
 			$("#msgtable").append(new_info_row);
 		}
 	}
+	$("#msgtable").off("click", ".mes__row");
 	$("#msgtable").on("click", ".mes__row", function() {
 		audio = $(this).find("audio");
 		$(audio)[0].pause();
 		$(audio)[0].currentTime = 0;
 		$(audio).closest(".mes__audio").toggle(300);
 	});
-	$("#msgtable").append("<div class='back'>Back</div>");
-	$(".back").one("click", function() {
-		$("#msgtable").off("click", ".mes__row");
-		$("#tabs").tabs("option", "active", 1);
-		$("#tabs").tabs("option", "active", 0);
-	});
+	// $("#msgtable").append("<div class='back'>Back</div>");
+	// $(".back").one("click", function() {
+	// 	$("#msgtable").off("click", ".mes__row");
+	// 	$("#tabs").tabs("option", "active", 1);
+	// 	$("#tabs").tabs("option", "active", 0);
+	// });
 }
 
 function create_play_media_row(vmbox_id, media_id){
@@ -436,6 +437,19 @@ function create_info_media_row(from, number, name, box_id, media_id){
 
 	$(p1).text(from).attr("title", from);
 	$(img).attr("src", "images/remove.png");
+	$(img).on("click", (e)=>{
+		if (confirm("Delete voicemail from " + name + "?")) {
+			chrome.runtime.sendMessage({
+				type: "VOICE_MAIL_DELETE_ENTRY",
+				data: {media_id: media_id,
+				       vmbox_id: box_id}
+			});
+			var old_state = storage.get("vm_media", {});
+			old_state[box_id] = old_state[box_id].filter((x)=>{ return x.media_id != media_id;});			
+			storage.set("vm_media", old_state);
+			e.currentTarget.parentNode.parentNode.remove();			
+		}
+	});
 	$(col1).text(number).attr("title", number);
 	$(col1).append(p1);
 	$(col2).text(name).attr("title", name);
@@ -500,10 +514,12 @@ function create_default_pb_row(name, phone, id, index){
 	img.src = "images/remove.png";
 	img.id = id;
 	img.onclick = (e)=>{
-		$("#"+ e.currentTarget.id)[0].parentNode.parentNode.remove();
-		chrome.runtime.sendMessage({
-			type : "PHONE_BOOK_REMOVE_ENTRY",
-			entry_id: e.currentTarget.id }, ()=>{});
+		if (confirm("Do you want to delete '" + $("#"+ e.currentTarget.id)[0].parentNode.parentNode.childNodes[0].childNodes[0].innerText + "' ?")) {
+			e.currentTarget.parentNode.parentNode.remove();
+			chrome.runtime.sendMessage({
+				type : "PHONE_BOOK_REMOVE_ENTRY",
+				entry_id: e.currentTarget.id }, ()=>{});	
+		}
 	};
 	col1.appendChild(p1);
 	col2.appendChild(p2);
@@ -545,7 +561,7 @@ function updateDNDButtonImage(){
 
 function dnd_btn_handler(){
 	$("#dndbutton")[0].src = "images/logo_wait_128x128.gif";
-	chrome.runtime.sendMessage({type : "SWITCH_DND"}, updateDNDButtonImage);
+	chrome.runtime.sendMessage({type : "SWITCH_DND"}, ()=>{});
 }
 
 function localize(){
@@ -634,7 +650,18 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 			break;
 
 		default:
-			showMessage(a.data.statusText + " (" + a.data.status  + ")");
+			//showMessage(a.data.statusText + " (" + a.data.status  + ")");
+			console.log(a);
+			break;
+		}
+	} else if (a.type == "action") {
+		switch(a.data.action){
+		case "update_DND_icon":
+			updateDNDButtonImage();
+			break;
+
+		default:
+			//showMessage("Unknown action " + a.data.action);
 			console.log(a);
 			break;
 		}
@@ -735,7 +762,7 @@ function createOnCallBehaviorContextMenuItem(){
 	var options = {name: "On call behavior", items: {}};
 
 	options.items["inbound_notify"] = {
-		name: "On inbound call notification",
+		name: "Notify on inbound calls",
 		type: 'checkbox',
                 //selected: localStorage.inboundCallNotificationsEnabled=="true",
 		events: { click: (e)=>{
@@ -744,7 +771,7 @@ function createOnCallBehaviorContextMenuItem(){
 	};
 
 	options.items["outbound_notify"] = {
-		name: "On outbound call notification",
+		name: "Notify on outbound calls",
 		type: 'checkbox',
                 //selected: localStorage.outboundCallNotificationsEnabled=="true",
 		events: { click: (e)=>{
@@ -752,7 +779,7 @@ function createOnCallBehaviorContextMenuItem(){
 			}
 	};
 	options.items["system_notify"] = {
-		name: "System notification",
+		name: "Use system notification",
 		type: 'checkbox',
                 //selected: localStorage.system_notification === "true",
 		events: { click: (e)=>{
@@ -760,7 +787,7 @@ function createOnCallBehaviorContextMenuItem(){
 			}
 	};
 	options.items["quickcall_notify"] = {
-		name: "QuickCall notification",
+		name: "Notify on dialers call",
 		type: 'checkbox',
                 //selected: localStorage.system_notification === "true",
 		events: { click: (e)=>{
@@ -774,10 +801,34 @@ function createOnCallBehaviorContextMenuItem(){
 		name: "Customize profile viewer",
 		callback: (e)=>{
 			var message = "Введите адрес вашего сайта, которому будут переданы все необходимые параметры звонка. \n" +
-			    "Поддерживаемые  параметры: \n";
-			var pkg_dump = storage.get("pkg_dump", {});
+				    "Поддерживаемые  параметры: \n";
+			var pkg_dump = {
+				"Call-Direction":0,
+				"Call-ID":0,
+				"Callee-ID-Name":0,
+				"Callee-ID-Number":0,
+				"Caller-ID-Name":0,
+				"Caller-ID-Number":0,
+				"Custom-Channel-Vars.Account-ID":0,
+				"Custom-Channel-Vars.Account-Name":0,
+				"Custom-Channel-Vars.Bridge-ID":0,
+				"Custom-Channel-Vars.Username":0,
+				"Disposition":0,
+				"Event-Name":0,
+				"From":0,
+				"Msg-ID":0,
+				"Other-Leg-Call-ID":0,
+				"Other-Leg-Caller-ID-Name":0,
+				"Other-Leg-Caller-ID-Number":0,
+				"Other-Leg-Destination-Number":0,
+				"Other-Leg-Direction":0,
+				"Presence-ID":0,
+				"Timestamp":0,
+				"To":0
+			};
+			//var pkg_dump = storage.get("pkg_dump", {});
 			for(var name in pkg_dump){
-				message +=  name + ", ";
+				message +=  name + "\n ";
 			}
 			if(message.length >= 2)
 				message = message.slice(0, -2);
