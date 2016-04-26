@@ -6,10 +6,10 @@
   "description" : "__MSG_appDesc__",
   "manifest_version": 2,
   "omnibox": { "keyword" : "-call" },
-  "options_page": "options.html",
+  "options_page": "tabs.html",
   "browser_action": {
     "default_icon": "images/logo_offline_128x128.png",
-    "default_popup": "options.html"
+    "default_popup": "tabs.html"
   },
   "web_accessible_resources": [ "images/click2dial.png", "injected.html", "audio1.mp3" ],
   "background" : {
@@ -32,7 +32,7 @@
       "css" : [ "injected.css", "jquery-ui.css" ]
     }
   ],
-  "permissions": [ "notifications", "tabs", "http://*/*", "https://*/*", "tts" ,"identity", "contextMenus"],
+  "permissions": [ "notifications", "tabs", "http://*/*", "https://*/*", "tts" ,"identity", "contextMenus", "activeTab" ],
   "oauth2": {
 	"client_id": "anonymous",
     "scopes": [

@@ -354,7 +354,7 @@ function authorize(){
 					localStorage["name"] = b_data.data[0].first_name + " " + b_data.data[0].last_name;
 					localStorage["email"] = b_data.data[0].email;
 					LOGGER.API.log(MODULE,"Auth completed, welcome " + localStorage["name"]);
-					chrome.browserAction.setIcon({path: "images/logo_online_128x128.png"});					
+					chrome.browserAction.setIcon({path: "images/logo_online_128x128.png"});
 					localStorage["connectionStatus"] = "signedIn";
 					localStorage["errorMessage"]="";
 					localStorage["authTokens"] = KAZOO.authTokens[Object.keys(KAZOO.authTokens)[0]];
@@ -400,7 +400,7 @@ function signToBlackholeEvents(){
 		binding: 'call.*.*'
         });
 
-	function call_event_handler(EventJObj) {		
+	function call_event_handler(EventJObj) {
 		var devices = storage.get("devices", []).map((x)=>{return x.id;});
 		if (is_too_fast(EventJObj["Event-Name"] + "_" + EventJObj["Call-Direction"]) ||
 		    !EventJObj["Custom-Channel-Vars"]["Account-ID"] === localStorage["account_id"] ||	//FIXME(?)
@@ -427,7 +427,7 @@ function signToBlackholeEvents(){
 			if(is_outgoing && localStorage.outboundCallNotificationsEnabled !== "true") return;
 			if(!is_outgoing && localStorage.inboundCallNotificationsEnabled !== "true") return;
 			if(EventJObj["Caller-ID-Name"] === "Device QuickCall" && localStorage.onQuickCallNotifications !== "true") return;
-			
+
 			if(!is_outgoing && localStorage.system_notification === "true"){
 				chrome.notifications.create("Kazoo chrome extension push event", {
 					type: "basic",
@@ -456,7 +456,7 @@ function signToBlackholeEvents(){
 
 		if (EventJObj["Event-Name"] === "CHANNEL_DESTROY")
 			chrome.notifications.clear("Kazoo chrome extension push event");
-		
+
 		if (!is_too_fast("send_" + EventJObj["Event-Name"])){
 			chrome.tabs.query({active: true}, function(tabs) {
 				chrome.tabs.sendMessage(tabs[0].id, {
@@ -468,7 +468,7 @@ function signToBlackholeEvents(){
 						name: name,
 						"Event-Name": EventJObj["Event-Name"],
 						"Call-Direction": EventJObj["Call-Direction"]
-						
+
 					}
 				}, ()=>{});
 			});
@@ -491,7 +491,7 @@ var storage = {
 		}catch(e){}
 		return value;
 	},
-	set: function(key, val){		
+	set: function(key, val){
 		localStorage[key] = typeof(val) === "string"? val: JSON.stringify(val);
 	},
 	push: function(key, new_val){
@@ -604,7 +604,7 @@ document.addEventListener('DOMContentLoaded', ()=>{contentLoaded();});
 chrome.contextMenus.create({
 	onclick: (a,b)=>{
 		if(a.mediaType == "image"){
-			
+
 		}else{
 			var text = a.selectionText;
 			var international = "(([+]?)([0-9][0-9]?)((\\.|-| )([0-9]{1,3}))((\\.|-| )([0-9]{1,4})){2,4})";
@@ -622,7 +622,7 @@ chrome.contextMenus.create({
 			} else {
 				alert(localization.cant_parse_number.message + " :(");
 			}
-		}		
+		}
 	},
 	id: "add_phone",
 	title:"Add to phonebook",
