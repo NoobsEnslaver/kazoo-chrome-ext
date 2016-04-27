@@ -75,19 +75,24 @@ function signin() {
 	localStorage["connectionStatus"] = "";
 
 	chrome.runtime.sendMessage({type : "BG_RESTART"});
+	//Start animation
 
 	wait(()=>{
 		if (localStorage["connectionStatus"] == "signedIn"){
-			chrome.browserAction.setPopup({popup: "tabs.html"});
 			addConnection(connection);
-			done();
+			//Stop animation + delay before close
+			chrome.tabs.getCurrent(function(tab) {
+				chrome.tabs.remove(tab.id, function() { });
+			});
 		}
 
 		return (localStorage["connectionStatus"] == "signedIn") || (localStorage["connectionStatus"] == "authFailed");
-
-	}, { timeout_callback: ()=>{
-		showMessage("Connection timeout");
-	}});
+	}, {
+		timeout_callback: ()=>{
+			LOGGER.API.log(MODULE, "Connection timeout");
+			showMessage("Connection timeout");},
+		timeout: 6000
+	});
 }
 
 function wait(predicate, options){
@@ -194,10 +199,6 @@ function flag_click_handler(e){
 	var message = { type : "UPDATE_LOCALIZATION"};
 	chrome.runtime.sendMessage(message, ()=>{});
 	window.setTimeout(localize, 500);
-}
-
-function done() {
-	window.close();
 }
 
 function showAboutBox() {

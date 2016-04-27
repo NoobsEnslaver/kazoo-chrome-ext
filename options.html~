@@ -24,26 +24,26 @@ limitations under the License.
 	<body>
 		<form name="Options">
 			<fieldset>
-				<legend> Language </legend>
+				<legend id="lang_text"> Language </legend>
 				<p><input type="radio" name="lang" value="en">English</p>
 				<p><input type="radio" name="lang" value="ru">Russian</p>
 			</fieldset>
 
 			<BR />			
 			<fieldset id="devices_list">
-				<legend> Active device </legend>
+				<legend id="device_text"> Active device </legend>
 				<p><input type="radio" name="active_device" value="auto">Auto</p>
 			</fieldset>
 
 			<BR />
 			<fieldset>
-				<legend> On call behavior </legend>
+				<legend id="behavior_text"> On call behavior </legend>
 				<p><input type="checkbox" name="inboundCallNotificationsEnabled">Notify on inbound calls</p>
 				<p><input type="checkbox" name="outboundCallNotificationsEnabled">Notify on outbound calls</p>
 				<p><input type="checkbox" name="system_notification">Use system notification</p>
 				<p><input type="checkbox" name="onQuickCallNotifications">Notify on dialers call</p>
 				<fieldset>
-					<legend> Customize profile viewer </legend>
+					<legend id="customize_viewer_text"> Customize profile viewer </legend>
 					<p>Введите адрес вашего сайта, которому будут переданы все необходимые параметры звонка.</p>
 					<p>
 						<details>

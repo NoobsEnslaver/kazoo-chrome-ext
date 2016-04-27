@@ -29,7 +29,7 @@ function onMessage(request, sender, sendResponse) {
 		var destination = request.text.replace(/[- \(\)\.]/g, "");
 		var status = "ok";
 		LOGGER.API.log(MODULE, "calling: " + destination);
-		if (localStorage["active_device"] && localStorage["active_device"] != "" && localStorage["active_device"] != "any_phone") {
+		if (localStorage["active_device"] && localStorage["active_device"] != "" && localStorage["active_device"] != "auto") {
 			KAZOO.device.quickcall({
 				number: destination,
 				account_id: localStorage["account_id"],
@@ -55,15 +55,12 @@ function onMessage(request, sender, sendResponse) {
 		break;
 
 	case "BG_RESTART":
-		KAZOO = {};
-		SOCKET = {};
-		clearInterval(AUTH_DAEMON_ID);
-		clearInterval(VM_DAEMON_ID);
-		contentLoaded();
+		bg_restart();
 		break;
 
 	case "UPDATE_LOCALIZATION":
 		updateLocalization();
+		sendResponse();
 		break;
 
 	case "UPDATE_PHONE_BOOK":
@@ -96,6 +93,10 @@ function onMessage(request, sender, sendResponse) {
 	case "VOICE_MAIL_DELETE_ENTRY":
 		voiceMailDeleteEntryHandler(request.data);
 		break;
+
+	case "GENTLY_OPEN_PAGE":
+		gentlyOpenPage(request.url);
+		break;
 	}
 }
 
@@ -126,7 +127,7 @@ function updateLocalization(){
 		chrome.i18n.getUILanguage().substring(0, 2);
 	var lang = localStorage["lang"];
 
-	var a = $.getJSON("_locales/" + lang + "/messages.json").	//have problem with messaging with callbacks.
+	var a = $.getJSON("_locales/" + lang + "/messages.json").
 		    done( (x)=> { localStorage["localization"] = JSON.stringify(x); }).
 		    fail( ( )=> { localStorage["localization"] = JSON.stringify({ "appName":{message: chrome.i18n.getMessage("appName")},
 										  "appDesc":{message: chrome.i18n.getMessage("appDesc")},
@@ -233,14 +234,14 @@ function updateDevices(){
 			};
 			localStorage["devices"] = JSON.stringify(new_devices);
 
-			localStorage["active_device"] = (localStorage["active_device"] && devices[localStorage["active_device"]])? localStorage["active_device"]: "";
+			localStorage["active_device"] = (localStorage["active_device"] && devices[localStorage["active_device"]])? localStorage["active_device"]: "auto";
 		}});
 };
 
 function reloadTabs(){
 	chrome.tabs.getAllInWindow((tabs)=>{
 		tabs.map((tab)=>{
-			if (!tab.url.startsWith("chrome:")) {
+			if (!tab.url.startsWith("chrome")) {
 				chrome.tabs.reload(tab.id);
 			}
 		});
@@ -305,12 +306,15 @@ function prepareToStart(){
 		localStorage["pkg_dump"] = JSON.stringify(preset);
 	}
 	if (!localStorage["custom_profile_page"]) {
-		localStorage["custom_profile_page"] = "https://google.com/search?q={{user_id}}%20{{account_id}}";
+		localStorage["custom_profile_page"] = "https://google.com/search?q={{Caller-ID-Name}}%20{{Caller-ID-Number}}";
 	}
-
+	if(!localStorage["active_device"] || localStorage["active_device"] == ""){
+		localStorage["active_device"] = "auto";
+	}
 }
 
 function incrementErrorCount(error_code){
+	LOGGER.API.log(MODULE, "Error " + error_code + " count increased");
 	var errors = storage.get("errors", {});
 	errors[error_code] = errors[error_code] || 0;
 	errors[error_code] += 1;
@@ -336,6 +340,7 @@ function showError(data){
 
 function authorize(){
 	if(is_too_fast()) return;
+	LOGGER.API.log(MODULE,"Start authorizing routines...");
 	localStorage["connectionStatus"] = "inProgress";
 	chrome.browserAction.setIcon({path: "images/logo_wait_128x128.gif"});
 	KAZOO.auth.userAuth({
@@ -345,6 +350,7 @@ function authorize(){
 			credentials: localStorage["credentials"]
 		},
 		success: function(data, status) {
+			LOGGER.API.log(MODULE, "Require user data...");
 			localStorage["account_id"] = data.data.account_id;
 			//localStorage["user_id"] = data.data.owner_id;
 			KAZOO.user.list({
@@ -527,7 +533,7 @@ function error_handler(data, status){
 	localStorage.removeItem('credentials');
 	localStorage["errorMessage"] = status.responseText;
 
-	contentLoaded();
+	bg_restart();
 }
 
 function updateVoiceMails(){
@@ -597,6 +603,27 @@ function substitute(str, data){
 	}
 
 	return str;
+}
+
+function gentlyOpenPage(url){
+	var local_url = chrome.extension.getURL(url);
+	chrome.tabs.query({url: local_url}, (x)=>{
+		var activate_tab = x.pop();
+		if (activate_tab) {
+			chrome.tabs.highlight({tabs: activate_tab.index});
+			chrome.tabs.remove(x.map((t)=>{ return t.id;}), ()=>{});
+		}else{
+			chrome.tabs.create({url: local_url});
+		}
+	});
+}
+
+function bg_restart(){
+	KAZOO = {};
+	SOCKET = {};
+	clearInterval(AUTH_DAEMON_ID);
+	clearInterval(VM_DAEMON_ID);
+	contentLoaded();
 }
 
 chrome.extension.onMessage.addListener(onMessage);

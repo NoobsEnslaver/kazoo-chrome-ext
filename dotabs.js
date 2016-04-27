@@ -16,9 +16,11 @@ limitations under the License.
  */
 
 var MODULE = "dotabs.js";
-
-// retrieve stored name
-$("#name").text(localStorage["name"]);
+if(localStorage["connectionStatus"] != "signedIn") signout(false);
+// {
+// 	chrome.tabs.create({url: chrome.extension.getURL("sign.html")});
+// 	window.close();
+// }
 
 function formatTimestamp(timestamp) {
 	var today = new Date();
@@ -35,16 +37,6 @@ function formatTimestamp(timestamp) {
 	}
 	return dt.getMonth() + "/" + dt.getDay() + "/" + dt.getFullYear();
 }
-
-// signout
-document.querySelector('#signout').addEventListener('click', function() {
-	signout(true);
-});
-
-// about
-document.querySelector('#about').addEventListener('click',
-		showAboutBox);
-
 
 // Signout. A manual signout means the user signed out themselves. In this case,
 // clear out all info. If a force logout
@@ -74,22 +66,10 @@ function signout(manual) {
 		localStorage.removeItem('vm_boxes');
 		localStorage.removeItem("vm_media");
 	}
-	top.location.assign("options.html");
+	chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "sign.html"}, ()=>{});
 	chrome.runtime.sendMessage({type : "BG_RESTART"}, ()=>{});
+	window.close();
 }
-
-function announceServiceState(service, value) {
-	if (textToSpeechEnabled() == "true") {
-		if (value == "true") {
-			chrome.tts.speak(services[service].textToSpeech + "on");
-		} else if (value == "false") {
-			chrome.tts.speak(services[service].textToSpeech + "off");
-		} else {
-			chrome.tts.speak(services[service].textToSpeech + "unknown");
-		}
-	}
-}
-
 
 function history_handler(e){
 	var tel = $(this).find("td:first-child() span").text();
@@ -272,26 +252,14 @@ function restoreTabs() {
 
 	$("#create_phonebook_btn").on('click', create_phonebook_handler);
 
-	$("#language").val(localStorage.lang);
-	$("#language").on("change", switch_lang_handler);
-
 	$("#dndbutton").on("click", dnd_btn_handler);
 	updateDNDButtonImage();
 
-	var contextMenu = {};
-	contextMenu["Language"] = createLanguagesContextMenuItem([{shortName: "ru", fullName:"Russian"}, {shortName: "en", fullName:"English"}]);
-	contextMenu["Active device"] = createDevicesContextMenuItem();
-	contextMenu["Click to dial"] = createClickToDialContextMenuItem();
-	contextMenu["On call behavior"] = createOnCallBehaviorContextMenuItem();
-	contextMenu["sep1"] = "---------";
-	contextMenu["Clear history"] = {
-		name: "Clear history",
-		callback: (x)=>{
-			localStorage.history = JSON.stringify([]);
-			$("#calllogentries").empty();
-		}
-	};
-	drawContextMenu(contextMenu);
+	$("#options").on("click", ()=>{
+		chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "options.html"}, ()=>{});
+		window.close();
+	});
+	
 	updatePhoneBook();
 	localize();
 }
@@ -583,12 +551,6 @@ function localize(){
 	};
 }
 
-function switch_lang_handler(lang){ // FIXME
-	localStorage.lang = lang;
-	var message = { type : "UPDATE_LOCALIZATION"};
-	chrome.runtime.sendMessage(message, ()=>{});
-	window.setTimeout(localize, 500);
-}
 
 function btn_handler(e){
 	$("#destination")[0].value += e.currentTarget.textContent;
@@ -601,28 +563,6 @@ function call_btn(){
 	};
 	$("#destination").val("");
 	chrome.runtime.sendMessage(message, ()=>{});
-}
-
-
-function hhmmssToString(hh, mm, ss) {
-	var ret = ss;
-	if (ss < 10) {
-		ret = "0" + ss;
-	}
-	if (mm < 10) {
-		ret = "0" + mm + ":" + ret;
-	} else {
-		ret = mm + ":" + ret;
-	}
-	if (hh > 0) {
-		ret = hh + ":" + ret;
-	}
-	return ret;
-}
-
-function textToSpeechEnabled() {
-	var texttospeech = localStorage["texttospeech"];
-	return texttospeech;
 }
 
 function showAboutBox() {
@@ -668,177 +608,6 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 	}
 });
 
-function showMessage(message){
-	$("#error_msg").text(message).attr("title", message);
-	$("#error_msg").fadeIn();
-	$("#error_msg").fadeOut(5000);
-}
-
-/*Example input: [{shortName: "ru", fullName:"Russian"}, {shortName: "en", fullName:"English"}]*/
-function createLanguagesContextMenuItem(list){
-	var langs = {name: "Language", items: {}};
-	for(var i = 0; i < list.length; i++) {
-		langs.items[list[i].shortName] = {
-			name: list[i].fullName,
-			type: 'radio',
-			radio: 'radio_lang',
-			value: list[i].shortName,
-			//icon: "edit",
-			//selected: localStorage["lang"] == list[i].shortName,
-			events: {
-				click: (e)=>{ switch_lang_handler(e.currentTarget.value); }
-			}
-		};
-	}
-
-	return langs;
-}
-
-
-function createDevicesContextMenuItem(){	
-	var devices = storage.get("devices", {});
-	var device_items = {name: "Active device", items: {}};	
-	for(var i in devices) {
-		device_items.items[devices[i].num] = {
-			name: devices[i].name,
-			type: 'radio',
-			radio: 'radio_dev',
-			value: devices[i].id,
-			//selected: localStorage["active_device"] == devices[i].id,
-			events: {
-				click: (e)=>{ localStorage["active_device"] = e.currentTarget.value;}}
-		};
-	}
-	device_items.items["any_phone"] = {
-		name: "Auto",
-		type: 'radio',
-		radio: 'radio_dev',
-		value: "any_phone",
-		//selected: (localStorage["active_device"] == "any_phone") || (localStorage["active_device"] == "") || !localStorage["active_device"],
-		events: {
-			click: (e)=>{ localStorage["active_device"] = e.currentTarget.value;}}
-	};
-
-	return device_items;
-};
-
-function drawContextMenu(items){
-	$.contextMenu({
-		selector: '#options',
-		trigger: 'left',
-		items: items,
-		events: {
-			show: function(opt) {
-				var data = {
-					"Click to dial": (localStorage["clicktodial"] == "true"),
-					"inbound_notify": (localStorage.inboundCallNotificationsEnabled == "true"),
-					"outbound_notify": (localStorage.outboundCallNotificationsEnabled == "true"),
-					"radio_dev": (localStorage["active_device"] == "" || localStorage["active_device"] == "any_phone" || !localStorage["active_device"])?
-						"any_phone" : localStorage["active_device"],
-					"radio_lang": localStorage["lang"],
-					"system_notify": localStorage.system_notification == "true",
-					"quickcall_notify": localStorage.onQuickCallNotifications == "true"
-				};
-				$.contextMenu.setInputValues(opt, data);
-			}
-		}
-	});
-}
-
-function createClickToDialContextMenuItem(){
-	var ctd_item = {
-		name: "Enable Click to Dial",
-		type: 'checkbox',
-                //selected: localStorage["clicktodial"]=="true",
-		events: { click: (e)=>{
-				localStorage["clicktodial"] = !(localStorage["clicktodial"] == "true"); }
-		}
-	};
-
-	return ctd_item;
-}
-
-function createOnCallBehaviorContextMenuItem(){
-	var options = {name: "On call behavior", items: {}};
-
-	options.items["inbound_notify"] = {
-		name: "Notify on inbound calls",
-		type: 'checkbox',
-                //selected: localStorage.inboundCallNotificationsEnabled=="true",
-		events: { click: (e)=>{
-			localStorage.inboundCallNotificationsEnabled = !(localStorage.inboundCallNotificationsEnabled == "true"); }
-			}
-	};
-
-	options.items["outbound_notify"] = {
-		name: "Notify on outbound calls",
-		type: 'checkbox',
-                //selected: localStorage.outboundCallNotificationsEnabled=="true",
-		events: { click: (e)=>{
-			localStorage.outboundCallNotificationsEnabled = !(localStorage.outboundCallNotificationsEnabled == "true"); }
-			}
-	};
-	options.items["system_notify"] = {
-		name: "Use system notification",
-		type: 'checkbox',
-                //selected: localStorage.system_notification === "true",
-		events: { click: (e)=>{
-			localStorage.system_notification = !(localStorage.system_notification == "true"); }
-			}
-	};
-	options.items["quickcall_notify"] = {
-		name: "Notify on dialers call",
-		type: 'checkbox',
-                //selected: localStorage.system_notification === "true",
-		events: { click: (e)=>{
-			localStorage.onQuickCallNotifications = !(localStorage.onQuickCallNotifications == "true"); }
-			}
-	};
-
-	
-	options.items["sep2"] = "---------";
-	options.items["customize_profile_viewer"] = {
-		name: "Customize profile viewer",
-		callback: (e)=>{
-			var message = "Введите адрес вашего сайта, которому будут переданы все необходимые параметры звонка. \n" +
-				    "Поддерживаемые  параметры: \n";
-			var pkg_dump = {
-				"Call-Direction":0,
-				"Call-ID":0,
-				"Callee-ID-Name":0,
-				"Callee-ID-Number":0,
-				"Caller-ID-Name":0,
-				"Caller-ID-Number":0,
-				"Custom-Channel-Vars.Account-ID":0,
-				"Custom-Channel-Vars.Account-Name":0,
-				"Custom-Channel-Vars.Bridge-ID":0,
-				"Custom-Channel-Vars.Username":0,
-				"Disposition":0,
-				"Event-Name":0,
-				"From":0,
-				"Msg-ID":0,
-				"Other-Leg-Call-ID":0,
-				"Other-Leg-Caller-ID-Name":0,
-				"Other-Leg-Caller-ID-Number":0,
-				"Other-Leg-Destination-Number":0,
-				"Other-Leg-Direction":0,
-				"Presence-ID":0,
-				"Timestamp":0,
-				"To":0
-			};
-			//var pkg_dump = storage.get("pkg_dump", {});
-			for(var name in pkg_dump){
-				message +=  name + "\n ";
-			}
-			if(message.length >= 2)
-				message = message.slice(0, -2);
-			localStorage["custom_profile_page"] = prompt(message, localStorage["custom_profile_page"]) || localStorage["custom_profile_page"];
-		}
-	};
-
-	return options;
-}
-
 var storage = {
 	get: function(key, def_val){
 		if(typeof(def_val) === "string")
@@ -864,5 +633,17 @@ var storage = {
 		this.set(key, Object.assign(old_val, val));
 	}
 };
+
+// retrieve stored name
+$("#name").text(localStorage["name"]);
+
+// signout
+document.querySelector('#signout').addEventListener('click', function() {
+	signout(true);
+});
+
+// about
+document.querySelector('#about').addEventListener('click',
+		showAboutBox);
 
 document.addEventListener('DOMContentLoaded', restoreTabs);
