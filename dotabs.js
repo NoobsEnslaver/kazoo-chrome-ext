@@ -272,7 +272,7 @@ function showVMMessages(e){
 		for ( var i = 0; i < media_list[vmbox_id].length; i++) {
 			var new_info_row = create_info_media_row(media_list[vmbox_id][i].caller_id_name,
 								 "", // media_list[vmbox_id][i].from,
-								 media_list[vmbox_id][i].caller_id_number,								 
+								 media_list[vmbox_id][i].caller_id_number,
 								 vmbox_id,
 								 media_list[vmbox_id][i].media_id );
 			var new_player_row = create_play_media_row(vmbox_id, media_list[vmbox_id][i].media_id);
@@ -396,7 +396,7 @@ function create_info_media_row(from, number, name, box_id, media_id){
 	img = $("<img class='mes__img' />");
 
 	$(p1).text(from).attr("title", from);
-	$(img).attr("src", "images/remove.png");
+	$(img).attr("src", "images/remove.png").css("width", "auto");
 	$(img).on("click", (e)=>{
 		if (confirm("Delete voicemail from " + name + "?")) {
 			chrome.runtime.sendMessage({
