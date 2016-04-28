@@ -111,21 +111,21 @@ function restoreTabs() {
 					for ( var i = 0; i < list.length; i++) {
 						var row = "<tr id='calllogentry" + i + "_"
 							    + list[i].number + "'>";
+						if (list[i].type == "outgoing") {
+							row = row
+								+ "<td><img src='images/outcoming.png '/></td>";
+						} else if (list[i].type == "received") {
+							row = row
+								+ "<td><img src='images/incoming.png'/></td>";
+						} else {
+							row = row
+								+ "<td><img src='images/reject.png'/></td>";
+						}
 						row = row + "<td><p>" + list[i].name
 						+ "</p><span>" + list[i].number + "</span></td>";
 						row = row + "<td>"
 							+ formatTimestamp(list[i].time)
 							+ "</td>";
-						if (list[i].type == "outgoing") {
-							row = row
-								+ "<td><img src='images/history_outgoing_normal.png '/></td>";
-						} else if (list[i].type == "received") {
-							row = row
-								+ "<td><img src='images/history_incoming_normal.png'/></td>";
-						} else {
-							row = row
-								+ "<td><img src='images/history_missed_normal.png'/></td>";
-						}
 						$("#calllogentries").append(row);
 					}
 					$("#calllogentries").on("click", "tr", history_handler);
@@ -262,7 +262,7 @@ function restoreTabs() {
 		chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "options.html"}, ()=>{});
 		window.close();
 	});
-	
+
 	updatePhoneBook();
 	localize();
 }
@@ -308,7 +308,7 @@ function showVMMessages(e){
 		$(audio)[0].currentTime = 0;
 		$(audio).closest(".mes__audio").toggle(300);
 	});
-	
+
 	if (storage.get("vm_boxes", []).length > 1) {
 		$("#msgtable").append("<div class='back'>Back</div>");
 		$(".back").one("click", function() {
@@ -316,7 +316,7 @@ function showVMMessages(e){
 			$("#tabs").tabs("option", "active", 1);
 			$("#tabs").tabs("option", "active", 0);
 		});
-	} 
+	}
 }
 
 function create_play_media_row(vmbox_id, media_id){
@@ -450,7 +450,7 @@ function create_box_row(name, phone, count, is_new, id){
 	img = $("<img class='mes__img' />");
 
 	$(p1).text(name).attr("title", name);
-	$(img).attr("src", "images/msg_" + (is_new ? "new" : "old") + ".png");
+	$(img).attr("src", "images/msg_" + (is_new ? "new.jpg" : (count > 0 ? "not_empty.png" : "empty.png")));
 	$(col1).text(phone).attr("title", phone);
 	$(col1).append(p1);
 	$(col2).text(count);

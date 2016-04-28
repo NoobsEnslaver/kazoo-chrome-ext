@@ -303,6 +303,7 @@ a {
 	padding-right: 12px;
 }
 .mes__img {
+	width: 100%;
 	margin-bottom: 3px;
 	vertical-align: bottom;
 }
@@ -377,12 +378,21 @@ a {
 	border-top: 1px solid #bbb;
 	color: #000;
 }
+.btn-call {
+	width: 100%;
+	height: 100%;
+	display: inline-block;
+	background-image: url(images/phone.png);
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 24%;
+}
 
 
 .input-phonebook {
 	font-size: 0.75rem !important;
 	height: 1.5rem;
-
+	line-height: 1.5rem;
 }
 
 
@@ -455,10 +465,14 @@ legend {
 }
 
 fieldset {
-	margin: 10px;
-	border-color: #F2B36C;
+	width: 100%;
+	display: block;
+	padding: 8px 20px;
+	border-color: #35b;
+	border-radius: 4px;
+	margin: 0;
+	box-sizing: border-box;
 }
-
 td {
 	font-size: 0.9rem;
 	padding: 0px;
@@ -505,7 +519,7 @@ ul.ui-autocomplete {
 	font-size: 0.9rem;
 	margin: 0 auto;
 	padding: 12px;
-	border: 1px solid #6494AF;
+	border: 1px solid #35b;
 	border-bottom-style: none;
 }
 
@@ -525,7 +539,7 @@ ul.ui-autocomplete {
 
 #tabs {
 	height: 90%;
-	border-color: #34647F;
+	border-color: #35b;
 	margin: 0 auto;
 	border-top-style: none;
 	overflow: hidden;
@@ -591,6 +605,9 @@ ul.ui-autocomplete {
 #calllogentries {
 	width: 100%;
 	border-collapse: collapse;
+}
+#calllogentries tr td img {
+	width: 80%;
 }
 #calllogentries tr td {
 	cursor: pointer;
@@ -743,18 +760,16 @@ ul.ui-autocomplete {
 
 
 .settings {
-	position: absolute;
+	position: relative;
 	display: inline-block;
-	max-width: 640px;
+	max-width: 680px;
+	background-color: #f8f9fb;
 	color: #333;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	margin: auto;
+	margin-top: 80px;
+	margin-bottom: 80px;
 	padding: 30px;
 	font-size: 1rem;
-	line-height: 2rem;
+	line-height: 1.6rem;
 	border: 2px solid #35b;
 	border-radius: 4px;
 	text-align: left;
@@ -768,6 +783,7 @@ ul.ui-autocomplete {
 .settings__h2 {
 	font-size: 2rem;
 	margin-top: 0;
+	margin-bottom: 20px;
 }
 .settings__body {
 
@@ -809,13 +825,15 @@ ul.ui-autocomplete {
 	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 2px rgba(34, 204, 255, 0.6);
 	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 2px rgba(34, 204, 255, 0.6);
 }
-.settings__save {
-	background-color: #35b;
+.settings__btns {
+	text-align: center;
+}
+.settings__btn {
 	color: #fff;
 	border: 0;
-	margin: auto;
+	margin: 16px;
 	margin-top: 40px;
-	display: block;
+	display: inline-block;
 	text-align: center;
 	width: 100%;
 	max-width: 240px;
@@ -825,10 +843,23 @@ ul.ui-autocomplete {
 	box-sizing: border-box;
 	outline: none;
 }
-.settings__save:hover {
-	background-color: #54849F;
+.settings__btn-reset {
+	background-color: #35b;
 }
-.settings__save:active {
+.settings__btn-reset:hover {
+	background-color: #139;
+}
+.settings__btn-reset:active {
 	background-color: #24a;
+	color: #eee;
+}
+.settings__btn-save {
+	background-color: #5b3;
+}
+.settings__btn-save:hover {
+	background-color: #6a4;
+}
+.settings__btn-save:active {
+	background-color: #4b2;
 	color: #eee;
 }

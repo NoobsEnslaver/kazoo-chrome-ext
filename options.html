@@ -18,143 +18,149 @@ limitations under the License.
 <html>
 	<head>
 		<meta charset="utf-8">
+		<link rel="stylesheet" href="style.css" />
 		<script src="jquery.js"></script>
 		<script src="options.js"></script>
 	</head>
-	<body>
-		<form name="Options">
-			<fieldset>
-				<legend> Language </legend>
-				<p><input type="radio" name="lang" value="en">English</p>
-				<p><input type="radio" name="lang" value="ru">Russian</p>
-			</fieldset>
-
-			<BR />			
-			<fieldset id="devices_list">
-				<legend> Active device </legend>
-				<p><input type="radio" name="active_device" value="auto">Auto</p>
-			</fieldset>
-
-			<BR />
-			<fieldset>
-				<legend> On call behavior </legend>
-				<p><input type="checkbox" name="inboundCallNotificationsEnabled">Notify on inbound calls</p>
-				<p><input type="checkbox" name="outboundCallNotificationsEnabled">Notify on outbound calls</p>
-				<p><input type="checkbox" name="system_notification">Use system notification</p>
-				<p><input type="checkbox" name="onQuickCallNotifications">Notify on dialers call</p>
+	<body style="width: 100%;overflow: auto">
+		<div class="settings">
+			<div class="settings__head">
+				<div class="settings__h2">Settings</div>
+			</div>
+			<form class="settings__body" name="Options">
 				<fieldset>
-					<legend> Customize profile viewer </legend>
-					<p>Введите адрес вашего сайта, которому будут переданы все необходимые параметры звонка.</p>
-					<p>
-						<details>
-							<summary>Поддерживаемые параметры</summary>
-														
-							<details>
-								<summary>Call-Direction</summary>
-								Description
-							</details>
-							<details>
-								<summary>Call-ID</summary>
-								Description
-							</details>
-							<details>
-								<summary>Callee-ID-Name</summary>
-								Description
-							</details>
-							<details>
-								<summary>Callee-ID-Number</summary>
-								Description
-							</details>
-							<details>
-								<summary>Caller-ID-Name</summary>
-								Description
-							</details>
-							<details>
-								<summary>Caller-ID-Number</summary>
-								Description
-							</details>
-							<details>
-								<summary>Custom-Channel-Vars.Account-ID</summary>
-								Description
-							</details>
-							<details>
-								<summary>Custom-Channel-Vars.Account-Name</summary>
-								Description
-							</details>
-							<details>
-								<summary>Custom-Channel-Vars.Bridge-ID</summary>
-								Description
-							</details>
-							<details>
-								<summary>Custom-Channel-Vars.Username</summary>
-								Description
-							</details>
-							<details>
-								<summary>Disposition</summary>
-								Description
-							</details>
-							<details>
-								<summary>Event-Name</summary>
-								Description
-							</details>
-							<details>
-								<summary>From</summary>
-								Description
-							</details>
-							<details>
-								<summary>Msg-ID</summary>
-								Description
-							</details>
-							<details>
-								<summary>Other-Leg-Call-ID</summary>
-								Description
-							</details>
-							<details>
-								<summary>Other-Leg-Caller-ID-Name</summary>
-								Description
-							</details>
-							<details>
-								<summary>Other-Leg-Caller-ID-Number</summary>
-								Description
-							</details>
-							<details>
-								<summary>Other-Leg-Destination-Number</summary>
-								Description
-							</details>
-							<details>
-								<summary>Other-Leg-Direction</summary>
-								Description
-							</details>
-							<details>
-								<summary>Presence-ID</summary>
-								Description
-							</details>
-							<details>
-								<summary>Timestamp</summary>
-								Description
-							</details>
-							<details>
-								<summary>To</summary>
-								Description
-							</details>
-						</details>
-					</p>
-					
-					<p><input type="text" name="custom_profile_page" size=100 value=""></p>
+					<legend> Language </legend>
+					<div class="settings__item"><input type="radio" name="lang" value="en">English</div>
+					<div class="settings__item"><input type="radio" name="lang" value="ru">Russian</div>
 				</fieldset>
-			</fieldset>
 
-			<BR />
-			<fieldset>
-				<legend> Other </legend>
-				<p><input type="checkbox" name="clicktodial">Click to Dial</p>
-			</fieldset>
+				<br/>
+				<fieldset id="devices_list">
+					<legend> Active device </legend>
+					<div class="settings__item"><input type="radio" name="active_device" value="auto">Auto</div>
+				</fieldset>
 
-			<BR />
-			<p>
-				<input type="button" value="Save" id="save_btn">
-				<input type="button" value="Reset" id="reset_btn">
-			</p>
-		</form>
+				<br/>
+				<fieldset>
+					<legend> On call behavior </legend>
+					<div class="settings__item"><input type="checkbox" name="inboundCallNotificationsEnabled">Notify on inbound calls</div>
+					<div class="settings__item"><input type="checkbox" name="outboundCallNotificationsEnabled">Notify on outbound calls</div>
+					<div class="settings__item"><input type="checkbox" name="system_notification">Use system notification</div>
+					<div class="settings__item"><input type="checkbox" name="onQuickCallNotifications">Notify on dialers call</div>
+					<fieldset>
+						<legend> Customize profile viewer </legend>
+						<div>Введите адрес вашего сайта, которому будут переданы все необходимые параметры звонка.</div>
+						<div>
+							<details>
+								<summary>Поддерживаемые параметры</summary>
+
+								<details>
+									<summary>Call-Direction</summary>
+									Description
+								</details>
+								<details>
+									<summary>Call-ID</summary>
+									Description
+								</details>
+								<details>
+									<summary>Callee-ID-Name</summary>
+									Description
+								</details>
+								<details>
+									<summary>Callee-ID-Number</summary>
+									Description
+								</details>
+								<details>
+									<summary>Caller-ID-Name</summary>
+									Description
+								</details>
+								<details>
+									<summary>Caller-ID-Number</summary>
+									Description
+								</details>
+								<details>
+									<summary>Custom-Channel-Vars.Account-ID</summary>
+									Description
+								</details>
+								<details>
+									<summary>Custom-Channel-Vars.Account-Name</summary>
+									Description
+								</details>
+								<details>
+									<summary>Custom-Channel-Vars.Bridge-ID</summary>
+									Description
+								</details>
+								<details>
+									<summary>Custom-Channel-Vars.Username</summary>
+									Description
+								</details>
+								<details>
+									<summary>Disposition</summary>
+									Description
+								</details>
+								<details>
+									<summary>Event-Name</summary>
+									Description
+								</details>
+								<details>
+									<summary>From</summary>
+									Description
+								</details>
+								<details>
+									<summary>Msg-ID</summary>
+									Description
+								</details>
+								<details>
+									<summary>Other-Leg-Call-ID</summary>
+									Description
+								</details>
+								<details>
+									<summary>Other-Leg-Caller-ID-Name</summary>
+									Description
+								</details>
+								<details>
+									<summary>Other-Leg-Caller-ID-Number</summary>
+									Description
+								</details>
+								<details>
+									<summary>Other-Leg-Destination-Number</summary>
+									Description
+								</details>
+								<details>
+									<summary>Other-Leg-Direction</summary>
+									Description
+								</details>
+								<details>
+									<summary>Presence-ID</summary>
+									Description
+								</details>
+								<details>
+									<summary>Timestamp</summary>
+									Description
+								</details>
+								<details>
+									<summary>To</summary>
+									Description
+								</details>
+							</details>
+						</div>
+
+						<div class="settings__item"><input class="input" type="text" name="custom_profile_page" value=""></div>
+					</fieldset>
+				</fieldset>
+
+				<br/>
+				<fieldset>
+					<legend> Other </legend>
+					<div class="settings__item"><input type="checkbox" name="clicktodial">Click to Dial</div>
+				</fieldset>
+
+				<br/>
+				<div class="settings__btns">
+					<input class="settings__btn settings__btn-save" type="button" value="Save" id="save_btn">
+					<input class="settings__btn settings__btn-reset" type="button" value="Reset" id="reset_btn">
+				</div>
+			</form>
+		</div>
 	</body>
 </html>

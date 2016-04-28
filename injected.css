@@ -71,9 +71,10 @@ limitations under the License.
 	box-sizing: border-box !important;
 }
 .callup__name {
-	width: 75%;
+	width: 80%;
 	padding-left: 1.2rem;
 	line-height: 4rem;
+	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }

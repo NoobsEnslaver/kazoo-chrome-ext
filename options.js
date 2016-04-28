@@ -50,7 +50,8 @@ function get_devices(){
 	var devices = storage.get("devices", {});
 	var p, input, result_list = [];
 	for(var i in devices) {
-		p = document.createElement("P");
+		p = document.createElement("div");
+		$(p).attr("class", "settings__item");
 		input = document.createElement("INPUT");
 		input.type = "radio";
 		input.name = "active_device";
@@ -73,7 +74,7 @@ var storage = {
 		}catch(e){}
 		return value;
 	},
-	set: function(key, val){		
+	set: function(key, val){
 		localStorage[key] = typeof(val) === "string"? val: JSON.stringify(val);
 	},
 	push: function(key, new_val){
