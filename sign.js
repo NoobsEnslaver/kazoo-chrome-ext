@@ -123,7 +123,7 @@ function restoreOptions() {
 	});
 
 	$(".language__img").on("click", function() {
-		$(".language__ul").css("top", "-" + ($(".language__li").size() - 1) * 2 + "rem").toggle(300);
+		$(".language__ul").css("top", "-" + (($(".language__li").size() - 1) * 2 - 1) + "rem").toggle(300);
 	});
 	$(".language__li").on("click", flag_click_handler);
 
@@ -202,7 +202,7 @@ function done() {
 
 function showAboutBox() {
 	localStorage["currentTab"] = "options";
-	chrome.browserAction.setPopup({popup: "about.html"});
+	top.location.assign("about.html");
 }
 
 //background error drawer
