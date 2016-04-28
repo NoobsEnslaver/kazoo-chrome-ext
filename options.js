@@ -57,11 +57,11 @@ function restore_options(){
 	var opt = document.forms["Options"];
 	opt.elements["lang"].value = storage.get("lang", "en");
 	opt.elements["active_device"].value =storage.get("active_device", "auto");
-	opt.elements["inboundCallNotificationsEnabled"].checked = storage.get("inboundCallNotificationsEnabled", true);
-	opt.elements["outboundCallNotificationsEnabled"].checked = storage.get("outboundCallNotificationsEnabled", true);
-	opt.elements["system_notification"].checked = storage.get("system_notification", true);
-	opt.elements["onQuickCallNotifications"].checked = storage.get("onQuickCallNotifications", true);
-	opt.elements["clicktodial"].checked = storage.get("clicktodial", true);
+	opt.elements["inboundCallNotificationsEnabled"].checked = storage.get("inboundCallNotificationsEnabled", false);
+	opt.elements["outboundCallNotificationsEnabled"].checked = storage.get("outboundCallNotificationsEnabled", false);
+	opt.elements["system_notification"].checked = storage.get("system_notification", false);
+	opt.elements["onQuickCallNotifications"].checked = storage.get("onQuickCallNotifications", false);
+	opt.elements["clicktodial"].checked = storage.get("clicktodial", false);
 	opt.elements["custom_profile_page"].value = storage.get("custom_profile_page", "");
 }
 
