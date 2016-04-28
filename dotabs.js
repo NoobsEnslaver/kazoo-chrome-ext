@@ -77,7 +77,10 @@ function history_handler(e){
 	chrome.runtime.sendMessage({
 		type : "CALL",
 		text : tel
-	}, ()=>{});
+	}, ()=>{
+		$("#tabs").tabs("option", "active", 0);
+		$("#tabs").tabs("option", "active", 2);
+	});
 
 	return null;
 }
@@ -228,11 +231,11 @@ function restoreTabs() {
 		$("body").css("-webkit-user-select", "none");
 		window.getSelection().removeAllRanges();
 		resizer.onmousemove = (e)=>{
+			console.log(e.pageY);
 			if (e.pageY < 250 || e.pageY > 570) return;
-			var new_len = (e.pageY - 50) ;
+			var new_len = (e.pageY - 80) ;
 			set_popup_heigth(new_len);
 			localStorage["popup_heigth"] = new_len;
-			e.preventDefault();
 		};
 		resizer.onmouseup = (e)=>{
 			resizer.onmousemove = null;
@@ -268,7 +271,7 @@ function restoreTabs() {
 function showVMMessages(e){
 	var vmbox_id = e.currentTarget.id;
 	var media_list = storage.get("vm_media", {});
-	
+
 	$("#msgtable").empty();
 	if(!media_list[vmbox_id]) return;
 	if (media_list[vmbox_id].length == 0) {
@@ -335,7 +338,7 @@ function create_input_pb_row(){
 		"pb_name_placeholder": {"message": "name"},
 		"pb_phone_placeholder": {"message": "phone number"}
 	});
-	
+
 	input_field = document.createElement("tr");
 	col1 = document.createElement("td");
 	col2 = document.createElement("td");
@@ -345,25 +348,30 @@ function create_input_pb_row(){
 	image = document.createElement("img");
 
 	input1.id = "pb_new_name";
+	$(input1).attr("class", "input input-phonebook");
 	input1.placeholder = translate["pb_name_placeholder"].message;
 	input1.size=15;
 	input2.id = "pb_new_phone";
+	$(input2).attr("class", "input input-phonebook");
 	input2.placeholder = translate["pb_phone_placeholder"].message;
 	input2.size=15;
 	image.src = "images/add.png";
 	image.onclick = (e)=>{
-		var row = create_default_pb_row($("#pb_new_name").val(),  $("#pb_new_phone").val(), Math.random());
-		$("#phonebookentries").append(row);
-		chrome.runtime.sendMessage({
-			type: "PHONE_BOOK_ADD_ENTRY",
-			name: $("#pb_new_name").val(),
-			phone: $("#pb_new_phone").val() + "" }, (e)=>{
+		if ($("#pb_new_name").val() !== "" && $("#pb_new_phone").val() !== "") {
+			var row = create_default_pb_row($("#pb_new_name").val(),  $("#pb_new_phone").val(), Math.random());
+			$("#phonebookentries").append(row);
+			chrome.runtime.sendMessage({
+				type: "PHONE_BOOK_ADD_ENTRY",
+				name: $("#pb_new_name").val(),
+				phone: $("#pb_new_phone").val() + ""
+			}, (e)=>{
 				var event = new KeyboardEvent('input');
 				$("#pb_new_name").val("");
 				$("#pb_new_phone").val("");
 				document.querySelector('#pb_new_name').dispatchEvent(event);
 				document.querySelector('#pb_new_phone').dispatchEvent(event);
 			});
+		}
 	};
 
 	col1.appendChild(input1);
@@ -383,13 +391,14 @@ function create_input_pb_row(){
 function text_input_handler_names(e){
 	var table = $("#phonebookentries");
 	var template = e.currentTarget.value + "";
+	var text = "";
 	table.children().children().map((index, object)=>{
 		if(index == 0) return;
-		var text = object.childNodes[0].childNodes[0].textContent;
+		text = object.childNodes[0].childNodes[0].textContent;
 		if (text.search(template) == -1) {
-			table.children().children()[index].style.visibility = "hidden";
+			object.style.visibility = "hidden";
 		} else {
-			table.children().children()[index].style.visibility = "visible";
+			object.style.visibility = "visible";
 		}
 	});
 }
@@ -413,9 +422,9 @@ function create_info_media_row(from, number, name, box_id, media_id){
 				       vmbox_id: box_id}
 			});
 			var old_state = storage.get("vm_media", {});
-			old_state[box_id] = old_state[box_id].filter((x)=>{ return x.media_id != media_id;});			
+			old_state[box_id] = old_state[box_id].filter((x)=>{ return x.media_id != media_id;});
 			storage.set("vm_media", old_state);
-			e.currentTarget.parentNode.parentNode.remove();			
+			e.currentTarget.parentNode.parentNode.remove();
 		}
 	});
 	$(col1).text(number).attr("title", number);
@@ -452,15 +461,16 @@ function create_box_row(name, phone, count, is_new, id){
 
 function text_input_handler_phones(e){
 	var table = $("#phonebookentries");
+	var text = "";
 	var template = e.currentTarget.value + "";
 	template = template.replace("+", "\\+");
 	table.children().children().map((index, object)=>{
 		if(index == 0) return;
-		var text = object.childNodes[1].childNodes[0].textContent;
+		text = object.childNodes[1].childNodes[0].textContent;
 		if (text.search(template) == -1) {
-			table.children().children()[index].style.visibility = "hidden";
+			object.style.visibility = "hidden";
 		} else {
-			table.children().children()[index].style.visibility = "visible";
+			object.style.visibility = "visible";
 		}
 	});
 }
@@ -486,7 +496,7 @@ function create_default_pb_row(name, phone, id, index){
 			e.currentTarget.parentNode.parentNode.remove();
 			chrome.runtime.sendMessage({
 				type : "PHONE_BOOK_REMOVE_ENTRY",
-				entry_id: e.currentTarget.id }, ()=>{});	
+				entry_id: e.currentTarget.id }, ()=>{});
 		}
 	};
 	col1.appendChild(p1);
@@ -619,7 +629,7 @@ var storage = {
 		}catch(e){}
 		return value;
 	},
-	set: function(key, val){		
+	set: function(key, val){
 		localStorage[key] = typeof(val) === "string"? val: JSON.stringify(val);
 	},
 	push: function(key, new_val){
