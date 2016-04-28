@@ -3,9 +3,28 @@ if (localStorage["connectionStatus"] != "signedIn")
 
 function main(){
 	create_fields();
+	localize();
 	restore_options();
 	$('#save_btn').click(save_options);
 	$('#reset_btn').click(restore_options);
+}
+
+function localize(){
+	var dictionary = storage.get("localization", {});
+	var opt = document.forms["Options"];
+
+	$("#lang_text").text(dictionary["lang"].message);
+	$("#device_text").text(dictionary["device_selection"].message);
+	$("#behavior_text").text(dictionary["behavior"].message);
+	$("#inboundCallNotificationsEnabled").text(dictionary["inboundCallNotificationsEnabled"].message);
+	$("#outboundCallNotificationsEnabled").text(dictionary["outboundCallNotificationsEnabled"].message);
+	$("#system_notification").text(dictionary["system_notification"].message);	
+	$("#onQuickCallNotifications").text(dictionary["onQuickCallNotifications"].message);
+	$("#invitation_to_customize_viewers_url").text(dictionary["invitation_to_customize_viewers_url"].message);
+	$("#supported_params_text").text(dictionary["supported_params_text"].message);
+	$("#clicktodial_text").text(dictionary["clicktodial_text"].message);
+	$("#customize_viewer_text").text(dictionary["customize_viewer_text"].message);
+	$("#other").text(dictionary["other"].message);
 }
 
 function save_options(){

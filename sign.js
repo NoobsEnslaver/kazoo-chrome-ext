@@ -95,21 +95,6 @@ function signin() {
 	});
 }
 
-function wait(predicate, options){
-	if (predicate()) return;
-
-	options = options || {};
-	options.sample_time = options.sample_time || 100;
-	options.timeout = isFinite(options.timeout)?(options.timeout - options.sample_time): 3000;
-	options.timeout_callback= options.timeout_callback || function(){};
-
-	if (options.timeout > 0) {
-		window.setTimeout(wait, options.sample_time, predicate, options);
-	}else {
-		options.timeout_callback();
-	}
-}
-
 function showGUI(name) {
 	$("#dnd").prop("checked", getDoNotDisturb());
 	$("#name").text(name);

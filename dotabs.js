@@ -17,26 +17,6 @@ limitations under the License.
 
 var MODULE = "dotabs.js";
 if(localStorage["connectionStatus"] != "signedIn") signout(false);
-// {
-// 	chrome.tabs.create({url: chrome.extension.getURL("sign.html")});
-// 	window.close();
-// }
-
-function formatTimestamp(timestamp) {
-	var today = new Date();
-	var dt = new Date(timestamp);
-	if (today.getDay() == dt.getDay() && today.getMonth() == dt.getMonth()
-			&& today.getFullYear() == dt.getFullYear()) {
-		var hours = dt.getHours();
-		var minutes = dt.getMinutes();
-		var ampm = hours >= 12 ? 'pm' : 'am';
-		hours = hours % 12;
-		hours = hours ? hours : 12;
-		return hours + ":" + (minutes < 10 ? "0" + minutes : minutes) + " "
-				+ ampm;
-	}
-	return dt.getMonth() + "/" + dt.getDay() + "/" + dt.getFullYear();
-}
 
 // Signout. A manual signout means the user signed out themselves. In this case,
 // clear out all info. If a force logout
@@ -290,9 +270,9 @@ function showVMMessages(e){
 		$("#msgtable").append(img);
 	} else {
 		for ( var i = 0; i < media_list[vmbox_id].length; i++) {
-			var new_info_row = create_info_media_row(media_list[vmbox_id][i].from,
-								 media_list[vmbox_id][i].caller_id_number,
-								 media_list[vmbox_id][i].caller_id_name,
+			var new_info_row = create_info_media_row(media_list[vmbox_id][i].caller_id_name,
+								 "", // media_list[vmbox_id][i].from,
+								 media_list[vmbox_id][i].caller_id_number,								 
 								 vmbox_id,
 								 media_list[vmbox_id][i].media_id );
 			var new_player_row = create_play_media_row(vmbox_id, media_list[vmbox_id][i].media_id);
@@ -621,31 +601,6 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 	}
 });
 
-var storage = {
-	get: function(key, def_val){
-		if(typeof(def_val) === "string")
-			return localStorage[key] || def_val;
-
-		var value = def_val;
-		try{
-			value = JSON.parse(localStorage[key]);
-		}catch(e){}
-		return value;
-	},
-	set: function(key, val){
-		localStorage[key] = typeof(val) === "string"? val: JSON.stringify(val);
-	},
-	push: function(key, new_val){
-		var old_val = this.get(key, []);
-		old_val.push(new_val);
-		this.set(key, old_val);
-	},
-	assign: function(key, val){
-		if(typeof(val) !== "object") throw new Error("Assign for Objects only!");
-		var old_val = this.get(key, {});
-		this.set(key, Object.assign(old_val, val));
-	}
-};
 
 // retrieve stored name
 $("#name").text(localStorage["name"]);

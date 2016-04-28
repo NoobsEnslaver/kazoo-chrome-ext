@@ -369,7 +369,6 @@ function authorize(){
 					updateVoiceMails();
 					updatePhoneBook();
 					signToBlackholeEvents();
-					reloadTabs();
 
 					AUTH_DAEMON_ID = window.setInterval(authorize, 60*60*1000); // update auth-token every hour
 					VM_DAEMON_ID = window.setInterval(updateVoiceMails, 30*1000);
@@ -380,17 +379,6 @@ function authorize(){
 		error: error_handler,
 		generateError: true
 	});
-}
-
-function flatten(o) {
-	var prefix = arguments[1] || "", out = arguments[2] || {}, name;
-	for (name in o) {
-		if (o.hasOwnProperty(name)) {
-			typeof o[name] === "object" ? flatten(o[name], prefix + name + '.', out) :
-                                out[prefix + name] = o[name];
-		}
-	}
-	return out;
 }
 
 var last_blackhole_pkg = {};
@@ -486,45 +474,6 @@ function signToBlackholeEvents(){
 	SOCKET.on('CHANNEL_DESTROY', call_event_handler);
 }
 
-var storage = {
-	get: function(key, def_val){
-		if(typeof(def_val) === "string")
-			return localStorage[key] || def_val;
-
-		var value = def_val;
-		try{
-			value = JSON.parse(localStorage[key]);
-		}catch(e){}
-		return value;
-	},
-	set: function(key, val){
-		localStorage[key] = typeof(val) === "string"? val: JSON.stringify(val);
-	},
-	push: function(key, new_val){
-		var old_val = this.get(key, []);
-		old_val.push(new_val);
-		this.set(key, old_val);
-	},
-	assign: function(key, val){
-		if(typeof(val) !== "object") throw new Error("Assign for Objects only!");
-		var old_val = this.get(key, {});
-		this.set(key, Object.assign(old_val, val));
-	}
-};
-
-function is_too_fast(event_name, timeout){
-	timeout = timeout || 1000;
-	event_name = event_name || arguments.callee.caller.name + "_last_call";
-	var last_time = storage.get(event_name, 0);
-	if (Date.now() - last_time < timeout){
-		showError({statusText: "Too fast", status: arguments.callee.caller.name});
-		console.log("Too fast:" + arguments.callee.caller.name);
-		return true;
-	}else{
-		localStorage[event_name] = Date.now();
-		return false;
-	}
-}
 
 function error_handler(data, status){
 	LOGGER.API.error(MODULE, status.error);
@@ -654,4 +603,7 @@ chrome.contextMenus.create({
 	id: "add_phone",
 	title:"Add to phonebook",
 	contexts: ["selection", "image"]
+});
+chrome.runtime.onInstalled.addListener((details)=>{
+	reloadTabs();
 });

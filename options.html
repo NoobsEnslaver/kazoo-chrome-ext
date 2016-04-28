@@ -19,35 +19,48 @@ limitations under the License.
 	<head>
 		<meta charset="utf-8">
 		<script src="jquery.js"></script>
+		<script src="utils.js"></script>
 		<script src="options.js"></script>
 	</head>
 	<body>
 		<form name="Options">
 			<fieldset>
-				<legend> Language </legend>
+				<legend id="lang_text"> Language </legend>
 				<p><input type="radio" name="lang" value="en">English</p>
 				<p><input type="radio" name="lang" value="ru">Russian</p>
 			</fieldset>
 
 			<BR />			
 			<fieldset id="devices_list">
-				<legend> Active device </legend>
+				<legend id="device_text"> Active device </legend>
 				<p><input type="radio" name="active_device" value="auto">Auto</p>
 			</fieldset>
 
 			<BR />
 			<fieldset>
-				<legend> On call behavior </legend>
-				<p><input type="checkbox" name="inboundCallNotificationsEnabled">Notify on inbound calls</p>
-				<p><input type="checkbox" name="outboundCallNotificationsEnabled">Notify on outbound calls</p>
-				<p><input type="checkbox" name="system_notification">Use system notification</p>
-				<p><input type="checkbox" name="onQuickCallNotifications">Notify on dialers call</p>
+				<legend id="behavior_text"> On call behavior </legend>
+				<p>					
+					<input type="checkbox" name="inboundCallNotificationsEnabled">
+					<label id="inboundCallNotificationsEnabled">Notify on inbound calls</label>
+				</p>
+				<p>
+					<input type="checkbox" name="outboundCallNotificationsEnabled">
+					<label id="outboundCallNotificationsEnabled">Notify on outbound calls</label>
+				</p>
+				<p>
+					<input type="checkbox" name="system_notification">
+					<label id="system_notification">Use system notification</label>
+				</p>
+				<p>
+					<input type="checkbox" name="onQuickCallNotifications">
+					<label id="onQuickCallNotifications">Notify on dialers call</label>					
+				</p>
 				<fieldset>
-					<legend> Customize profile viewer </legend>
-					<p>Введите адрес вашего сайта, которому будут переданы все необходимые параметры звонка.</p>
+					<legend id="customize_viewer_text"> Customize profile viewer </legend>
+					<p id="invitation_to_customize_viewers_url">Введите адрес вашего сайта, которому будут переданы все необходимые параметры звонка.</p>
 					<p>
 						<details>
-							<summary>Поддерживаемые параметры</summary>
+							<summary id="supported_params_text">Поддерживаемые параметры</summary>
 														
 							<details>
 								<summary>Call-Direction</summary>
@@ -138,16 +151,20 @@ limitations under the License.
 								Description
 							</details>
 						</details>
+					</p>					
+					<p>
+						<input type="text" name="custom_profile_page" size=100 value="">
 					</p>
-					
-					<p><input type="text" name="custom_profile_page" size=100 value=""></p>
 				</fieldset>
 			</fieldset>
 
 			<BR />
 			<fieldset>
-				<legend> Other </legend>
-				<p><input type="checkbox" name="clicktodial">Click to Dial</p>
+				<legend id="other"> Other </legend>
+				<p>
+					<input type="checkbox" name="clicktodial">
+					<label id="clicktodial_text">Enable Click to Dial</label>
+				</p>
 			</fieldset>
 
 			<BR />
