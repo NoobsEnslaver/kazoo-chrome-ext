@@ -247,7 +247,7 @@ function restoreTabs() {
 		e.preventDefault();
 	};
 
-	$(".btn_added").on("click", btn_handler);
+	$(".btn_added:not(#btn12)").on("click", btn_handler);
 	$("#btn12").on("click", call_btn);
 	$("#destination").on('keydown', function(e) {
 		if (e.which == 13) call_btn();
@@ -308,12 +308,15 @@ function showVMMessages(e){
 		$(audio)[0].currentTime = 0;
 		$(audio).closest(".mes__audio").toggle(300);
 	});
-	// $("#msgtable").append("<div class='back'>Back</div>");
-	// $(".back").one("click", function() {
-	// 	$("#msgtable").off("click", ".mes__row");
-	// 	$("#tabs").tabs("option", "active", 1);
-	// 	$("#tabs").tabs("option", "active", 0);
-	// });
+	
+	if (storage.get("vm_boxes", []).length > 1) {
+		$("#msgtable").append("<div class='back'>Back</div>");
+		$(".back").one("click", function() {
+			$("#msgtable").off("click", ".mes__row");
+			$("#tabs").tabs("option", "active", 1);
+			$("#tabs").tabs("option", "active", 0);
+		});
+	} 
 }
 
 function create_play_media_row(vmbox_id, media_id){
