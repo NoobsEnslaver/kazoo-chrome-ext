@@ -79,10 +79,10 @@ function signin() {
 
 	wait(()=>{
 		if (localStorage["connectionStatus"] == "signedIn"){
-			addConnection(connection);
 			//Stop animation + delay before close
+			addConnection(connection);
 			chrome.tabs.getCurrent(function(tab) {
-				chrome.tabs.remove(tab.id, function() { });
+				chrome.tabs.remove(tab.id, function() {});
 			});
 		}
 
