@@ -340,21 +340,23 @@ function create_input_pb_row(){
 	input2.size=15;
 	image.src = "images/add.png";
 	image.onclick = (e)=>{
-		if ($("#pb_new_name").val() !== "" && $("#pb_new_phone").val() !== "") {
-			var row = create_default_pb_row($("#pb_new_name").val(),  $("#pb_new_phone").val(), Math.random());
-			$("#phonebookentries").append(row);
-			chrome.runtime.sendMessage({
-				type: "PHONE_BOOK_ADD_ENTRY",
-				name: $("#pb_new_name").val(),
-				phone: $("#pb_new_phone").val() + ""
-			}, (e)=>{
-				var event = new KeyboardEvent('input');
-				$("#pb_new_name").val("");
-				$("#pb_new_phone").val("");
-				document.querySelector('#pb_new_name').dispatchEvent(event);
-				document.querySelector('#pb_new_phone').dispatchEvent(event);
-			});
-		}
+		// if ($("#pb_new_name").val() !== "" && $("#pb_new_phone").val() !== "") {
+		// 	var row = create_default_pb_row($("#pb_new_name").val(),  $("#pb_new_phone").val(), Math.random());
+		// 	$("#phonebookentries").append(row);
+		// 	chrome.runtime.sendMessage({
+		// 		type: "PHONE_BOOK_ADD_ENTRY",
+		// 		name: $("#pb_new_name").val(),
+		// 		phone: $("#pb_new_phone").val() + ""
+		// 	}, (e)=>{
+		// 		var event = new KeyboardEvent('input');
+		// 		$("#pb_new_name").val("");
+		// 		$("#pb_new_phone").val("");
+		// 		document.querySelector('#pb_new_name').dispatchEvent(event);
+		// 		document.querySelector('#pb_new_phone').dispatchEvent(event);
+		// 	});
+		// }
+
+		chrome.tabs.update({url: chrome.extension.getURL("add_to_phonebook.html")});
 	};
 
 	col1.appendChild(input1);
