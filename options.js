@@ -1,5 +1,6 @@
-if (localStorage["connectionStatus"] != "signedIn")
+if (localStorage["connectionStatus"] != "signedIn") {
 	chrome.tabs.update({url: chrome.extension.getURL("sign.html")});
+}
 
 function main(){
 	create_fields();
@@ -18,7 +19,7 @@ function localize(){
 	$("#behavior_text").text(dictionary["behavior"].message);
 	$("#inboundCallNotificationsEnabled").text(dictionary["inboundCallNotificationsEnabled"].message);
 	$("#outboundCallNotificationsEnabled").text(dictionary["outboundCallNotificationsEnabled"].message);
-	$("#system_notification").text(dictionary["system_notification"].message);	
+	$("#system_notification").text(dictionary["system_notification"].message);
 	$("#onQuickCallNotifications").text(dictionary["onQuickCallNotifications"].message);
 	$("#invitation_to_customize_viewers_url").text(dictionary["invitation_to_customize_viewers_url"].message);
 	$("#supported_params_text").text(dictionary["supported_params_text"].message);

@@ -655,6 +655,9 @@ ul.ui-autocomplete {
 	margin-bottom: 2px;
 	cursor: pointer;
 }
+#phonebookentries tr td img[src*="add"] {
+	margin-bottom: -2px;
+}
 #phonebookentries tr td p {
 	margin: 0px;
 	font-size: 0.8rem;
@@ -763,6 +766,7 @@ ul.ui-autocomplete {
 	position: relative;
 	display: inline-block;
 	max-width: 680px;
+	width: 92%;
 	background-color: #f8f9fb;
 	color: #333;
 	margin-top: 80px;
