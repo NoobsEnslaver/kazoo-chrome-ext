@@ -1,18 +1,17 @@
 /*
-Copyright 2016, SIPLABS LLC.
-Copyright 2013, BroadSoft, Inc.
+ Copyright 2016, SIPLABS LLC.
 
-Licensed under the Apache License,Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License,Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "ASIS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "ASIS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
  */
 
 var MODULE = "sign.js";
@@ -89,7 +88,7 @@ function signin() {
 		return (localStorage["connectionStatus"] == "signedIn") || (localStorage["connectionStatus"] == "authFailed");
 	}, {
 		timeout_callback: ()=>{
-			LOGGER.API.log(MODULE, "Connection timeout");
+			console.log(MODULE + "Connection timeout");
 			showMessage("Connection timeout");},
 		timeout: 6000
 	});
@@ -173,7 +172,7 @@ function restoreOptions() {
 			}
 		} catch (error) {
 			$("#settings").show();
-			LOGGER.API.error(MODULE,error.message);
+
 		}
 	}
 }

@@ -1,18 +1,17 @@
 /*
-Copyright 2016, SIPLABS LLC.
-Copyright 2013, BroadSoft, Inc.
+ Copyright 2016, SIPLABS LLC.
 
-Licensed under the Apache License,Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License,Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "ASIS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "ASIS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
  */
 
 var MODULE = "background.js";
@@ -26,9 +25,8 @@ function onMessage(request, sender, sendResponse) {
 	switch (type){
 	case "CALL":
 		if(is_too_fast("last_call_time", 3000)) return;
-		var destination = request.text.replace(/[- \(\)\.]/g, "");
-		var status = "ok";
-		LOGGER.API.log(MODULE, "calling: " + destination);
+		var destination = request.text.replace(/[- \)\(\.]/g, "");
+		console.log(MODULE + "calling: " + destination);
 		if (localStorage["active_device"] && localStorage["active_device"] != "" && localStorage["active_device"] != "auto") {
 			KAZOO.device.quickcall({
 				number: destination,
@@ -44,7 +42,7 @@ function onMessage(request, sender, sendResponse) {
 		}
 
 		sendResponse({
-			status : status
+			status : "ok"
 		});
 		break;
 
@@ -260,14 +258,14 @@ function contentLoaded() {
 		apiRoot: localStorage["url"] + "v2/",
 
 		onRequestStart: function(request, requestOptions) {
-			//LOGGER.API.log(MODULE,"Request started: " + JSON.stringify(request));
+			//console.log(MODULE + "Request started: %o", request);
 		},
 		onRequestEnd: function(request, requestOptions) {
-			//LOGGER.API.log(MODULE,"Request ended: " + JSON.stringify(request));
+			//console.log(MODULE + "Request started: %o", request);
 		},
 		onRequestError: function(error, requestOptions) {
 			if(requestOptions.generateError !== false) {
-				LOGGER.API.log(MODULE,"Request error: " + error.status + " " + error.status.text);
+				console.log(MODULE,"Request error: %o %o", error.status, error.status.text);
 			}
 			var error_count = incrementErrorCount(error.status);
 
@@ -314,7 +312,7 @@ function prepareToStart(){
 }
 
 function incrementErrorCount(error_code){
-	LOGGER.API.log(MODULE, "Error " + error_code + " count increased");
+	console.log(MODULE + "Error %o count increased", error_code);
 	var errors = storage.get("errors", {});
 	errors[error_code] = errors[error_code] || 0;
 	errors[error_code] += 1;
@@ -340,7 +338,7 @@ function showError(data){
 
 function authorize(){
 	if(is_too_fast()) return;
-	LOGGER.API.log(MODULE,"Start authorizing routines...");
+	console.log(MODULE + "Start authorizing routines...");
 	localStorage["connectionStatus"] = "inProgress";
 	chrome.browserAction.setIcon({path: "images/logo_wait_128x128.gif"});
 	KAZOO.auth.userAuth({
@@ -350,7 +348,7 @@ function authorize(){
 			credentials: localStorage["credentials"]
 		},
 		success: function(data, status) {
-			LOGGER.API.log(MODULE, "Require user data...");
+			console.log(MODULE + "Require user data...");			
 			localStorage["account_id"] = data.data.account_id;
 			//localStorage["user_id"] = data.data.owner_id;
 			KAZOO.user.list({
@@ -359,7 +357,7 @@ function authorize(){
 				success: function(b_data, b_status) {
 					localStorage["name"] = b_data.data[0].first_name + " " + b_data.data[0].last_name;
 					localStorage["email"] = b_data.data[0].email;
-					LOGGER.API.log(MODULE,"Auth completed, welcome " + localStorage["name"]);
+					console.log(MODULE + "Auth completed, welcome ", localStorage["name"]);
 					chrome.browserAction.setIcon({path: "images/logo_online_128x128.png"});
 					localStorage["connectionStatus"] = "signedIn";
 					localStorage["errorMessage"]="";
@@ -476,7 +474,7 @@ function signToBlackholeEvents(){
 
 
 function error_handler(data, status){
-	LOGGER.API.error(MODULE, status.error);
+	console.log(MODULE + "Error: ", status.error);
 	chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
 	localStorage["connectionStatus"]= "authFailed";
 	localStorage.removeItem('credentials');
@@ -542,7 +540,7 @@ function blackholeUserActionHandler(action){
 
 	default:
 		showError({statusText: "Cannot execute command", status: ""});
-		LOGGER.API.log(MODULE, "Unknown event-type from content-script: " +  event.type);
+		console.log(MODULE + "Unknown action from content-script: %o", action);
 	}
 }
 
