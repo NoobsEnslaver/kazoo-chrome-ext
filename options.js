@@ -7,7 +7,12 @@ function main(){
 	restore_options();
 	$('#save_btn').click(save_options);
 	$('#reset_btn').click(restore_options);
+	$('#clean_history_btn').click(clean_history);
 	localize();
+}
+
+function clean_history(){
+	storage.set("history", []);
 }
 
 function localize(){

@@ -58,9 +58,9 @@ function addConnection(connection) {
 }
 
 function signin() {
-	var url = $("#url").val();
+	if(!validate_fields()) return;
 	var connection = ($("#connection_select").val() == "new") ? $("#connection").val() : $("#connection_select").val();
-	localStorage["url"] = (url[url.length-1] == '/')? url: url + '/';
+	localStorage["url"] = $("#url").val();
 	localStorage["username"] = $("#username").val();
 	localStorage["accname"] = $("#accname").val();
 	localStorage["credentials"] = CryptoJS.MD5(localStorage["username"] + ":" + $("#password").val()).toString();
@@ -74,11 +74,9 @@ function signin() {
 	localStorage["connectionStatus"] = "";
 
 	chrome.runtime.sendMessage({type : "BG_RESTART"});
-	//Start animation
 
 	wait(()=>{
 		if (localStorage["connectionStatus"] == "signedIn"){
-			//Stop animation + delay before close
 			addConnection(connection);
 			chrome.tabs.getCurrent(function(tab) {
 				chrome.tabs.remove(tab.id, function() {});
@@ -94,11 +92,25 @@ function signin() {
 	});
 }
 
-function showGUI(name) {
-	$("#dnd").prop("checked", getDoNotDisturb());
-	$("#name").text(name);
-	$("#settings").hide();
-	$("#tabs").show();
+function validate_fields(){
+	var url = $("#url").val() || "";
+	var username = $("#username").val();
+	var accname = $("#accname").val();
+	var password = $("#password").val();
+	var url_parts = url.match(/(https?:\/\/)?([^:/]+)(:\d{0,5})?.*$/i);
+	var is_valid = url.length == 0?   showMessage("Invalid url"):
+		    username.length == 0? showMessage("Invalid username"):
+		    accname.length == 0?  showMessage("Invalid account name"):
+		    password.length == 0? showMessage("Invalid password"):
+		    url_parts? true :     showMessage("Invalid url");
+	if(is_valid){
+		var protocol = url_parts[1] || "http://";
+		var address = url_parts[2];
+		var port = url_parts[3] || ":8000";
+		var valid_url = protocol + address + port + '/';
+		$("#url").val(valid_url);
+	}
+	return is_valid;
 }
 
 function restoreOptions() {
