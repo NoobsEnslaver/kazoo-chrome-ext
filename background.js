@@ -26,7 +26,7 @@ function onMessage(request, sender, sendResponse) {
 	case "CALL":
 		if(is_too_fast("last_call_time", 3000)) return;
 		var destination = request.text.replace(/[- \)\(\.]/g, "");
-		console.log(MODULE + "calling: " + destination);
+		console.log(MODULE + " calling: " + destination);
 		if (localStorage["active_device"] && localStorage["active_device"] != "" && localStorage["active_device"] != "auto") {
 			KAZOO.device.quickcall({
 				number: destination,
@@ -65,14 +65,10 @@ function onMessage(request, sender, sendResponse) {
 		updatePhoneBook();
 		break;
 
-
-	case "CREATE_PHONE_BOOK":
-		createPhoneBook();
-		break;
-
 	case "PHONE_BOOK_ADD_ENTRY":
-		sendResponse("");
-		phoneBookAddEntry(request.name, request.phone);
+		//sendResponse("");
+		delete request["type"];
+		phoneBookAddEntry(request);
 		break;
 
 	case "PHONE_BOOK_REMOVE_ENTRY":
@@ -108,13 +104,12 @@ function voiceMailDeleteEntryHandler(data){
 	});
 }
 
-function phoneBookAddEntry(name, phone){
-	if (name.length > 0 && phone.length > 0 && localStorage["phoneBookListId"]) {
-		var list_id = localStorage["phoneBookListId"];
+function phoneBookAddEntry(request){
+	if ((request.name.length > 0 || request.last_name.length > 0) && request.phone.length > 0 && localStorage["phoneBookListId"]) {
 		KAZOO.lists.addEntry({account_id: localStorage["account_id"],
 				      success: updatePhoneBook,
-				      list_id: list_id,
-				      data:{ name: name, phone: phone }
+				      list_id: localStorage["phoneBookListId"], 
+				      data: request
 				     });
 	}
 }
@@ -174,9 +169,11 @@ function phoneBookRemoveEntry(entry_id){
 }
 
 function createPhoneBook(){
-	if(is_too_fast()) return;
+	if(is_too_fast(undefined, 60000)) return;
+	console.log("Creating new phonebook");
 	KAZOO.lists.addList({account_id: localStorage["account_id"],
 			     success: updatePhoneBook,
+			     error: (d,s)=>{ console.log("Can't create phonebook, response: %o", s.responseJSON); },
 			     data:{ name: localStorage["username"] + "'s phone book" }});
 }
 
@@ -212,12 +209,14 @@ function updatePhoneBook(){
 		var phone_book = data.data.find((x)=>{return ( x.name == (localStorage["username"] + "'s phone book"));});
 		if (phone_book) {
 			localStorage["phoneBookListId"] = phone_book.id;
-			KAZOO.lists.getEntries({account_id: localStorage["account_id"], list_id: phone_book.id, success:(d, s)=>{
-				localStorage["phone_book"] = JSON.stringify(d.data);
-			}});
+			KAZOO.lists.getEntries({account_id: localStorage["account_id"], list_id: phone_book.id,
+						success:(d, s)=>{ localStorage["phone_book"] = JSON.stringify(d.data);},
+						error:  (d, s)=>{ console.log(MODULE + " Can't create phonebook! response: %o", s.status); }});
 		}else{
-			localStorage["phone_book"] = localStorage["phone_book"]? localStorage["phone_book"]: "NONE";
+			createPhoneBook();
 		}
+	}, error: (data, status)=>{
+		console.log("Update phoneBook error, code %o", status.status);
 	}});
 }
 
@@ -272,7 +271,7 @@ function contentLoaded() {
 		},
 		onRequestError: function(error, requestOptions) {
 			if(requestOptions.generateError !== false) {
-				console.log(MODULE,"Request error: %o %o", error.status, error.status.text);
+				console.log(MODULE + " Request error: %o %o", error.status, error.status.text);
 			}
 			var error_count = incrementErrorCount(error.status);
 
@@ -319,7 +318,7 @@ function prepareToStart(){
 }
 
 function incrementErrorCount(error_code){
-	console.log(MODULE + "Error %o count increased", error_code);
+	console.log(MODULE + " Error %o count increased", error_code);
 	var errors = storage.get("errors", {});
 	errors[error_code] = errors[error_code] || 0;
 	errors[error_code] += 1;
@@ -345,7 +344,7 @@ function showError(data){
 
 function authorize(){
 	if(is_too_fast()) return;
-	console.log(MODULE + "Start authorizing routines...");
+	console.log(MODULE + " Start authorizing routines...");
 	localStorage["connectionStatus"] = "inProgress";
 	chrome.browserAction.setIcon({path: "images/logo_wait_128x128.gif"});
 	KAZOO.auth.userAuth({
@@ -355,7 +354,7 @@ function authorize(){
 			credentials: localStorage["credentials"]
 		},
 		success: function(data, status) {
-			console.log(MODULE + "Require user data...");			
+			console.log(MODULE + " Require user data...");			
 			localStorage["account_id"] = data.data.account_id;
 			//localStorage["user_id"] = data.data.owner_id;
 			KAZOO.user.list({
@@ -364,7 +363,7 @@ function authorize(){
 				success: function(b_data, b_status) {
 					localStorage["name"] = b_data.data[0].first_name + " " + b_data.data[0].last_name;
 					localStorage["email"] = b_data.data[0].email;
-					console.log(MODULE + "Auth completed, welcome ", localStorage["name"]);
+					console.log(MODULE + " Auth completed, welcome ", localStorage["name"]);
 					chrome.browserAction.setIcon({path: "images/logo_online_128x128.png"});
 					localStorage["connectionStatus"] = "signedIn";
 					localStorage["errorMessage"]="";
@@ -391,7 +390,7 @@ function signToBlackholeEvents(){
 	if(is_too_fast()) return;
 	if (!(io && io.connect)) return;
 
-	var blackholeUrl = localStorage.url.replace(/:[0-9]+/, ":5555");
+	var blackholeUrl = localStorage.url.replace(/:[0-9]+\/$/, ":5555");
 	SOCKET = io.connect(blackholeUrl);
 	SOCKET.emit('subscribe', {
 		account_id: localStorage.account_id,
@@ -481,7 +480,7 @@ function signToBlackholeEvents(){
 
 
 function error_handler(data, status){
-	console.log(MODULE + "Error: ", status.error);
+	console.log(MODULE + " Error: ", status.error);
 	chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
 	localStorage["connectionStatus"]= "authFailed";
 	localStorage.removeItem('credentials');
@@ -547,7 +546,7 @@ function blackholeUserActionHandler(action){
 
 	default:
 		showError({statusText: "Cannot execute command", status: ""});
-		console.log(MODULE + "Unknown action from content-script: %o", action);
+		console.log(MODULE + " Unknown action from content-script: %o", action);
 	}
 }
 

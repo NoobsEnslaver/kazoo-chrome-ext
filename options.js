@@ -3,16 +3,15 @@ if (localStorage["connectionStatus"] != "signedIn") {
 }
 
 function main(){
-	create_fields();
-	localize();
+	create_fields();	
 	restore_options();
 	$('#save_btn').click(save_options);
 	$('#reset_btn').click(restore_options);
+	localize();
 }
 
 function localize(){
 	var dictionary = storage.get("localization", {});
-	var opt = document.forms["Options"];
 
 	$("#lang_text").text(dictionary["lang"].message);
 	$("#device_text").text(dictionary["device_selection"].message);
@@ -26,6 +25,8 @@ function localize(){
 	$("#clicktodial_text").text(dictionary["clicktodial_text"].message);
 	$("#customize_viewer_text").text(dictionary["customize_viewer_text"].message);
 	$("#other").text(dictionary["other"].message);
+	$("#save_btn").attr("value", dictionary["save"].message);
+	$("#reset_btn").attr("value", dictionary["reset"].message);
 }
 
 function save_options(){

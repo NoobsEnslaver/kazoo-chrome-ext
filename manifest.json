@@ -11,7 +11,7 @@
     "default_icon": "images/logo_offline_128x128.png",
     "default_popup": "tabs.html"
   },
-  "web_accessible_resources": [ "images/click2dial.png", "injected.html", "audio1.mp3" ],
+	"web_accessible_resources": [ "images/click2dial.png", "injected.html", "injected.js", "audio1.mp3" ],
   "background" : {
     "page" : "background.html",
     "persistent" : true

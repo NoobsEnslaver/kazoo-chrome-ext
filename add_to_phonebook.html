@@ -21,24 +21,18 @@ limitations under the License.
 		<link rel="stylesheet" href="style.css" />
 		<script src="jquery.js"></script>
 		<script src="add_to_phonebook.js"></script>
+		<script src="utils.js"></script>
 	</head>
 	<body style="width: 100%;overflow: auto">
 		<div class="settings">
 			<div class="settings__head">
-				<div class="settings__h2">Add entry to phonebook</div>
+				<div class="settings__h2" id="title">Add entry to phonebook</div>
 			</div>
 			<form class="settings__body" name="Options">
 				<fieldset>
-					<legend id="lang_text">Language</legend>
-					<div class="settings__item"><input type="radio" name="lang" value="en">English</div>
-					<div class="settings__item"><input type="radio" name="lang" value="ru">Russian</div>
-				</fieldset>
-
-				<br/>
-				<fieldset>
 					<legend id="info">Personal information</legend>
 					<div class="settings__item">
-						<input class="input" type="text" id="first_name" name="first_name" placeholder="First name" required="true" />
+						<input class="input" type="text" id="first_name" name="name" placeholder="First name" required="true" />
 					</div>
 
 					<div class="settings__item">
@@ -46,15 +40,15 @@ limitations under the License.
 					</div>
 
 					<div class="settings__item">
-						<input class="input" type="text" id="birthday" name="birthday" placeholder="Birthday" />
+						<input class="input" type="date" id="birthday" name="birthday" placeholder="Birthday" />
 					</div>
 
 					<div class="settings__item">
-						<input class="input" type="text" id="tel" name="tel" placeholder="Telephone number" required="true" />
+						<input class="input" type="tel" id="phone" name="phone" placeholder="Telephone number" required="true" />
 					</div>
 
 					<div class="settings__item">
-						<input class="input" type="text" id="email" name="email" placeholder="Email address" />
+						<input class="input" type="email" id="email" name="email" placeholder="Email address" />
 					</div>
 
 					<div class="settings__item">
@@ -65,7 +59,7 @@ limitations under the License.
 				<br/>
 				<div class="settings__btns">
 					<input class="settings__btn settings__btn-save" type="button" value="Add entry" id="save_btn">
-					<input class="settings__btn settings__btn-reset" type="button" value="Reset" id="reset_btn">
+					<input class="settings__btn settings__btn-reset" type="reset" value="Reset" id="reset_btn">
 				</div>
 			</form>
 		</div>

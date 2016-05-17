@@ -150,24 +150,15 @@ function restoreTabs() {
 
 				case "phonebook":
 					localStorage["currentTab"] = "phonebook";
-
-					if (localStorage["phone_book"] == "NONE") {
-						$("#phonebookentries")[0].style.display = "none";
-						$("#new_phonebook_msg")[0].style.display = "";
-
-					}else {
-						$("#phonebookentries")[0].style.display = "";
-						$("#new_phonebook_msg")[0].style.display = "none";
-						var pb_list = storage.get("phone_book", []);
-						$("#phonebookentries").empty();
-						// Create the first one table entry with input fields for creating new entries in phone book
-						// || <input name> | <input number> | <add button> ||
-						create_input_pb_row();
-						//Fill phonebook table
-						// || name | phone | remove_btn ||
-						for ( var z = 0; z < pb_list.length; z++) {
-							create_default_pb_row(pb_list[z].value.name, pb_list[z].value.phone, pb_list[z].id, z);
-						}
+					var pb_list = storage.get("phone_book", []);
+					$("#phonebookentries").empty();
+					// Create the first one table entry with input fields for creating new entries in phone book
+					// || <input name> | <input number> | <add button> ||
+					create_input_pb_row();
+					//Fill phonebook table
+					// || name | phone | remove_btn ||
+					for ( var z = 0; z < pb_list.length; z++) {
+						create_default_pb_row(pb_list[z].value.name, pb_list[z].value.phone, pb_list[z].id, z);
 					}
 					break;
 
@@ -231,8 +222,6 @@ function restoreTabs() {
 	$("#destination").on('keydown', function(e) {
 		if (e.which == 13) call_btn();
 	});
-
-	$("#create_phonebook_btn").on('click', create_phonebook_handler);
 
 	$("#dndbutton").on("click", dnd_btn_handler);
 	updateDNDButtonImage();
@@ -339,23 +328,7 @@ function create_input_pb_row(){
 	input2.size=15;
 	image.src = "images/add.png";
 	image.onclick = (e)=>{
-		// if ($("#pb_new_name").val() !== "" && $("#pb_new_phone").val() !== "") {
-		// 	var row = create_default_pb_row($("#pb_new_name").val(),  $("#pb_new_phone").val(), Math.random());
-		// 	$("#phonebookentries").append(row);
-		// 	chrome.runtime.sendMessage({
-		// 		type: "PHONE_BOOK_ADD_ENTRY",
-		// 		name: $("#pb_new_name").val(),
-		// 		phone: $("#pb_new_phone").val() + ""
-		// 	}, (e)=>{
-		// 		var event = new KeyboardEvent('input');
-		// 		$("#pb_new_name").val("");
-		// 		$("#pb_new_phone").val("");
-		// 		document.querySelector('#pb_new_name').dispatchEvent(event);
-		// 		document.querySelector('#pb_new_phone').dispatchEvent(event);
-		// 	});
-		// }
-
-		chrome.tabs.update({url: chrome.extension.getURL("add_to_phonebook.html")});
+		chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "add_to_phonebook.html"}, ()=>{});
 	};
 
 	col1.appendChild(input1);
@@ -505,13 +478,6 @@ function create_default_pb_row(name, phone, id, index){
 	$("#phonebookentries").append(row);
 }
 
-function create_phonebook_handler(){
-	var message = { type : "CREATE_PHONE_BOOK"};
-	chrome.runtime.sendMessage(message, ()=>{});
-	$("#phonebookentries")[0].style.display = "";
-	$("#new_phonebook_msg")[0].style.display = "none";
-}
-
 function updatePhoneBook(){
 	var message = { type : "UPDATE_PHONE_BOOK"};
 	chrome.runtime.sendMessage(message, ()=>{});
@@ -529,11 +495,7 @@ function dnd_btn_handler(){
 function localize(){
 	try{
 		var x = storage.get("localization", {});
-
-		$("#help_why").text(x.help_why.message);
-		$("#help_why")[0].title = x.help_why_answer.message;
-		$("#help_ask_create_pb").text(x.help_ask_create_pb.message);
-		$("#help_ask_create_pb2").text(x.help_ask_create_pb2.message);
+		
 		$("#signout_text")[0].innerText = x.signout_text.message;
 		$("#history_tab")[0].title = x.history_tab.message;
 		$("#pref_tab")[0].title = x.pref_tab.message;
@@ -541,7 +503,7 @@ function localize(){
 		$("#dndbutton")[0].title = x.dndbutton.message;
 		// $("#about")[0].innerText = x.about.message;
 	}catch(e){
-		console.log(MODULE + "Localization error: %o", e);
+		console.log(MODULE + ", Localization error: %o", e);
 	};
 }
 

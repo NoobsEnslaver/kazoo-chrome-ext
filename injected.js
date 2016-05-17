@@ -13,6 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
+
 function sendCallMessage(number) {
 	window.confirm("Are you sure you want to call " + number + "?")?
 		window.postMessage({type: "CALL", text: number}, "*"):"";

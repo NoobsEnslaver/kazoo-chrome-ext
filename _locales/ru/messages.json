@@ -46,5 +46,8 @@
 	"pb_phone_placeholder": {"message": "номер телефона"},
 	"get_owner_name": {"message": "Введите имя владельца номера"},
 	"anonymous": {"message": "Таинственный незнакомец"},
-	"cant_parse_number": {"message": "Не удаётся выделить номер"}
+	"cant_parse_number": {"message": "Не удаётся выделить номер"},
+	"pb_title": {"message": "Добавить запись в телефонную книгу"},
+	"save": {"message": "Сохранить"},
+	"reset": {"message": "Сбросить"}
 }
