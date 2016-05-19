@@ -116,19 +116,7 @@ function restoreTabs() {
 					$("#msgtable").empty();
 					switch(msg_list.length){
 					case 0:
-						var p1, img, h2;
-
-						p1= document.createElement("p");
-						h2= document.createElement("h3");
-						h2.innerText = "You have no voicemailboxes yet";
-						p1.appendChild(h2);
-						img = document.createElement("img");
-
-						img.src = "images/no_voicemailbox.jpg";
-						img.width = 250;
-
-						$("#msgtable").append(p1);
-						$("#msgtable").append(img);
+						draw_no_vm_logo();
 						break;
 
 					case 1:
@@ -342,6 +330,31 @@ function create_input_fax_row(){
 	$("#faxentries").append(row);
 }
 
+function draw_no_vm_logo(){
+	var popup_heigth = storage.get("popup_heigth", 480);
+	var p1, p2, img, h3_1, h3_2;
+	
+
+	p1= document.createElement("p");
+	p2= document.createElement("p");
+	h3_1= document.createElement("h3");
+	h3_2= document.createElement("h3");
+	h3_1.innerText = "You have no voicemails yet...";
+	h3_2.innerText = "... make a rest";
+	p1.appendChild(h3_1);
+	p2.appendChild(h3_2);
+	img = document.createElement("img");
+	
+	img.src = "images/no_voicemailbox.png";
+	img.height = (popup_heigth - 260)*0.8;
+
+	$("#msgtable").append(p1);
+	if(popup_heigth > 320){
+		$("#msgtable").append(img);
+		$("#msgtable").append(p2);
+	}
+}
+
 function showVMMessages(e){
 	var vmbox_id = e.currentTarget.id;
 	var media_list = storage.get("vm_media", {});
@@ -349,19 +362,7 @@ function showVMMessages(e){
 	$("#msgtable").empty();
 	if(!media_list[vmbox_id]) return;
 	if (media_list[vmbox_id].length == 0) {
-		var p1, img, h2;
-
-		p1= document.createElement("p");
-		h2= document.createElement("h3");
-		h2.innerText = "You have no voicemails yet";
-		p1.appendChild(h2);
-		img = document.createElement("img");
-
-		img.src = "images/no_voicemailbox.jpg";
-		img.width = 250;
-
-		$("#msgtable").append(p1);
-		$("#msgtable").append(img);
+		draw_no_vm_logo();
 	} else {
 		for ( var i = 0; i < media_list[vmbox_id].length; i++) {
 			var new_info_row = create_info_media_row(media_list[vmbox_id][i].caller_id_name,
