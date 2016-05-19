@@ -415,6 +415,8 @@ function authorize(){
 					updatePhoneBook();
 					signToBlackholeEvents();
 
+					clearInterval(AUTH_DAEMON_ID);
+					clearInterval(VM_DAEMON_ID);
 					AUTH_DAEMON_ID = window.setInterval(authorize, 60*60*1000); // update auth-token every hour
 					VM_DAEMON_ID = window.setInterval(updateVoiceMails, 30*1000);
 				},
@@ -562,7 +564,7 @@ function updateVoiceMails(){
 				}
 				return x_new;
 			});
-			localStorage["vm_boxes"] = JSON.stringify(new_boxes);
+			storage.set("vm_boxes", new_boxes);
 		}});
 }
 
