@@ -49,5 +49,7 @@
 	"cant_parse_number": {"message": "Не удаётся выделить номер"},
 	"pb_title": {"message": "Добавить запись в телефонную книгу"},
 	"save": {"message": "Сохранить"},
-	"reset": {"message": "Сбросить"}
+	"reset": {"message": "Сбросить"},
+	"send": {"message": "Отправить"},
+	"fax_send": {"message": "Отправить факс"}
 }

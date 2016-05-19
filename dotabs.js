@@ -162,8 +162,15 @@ function restoreTabs() {
 					}
 					break;
 
-				case "preferences":
-					localStorage["currentTab"] = "preferences";
+				case "fax":
+					localStorage["currentTab"] = "fax";
+					var fax_list = storage.get("fax_media", []);
+					$("#faxentries").empty();
+					create_input_fax_row();
+					for ( var z = 0; z < fax_list.length; z++) {
+						create_default_fax_row(fax_list[z].name, fax_list[z].phone, fax_list[z].id, fax_list[z].attachments, z);	// FIXME
+					}
+
 					break;
 				}
 			}
@@ -184,8 +191,8 @@ function restoreTabs() {
 	case "history":
 		$("#tabs").tabs("option", "active", 2);
 		break;
-	case "preferences":
-		$("#tabs").tabs("option", "active", 4);
+	case "fax":
+		$("#tabs").tabs("option", "active", 3);
 		break;
 	default:
 		$("#tabs").tabs("option", "active", 1);
@@ -235,6 +242,105 @@ function restoreTabs() {
 	localize();
 }
 
+function create_default_fax_row(name, phone, id, attachments, pos){	//FIXME
+	var row, col1, col2, col3, div, input1, input2, input3, image, btn_attach, btn_send;
+	var translate = storage.get("localization", {
+		"pb_name_placeholder": {"message": "name"},
+		"pb_phone_placeholder": {"message": "phone number"}
+	});
+
+	row = document.createElement("tr");
+	col1 = document.createElement("td");
+	col2 = document.createElement("td");
+	col3 = document.createElement("td");
+	input1 = document.createElement("input");
+	input2 = document.createElement("input");
+	input3 = document.createElement("input");
+	btn_attach = document.createElement("button");
+	btn_send = document.createElement("button");
+	
+	col1.colspan = 2;
+	input1.style.width = "100%";
+	input2.style.width = "100%";
+	input3.style.width = "100%";
+	input3.type = "file";
+	// input1.placeholder = translate["attachment"].message;
+	// input2.placeholder = translate["pb_phone_placeholder"].message;
+	// input3.placeholder = translate["pb_name_placeholder"].message;
+
+	btn_attach.innerText = "Attach";
+	btn_attach.style.width = "100%";	
+	btn_send.innerText = "Send";
+	btn_send.style.height = "40px";
+	btn_send.style.width = "100%";
+
+	btn_attach.onclick = (e)=>{
+		
+	};
+	
+	col1.appendChild(input1);
+	col1.appendChild(document.createElement("br"));
+	col1.appendChild(input2);
+	col1.appendChild(document.createElement("br"));
+	col1.appendChild(input3);
+	
+	col3.appendChild(btn_attach);
+	col3.appendChild(document.createElement("br"));
+	col3.appendChild(btn_send);
+
+	row.appendChild(col1);
+	row.appendChild(col2);
+	row.appendChild(col3);
+	// input2 = document.createElement("input");
+	// input3 = document.createElement("input");
+	//image = document.createElement("img");
+	
+
+	// input1.id = "pb_new_name";
+	// $(input1).attr("class", "input input-phonebook");
+	// 
+	// input1.size=15;
+	// input2.id = "pb_new_phone";
+	// $(input2).attr("class", "input input-phonebook");
+	// input2.placeholder = translate["pb_phone_placeholder"].message;
+	// input2.size=15;
+	// image.src = "images/add.png";
+	// image.onclick = (e)=>{
+	// 	chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "add_to_phonebook.html"}, ()=>{});
+	// };
+
+	// col1.appendChild(input1);
+	// col2.appendChild(input2);
+	// col3.appendChild(image);
+
+	// input_field.appendChild(col1);
+	// input_field.appendChild(col2);
+	// input_field.appendChild(col3);
+
+	$("#faxentries").append(row);
+}
+
+function create_input_fax_row(){
+	var row, col, btn, image;
+	var translate = storage.get("localization", {
+		"fax_send": {"message": "name"}
+	});
+	row = document.createElement("tr");
+	col = document.createElement("td");
+	btn = document.createElement("button");
+
+	col.colspan = 3;
+	btn.innerText = "Send fax";
+	btn.style.width = "100%";	
+
+	btn.onclick = (e)=>{
+		chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "send_fax.html"}, ()=>{});
+	};
+	col.appendChild(btn);
+	row.appendChild(col);
+
+	$("#faxentries").append(row);
+}
 
 function showVMMessages(e){
 	var vmbox_id = e.currentTarget.id;
@@ -273,7 +379,7 @@ function showVMMessages(e){
 	$("#msgtable").on("click", ".mes__row", function() {
 		audio = $(this).find("audio");
 		$(audio)[0].pause();
-		$(audio)[0].currentTime = 0;
+		$(audio)[0].currentTime = 0;		//CHECK IT
 		$(audio).closest(".mes__audio").toggle(300);
 	});
 

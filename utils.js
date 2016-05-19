@@ -18,7 +18,7 @@ function is_too_fast(event_name, timeout){
 	event_name = event_name || arguments.callee.caller.name + "_last_call";
 	var last_time = storage.get(event_name, 0);
 	if (Date.now() - last_time < timeout){
-		showError({statusText: "Too fast", status: arguments.callee.caller.name});
+		//showError({statusText: "Too fast", status: arguments.callee.caller.name});
 		console.log("Too fast:" + arguments.callee.caller.name);
 		return true;
 	}else{

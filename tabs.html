@@ -69,38 +69,39 @@
 					</a>
 				</li>
 				<li>
-					<a href="#preferences">
-						<span><img src="images/preferences.png" id="pref_tab" title="Preferences"></span>
+					<a href="#fax">
+						<span><img src="images/faxbox.png" width=32 height=32 id="fax_tab" title="Fax"></span>
 					</a>
 				</li>
-				<li>
-					<a href="#preferences">
-						<span><img src="images/preferences.png" id="pref_tab" title="Preferences"></span>
-					</a>
-				</li>
+				<!-- <li> -->
+				<!-- 	<a href="#preferences"> -->
+				<!-- 		<span><img src="images/preferences.png" id="pref_tab" title="Preferences"></span> -->
+				<!-- 	</a> -->
+				<!-- </li> -->
 			</ul>
 			<div id="history">
 				<div id="calllogs">
-					<table id="calllogentries">
+					<table id="calllogentries" class="tabled_tab">
 					</table>
 				</div>
 			</div>
-
 			<div id="phonebook">
-				<table id="phonebookentries">
+				<table id="phonebookentries" class="tabled_tab">
 				</table>
 			</div>
-
 			<div id="messages">
-
 				<div id="msgtable" class="mes">
 				</div>
-
 			</div>
-
-			<div id="preferences">
-				Comming soon
-			</div>
+			<div id="fax">
+				<table id="faxentries" class="tabled_tab">
+					<tr>
+						<td colspan=3>
+							<button>Send fax</button>
+						</td>
+					</tr>
+				</table>
+			</div>		
 		</div>
 		<div id="toolbar">
 			<img id="cfabutton" src="images/callforward_disabled.png" title="Call Forwarding Always" class="tray_icons" />

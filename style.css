@@ -537,6 +537,11 @@ ul.ui-autocomplete {
 	margin: 2px;
 }
 
+#fax {
+	font-size: 8pt;
+	margin: 2px;
+}
+
 #tabs {
 	height: 90%;
 	border-color: #35b;
@@ -547,29 +552,6 @@ ul.ui-autocomplete {
 
 #tabs li {
 	background-color: #ffffff;
-}
-
-#dndbutton {
-	/* position: absolute; */
-	/* bottom: 15px; */
-	/* left: 230px; */
-	/* cursor: pointer; */
-}
-
-#cfabutton {
-	/* position: absolute; */
-	/* bottom: 15px; */
-	/* left: 130px; */
-	/* cursor: pointer; */
-	/* display: none; */
-}
-
-#robutton {
-	/* position: absolute; */
-	/* bottom: 15px; */
-	/* left: 100px; */
-	/* cursor: pointer; */
-	/* display: none; */
 }
 
 #clicktodial {
@@ -584,12 +566,6 @@ ul.ui-autocomplete {
 	top: 70px;
 }
 
-#texttospeech {
-	position: absolute;
-	left: 10px;
-	top: 90px;
-}
-
 #language {
 	position: absolute;
 	left: 75px;
@@ -602,32 +578,32 @@ ul.ui-autocomplete {
 	height: 100%;
 }
 
-#calllogentries {
+.tabled_tab {
 	width: 100%;
 	border-collapse: collapse;
 }
-#calllogentries tr td img {
+.tabled_tab tr td img {
 	width: 80%;
 }
-#calllogentries tr td {
+.tabled_tab tr td {
 	cursor: pointer;
 	padding: 4px;
 	text-align: left;
 	border-bottom: 1px solid #F1F1F1;
 	font-size: 0.8rem;
 }
-#calllogentries tr td p {
+.tabled_tab tr td p {
 	margin: 0px;
 	font-size: 0.8rem;
 	font-weight: bold;
 }
-#calllogentries tr:hover {
+.tabled_tab tr:hover {
 	background-color: #57b;
 }
-#calllogentries tr td:first-child {
+.tabled_tab tr td:first-child {
 	padding-left: 12px;
 }
-#calllogentries tr td:last-child {
+.tabled_tab tr td:last-child {
 	padding-right: 12px;
 }
 /* ------ Phone Book --------  */

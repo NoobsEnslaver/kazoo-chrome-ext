@@ -49,5 +49,7 @@
 	"cant_parse_number": {"message": "No phone numbers there... i think..."},
 	"pb_title": {"message": "Add entry to phonebook"},
 	"save": {"message": "Save"},
-	"reset": {"message": "Reset"}
+	"reset": {"message": "Reset"},
+	"send": {"message": "Send"},
+	"fax_send": {"message": "Send fax"}
 }

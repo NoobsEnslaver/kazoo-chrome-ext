@@ -91,7 +91,48 @@ function onMessage(request, sender, sendResponse) {
 	case "GENTLY_OPEN_PAGE":
 		gentlyOpenPage(request.url);
 		break;
+
+	case "SEND_FAX":
+		send_fax(request);
+		break;
 	}
+}
+
+function send_fax(request){
+	var name = request.name;
+	var phone = request.phone;
+	var attachment = request.attachment;	// FIXME: no data received
+
+	var data = {
+		"document":{
+			"url": attachment,
+			"method":"get"
+		},
+		"retries":1,
+		"to_name": name,
+		"to_number": phone,
+		"from_number": localStorage["fax_caller_id"],
+		"from_name": localStorage["fax_caller_name"]
+
+	};
+	KAZOO.faxes.send({account_id: localStorage.account_id, data: data});
+}
+
+function update_fax(){
+	if(is_too_fast()) return;
+	KAZOO.faxbox.list({account_id: localStorage["account_id"], filters: { filter_owner_id: localStorage["user_id"] }, success: (data, status)=>{
+		if (data.data.length > 0) {
+			localStorage["fax_id"] = data.data[0].id;
+			localStorage["fax_smtp_email_address"] = data.data[0]["fax_smtp_email_address"];
+			localStorage["fax_caller_id"] = data.data[0]["caller_id"];
+			localStorage["fax_caller_name"] = data.data[0]["caller_name"];
+			localStorage["fax_media"] = data.data[0]["media"];	//FIXME
+		}else{
+			//createFaxBox();	//TODO
+		}
+	}, error: (data, status)=>{
+		console.log("Update phoneBook error, code %o", status.status);
+	}});	
 }
 
 function voiceMailDeleteEntryHandler(data){

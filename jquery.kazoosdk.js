@@ -163,7 +163,8 @@
 		},
 		faxes: {
 			'getLogs': { verb: 'GET', url: 'accounts/{account_id}/faxes/smtplog'},
-			'getLogDetails': { verb: 'GET', url: 'accounts/{account_id}/faxes/smtplog/{logId}'}
+			'getLogDetails': { verb: 'GET', url: 'accounts/{account_id}/faxes/smtplog/{logId}'},
+			'send': {verb: 'PUT', url: 'accounts/{account_id}/faxes/'}
 		},
 		globalResources: {
 			'get': { verb: 'GET', url: 'resources/{resourceId}' },
