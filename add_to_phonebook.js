@@ -4,6 +4,11 @@ if (localStorage["connectionStatus"] != "signedIn") {
 
 function main(){
 	$("#save_btn").click(save_options);
+	$("#birthday").focus(function() {
+		this.type = "date";
+	}).blur(function() {
+		this.type = "text";
+	});
 	localize();
 }
 
@@ -26,7 +31,7 @@ function save_options(){
 	var options = $('form[name=Options]').serializeArray().reduce((obj, item)=>{
 		obj[item.name] = item.value;
 		return obj;
-	}, {type: "PHONE_BOOK_ADD_ENTRY"});	
+	}, {type: "PHONE_BOOK_ADD_ENTRY"});
 	chrome.runtime.sendMessage(options, (e)=>{});
 }
 
