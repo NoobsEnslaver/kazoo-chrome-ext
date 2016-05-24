@@ -75,10 +75,9 @@ function restoreTabs() {
 		{
 			activate : function(event, ui) {
 				var new_panel_id = ui.newPanel.attr("id");
-
+				localStorage["currentTab"] = new_panel_id;
 				switch(new_panel_id){
 				case "history":
-					localStorage["currentTab"] = "history";
 					var list = storage.get("history", []);
 
 					list.sort(function(a, b) {
@@ -111,7 +110,6 @@ function restoreTabs() {
 					break;
 
 				case "messages":
-					localStorage["currentTab"] = "messages";
 					var msg_list = storage.get("vm_boxes", []);
 					$("#msgtable").empty();
 					switch(msg_list.length){
@@ -137,7 +135,6 @@ function restoreTabs() {
 					break;
 
 				case "phonebook":
-					localStorage["currentTab"] = "phonebook";
 					var pb_list = storage.get("phone_book", []);
 					$("#phonebookentries").empty();
 					// Create the first one table entry with input fields for creating new entries in phone book
@@ -151,7 +148,6 @@ function restoreTabs() {
 					break;
 
 				case "fax":
-					localStorage["currentTab"] = "fax";
 					var fax_list = storage.get("fax_media", []);
 					$("#faxentries").empty();
 					create_input_fax_row();
@@ -159,6 +155,9 @@ function restoreTabs() {
 						create_default_fax_row(fax_list[z].name, fax_list[z].phone, fax_list[z].id, fax_list[z].attachments, z);	// FIXME
 					}
 
+					break;
+				case "conference":
+					
 					break;
 				}
 			}
@@ -181,6 +180,9 @@ function restoreTabs() {
 		break;
 	case "fax":
 		$("#tabs").tabs("option", "active", 3);
+		break;
+	case "conference":
+		$("#tabs").tabs("option", "active", 4);
 		break;
 	default:
 		$("#tabs").tabs("option", "active", 1);

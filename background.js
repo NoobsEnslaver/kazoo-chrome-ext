@@ -441,6 +441,12 @@ function signToBlackholeEvents(){
 		binding: 'call.*.*'
         });
 
+	SOCKET.emit('subscribe', {
+		account_id: localStorage.account_id,
+		auth_token: localStorage.authTokens,
+		binding: 'fax.status.*'
+        });
+
 	function call_event_handler(EventJObj) {
 		var devices = storage.get("devices", []).map((x)=>{return x.id;});
 		if (is_too_fast(EventJObj["Event-Name"] + "_" + EventJObj["Call-Direction"]) ||
@@ -516,9 +522,83 @@ function signToBlackholeEvents(){
 		}
 	}
 
+
+	function fax_event_handler(EventJObj){
+		if(is_too_fast()) return;
+
+		if(localStorage.fax_system_notification === "true"){
+			chrome.notifications.create("Kazoo chrome extension fax event", {
+				type: "basic",
+				iconUrl: "images/phone-push.png",
+				title: "Received fax",
+				//eventTime: 2000,
+				isClickable: true,
+				buttons: [{title:"View"}, {title: "Cancel"}],
+				message: "Received fax from " + EventJObj.data.name,
+				contextMessage: EventJObj.data.number
+			}, ()=>{});
+			chrome.notifications.onClicked.addListener((id)=>{
+				if(id !== "Kazoo chrome extension fax event") return;
+				blackholeUserActionHandler("VIEW_FAX");
+			});
+			chrome.notifications.onButtonClicked.addListener((id, b_idx)=>{
+				if(id !== "Kazoo chrome extension fax event") return;
+				if (b_idx === 0) {
+					alert("OK");
+				}else{
+					alert("Not OK");
+				}
+			});
+		}
+		
+		// chrome.tabs.query({active: true}, function(tabs) {
+		// 		chrome.tabs.sendMessage(tabs[0].id, {
+		// 			sender: "KAZOO",
+		// 			type: "event",
+		// 			data: {
+		// 				number: EventJObj.data.number,
+		// 				name: EventJObj.data.name,
+		// 				"Event-Name": EventJObj["Event-Name"]
+		// 			}
+		// 		}, ()=>{});
+		// 	});		
+	}
+
+	function conference_event_handler(EventJObj){
+		if(is_too_fast()) return;
+
+		if(localStorage.conerence_system_notification === "true"){
+			chrome.notifications.create("Kazoo chrome extension conference event", {
+				type: "basic",
+				iconUrl: "images/phone-push.png",
+				title: "Received fax",
+				//eventTime: 2000,
+				isClickable: true,
+				buttons: [{title:"View"}, {title: "Cancel"}],
+				message: "Received fax from " + EventJObj.data.name,
+				contextMessage: EventJObj.data.number
+			}, ()=>{});
+			chrome.notifications.onClicked.addListener((id)=>{
+				if(id !== "Kazoo chrome extension fax event") return;
+				blackholeUserActionHandler("VIEW_FAX");
+			});
+			chrome.notifications.onButtonClicked.addListener((id, b_idx)=>{
+				if(id !== "Kazoo chrome extension fax event") return;
+				if (b_idx === 0) {
+					alert("OK");
+				}else{
+					alert("Not OK");
+				}
+			});
+		}
+	}
+	
+
 	SOCKET.on('CHANNEL_CREATE', call_event_handler);
 	SOCKET.on('CHANNEL_ANSWER', call_event_handler);
 	SOCKET.on('CHANNEL_DESTROY', call_event_handler);
+        SOCKET.on('FAX_RECEIVED', fax_event_handler);                             //FIXME: Event name
+	SOCKET.on('CONFERENCE_PARTICIPANT', conference_event_handler);            //FIXME: Event name
 }
 
 
