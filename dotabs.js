@@ -75,10 +75,9 @@ function restoreTabs() {
 		{
 			activate : function(event, ui) {
 				var new_panel_id = ui.newPanel.attr("id");
-
+				localStorage["currentTab"] = new_panel_id;
 				switch(new_panel_id){
 				case "history":
-					localStorage["currentTab"] = "history";
 					var list = storage.get("history", []);
 
 					list.sort(function(a, b) {
@@ -111,7 +110,6 @@ function restoreTabs() {
 					break;
 
 				case "messages":
-					localStorage["currentTab"] = "messages";
 					var msg_list = storage.get("vm_boxes", []);
 					$("#msgtable").empty();
 					switch(msg_list.length){
@@ -137,7 +135,6 @@ function restoreTabs() {
 					break;
 
 				case "phonebook":
-					localStorage["currentTab"] = "phonebook";
 					var pb_list = storage.get("phone_book", []);
 					$("#phonebookentries").empty();
 					// Create the first one table entry with input fields for creating new entries in phone book
@@ -151,14 +148,16 @@ function restoreTabs() {
 					break;
 
 				case "fax":
-					localStorage["currentTab"] = "fax";
-					var fax_list = storage.get("fax_media", []);
+					var fax_list = storage.get("faxes", []);
 					$("#faxentries").empty();
 					create_input_fax_row();
-					for ( var z = 0; z < fax_list.length; z++) {
-						create_default_fax_row(fax_list[z].name, fax_list[z].phone, fax_list[z].id, fax_list[z].attachments, z);	// FIXME
+					for ( var z = 1; z < fax_list.length; z++) {
+						create_default_fax_row(fax_list[z].name, fax_list[z].from_number, fax_list[z].id, z);	// FIXME
 					}
 
+					break;
+				case "conference":
+					
 					break;
 				}
 			}
@@ -181,6 +180,9 @@ function restoreTabs() {
 		break;
 	case "fax":
 		$("#tabs").tabs("option", "active", 3);
+		break;
+	case "conference":
+		$("#tabs").tabs("option", "active", 4);
 		break;
 	default:
 		$("#tabs").tabs("option", "active", 1);
@@ -230,104 +232,43 @@ function restoreTabs() {
 	localize();
 }
 
-function create_default_fax_row(name, phone, id, attachments, pos){	//FIXME
-	var row, col1, col2, col3, div, input1, input2, input3, image, btn_attach, btn_send;
-	var translate = storage.get("localization", {
-		"pb_name_placeholder": {"message": "name"},
-		"pb_phone_placeholder": {"message": "phone number"}
-	});
-
-	row = document.createElement("tr");
-	col1 = document.createElement("td");
-	col2 = document.createElement("td");
-	col3 = document.createElement("td");
-	input1 = document.createElement("input");
-	input2 = document.createElement("input");
-	input3 = document.createElement("input");
-	btn_attach = document.createElement("button");
-	btn_send = document.createElement("button");
+function create_default_fax_row(name, phone, fax_id, pos){
+	var table = $("#faxentries")[0].childNodes[0];
+	table.insertRow(pos);
+	table.rows[pos].insertCell(0);
+	table.rows[pos].insertCell(1);
+	table.rows[pos].insertCell(2);
 	
-	col1.colspan = 2;
-	input1.style.width = "100%";
-	input2.style.width = "100%";
-	input3.style.width = "100%";
-	input3.type = "file";
-	// input1.placeholder = translate["attachment"].message;
-	// input2.placeholder = translate["pb_phone_placeholder"].message;
-	// input3.placeholder = translate["pb_name_placeholder"].message;
+	table.rows[pos].cells[0].appendChild(document.createElement("p"));
+	table.rows[pos].cells[0].childNodes[0].appendChild(document.createTextNode(name));
+	table.rows[pos].cells[0].appendChild(document.createTextNode(phone));
+	//table.rows[pos].cells[1].appendChild(document.createTextNode("-----"));
 
-	btn_attach.innerText = "Attach";
-	btn_attach.style.width = "100%";	
-	btn_send.innerText = "Send";
-	btn_send.style.height = "40px";
-	btn_send.style.width = "100%";
-
-	btn_attach.onclick = (e)=>{
-		
-	};
-	
-	col1.appendChild(input1);
-	col1.appendChild(document.createElement("br"));
-	col1.appendChild(input2);
-	col1.appendChild(document.createElement("br"));
-	col1.appendChild(input3);
-	
-	col3.appendChild(btn_attach);
-	col3.appendChild(document.createElement("br"));
-	col3.appendChild(btn_send);
-
-	row.appendChild(col1);
-	row.appendChild(col2);
-	row.appendChild(col3);
-	// input2 = document.createElement("input");
-	// input3 = document.createElement("input");
-	//image = document.createElement("img");
-	
-
-	// input1.id = "pb_new_name";
-	// $(input1).attr("class", "input input-phonebook");
-	// 
-	// input1.size=15;
-	// input2.id = "pb_new_phone";
-	// $(input2).attr("class", "input input-phonebook");
-	// input2.placeholder = translate["pb_phone_placeholder"].message;
-	// input2.size=15;
-	// image.src = "images/add.png";
-	// image.onclick = (e)=>{
-	// 	chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "add_to_phonebook.html"}, ()=>{});
-	// };
-
-	// col1.appendChild(input1);
-	// col2.appendChild(input2);
-	// col3.appendChild(image);
-
-	// input_field.appendChild(col1);
-	// input_field.appendChild(col2);
-	// input_field.appendChild(col3);
-
-	$("#faxentries").append(row);
+	table.rows[pos].cells[2].appendChild(document.createElement("img"));
+	table.rows[pos].cells[2].childNodes[0].src = "images/download.ico";
+	table.rows[pos].cells[2].childNodes[0].style.height = "24px";
+	table.rows[pos].cells[2].childNodes[0].style.width = "24px";
+	table.rows[pos].cells[2].childNodes[0].onclick = (e)=>{
+		console.log(e);
+		chrome.downloads.download({
+			url: localStorage["url"] + "v2/accounts/" + localStorage["account_id"] + "/faxes/incoming/" +
+				fax_id + "/attachment?auth_token=" + localStorage["authTokens"]
+		});};
 }
 
 function create_input_fax_row(){
-	var row, col, btn, image;
+	var table = $("#faxentries")[0].appendChild(document.createElement("tbody"));
 	var translate = storage.get("localization", {
 		"fax_send": {"message": "name"}
 	});
-	row = document.createElement("tr");
-	col = document.createElement("td");
-	btn = document.createElement("button");
-
-	col.colspan = 3;
-	btn.innerText = "Send fax";
-	btn.style.width = "100%";	
-
-	btn.onclick = (e)=>{
+	table.insertRow(0);
+	table.rows[0].insertCell(0).colSpan = 3;
+	table.rows[0].cells[0].appendChild(document.createElement("button"));
+	table.rows[0].cells[0].childNodes[0].innerText = translate.fax_send.message;
+	table.rows[0].cells[0].childNodes[0].style.width = "100%";	
+	table.rows[0].cells[0].childNodes[0].onclick = (e)=>{
 		chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "send_fax.html"}, ()=>{});
 	};
-	col.appendChild(btn);
-	row.appendChild(col);
-
-	$("#faxentries").append(row);
 }
 
 function draw_no_vm_logo(){
@@ -346,7 +287,7 @@ function draw_no_vm_logo(){
 	img = document.createElement("img");
 	
 	img.src = "images/no_voicemailbox.png";
-	img.height = (popup_heigth - 260)*0.8;
+	img.height = (popup_heigth - 260)*0.7;
 
 	$("#msgtable").append(p1);
 	if(popup_heigth > 320){
