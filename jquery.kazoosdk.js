@@ -164,7 +164,9 @@
 		faxes: {
 			'getLogs': { verb: 'GET', url: 'accounts/{account_id}/faxes/smtplog'},
 			'getLogDetails': { verb: 'GET', url: 'accounts/{account_id}/faxes/smtplog/{logId}'},
-			'send': {verb: 'PUT', url: 'accounts/{account_id}/faxes/'}
+			'send': {verb: 'PUT', url: 'accounts/{account_id}/faxes/'},
+			'incoming': {verb: 'GET', url: 'accounts/{account_id}/faxes/incoming'},
+			'receive': {verb: 'GET', url: 'accounts/{account_id}/faxes/incoming/{fax_id}/attachment'}
 		},
 		globalResources: {
 			'get': { verb: 'GET', url: 'resources/{resourceId}' },

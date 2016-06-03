@@ -118,21 +118,51 @@ function send_fax(request){
 	KAZOO.faxes.send({account_id: localStorage.account_id, data: data});
 }
 
-function update_fax(){
+function updateFax(){
 	if(is_too_fast()) return;
-	KAZOO.faxbox.list({account_id: localStorage["account_id"], filters: { filter_owner_id: localStorage["user_id"] }, success: (data, status)=>{
+	var faxbox_id = storage.get("faxbox_id", "");
+	if(faxbox_id){
+		KAZOO.faxes.incoming({account_id: localStorage["account_id"], filters: { filter_faxbox_id: localStorage["faxbox_id"] }, success: (data, status)=>{
+			storage.set("faxes", data.data);
+			// data.data.forEach((fax)=>{
+			// 	chrome.downloads.download({
+			// 		url: localStorage["url"] + "v2/accounts/" + localStorage["account_id"]+ "/faxes/incoming/" +
+			// 			fax.id + "/attachment?auth_token=" + localStorage["authTokens"]
+			// 	});
+			// });
+		}, error: (data, status)=>{
+			console.log("updateFax error, code %o", status.status);
+			storage.set("faxes", []);
+		}});
+	}else{
+		console.log("No faxbox_id, try to get");
+		getMyFaxBoxId();
+	}	
+}
+
+function getMyFaxBoxId(){
+	if(is_too_fast()) return;
+	KAZOO.faxbox.list({account_id: localStorage["account_id"], // filters: { filter_owner_id: localStorage["user_id"] },
+			   success: (data, status)=>{
 		if (data.data.length > 0) {
-			localStorage["fax_id"] = data.data[0].id;
-			localStorage["fax_smtp_email_address"] = data.data[0]["fax_smtp_email_address"];
-			localStorage["fax_caller_id"] = data.data[0]["caller_id"];
-			localStorage["fax_caller_name"] = data.data[0]["caller_name"];
-			localStorage["fax_media"] = data.data[0]["media"];	//FIXME
+			localStorage["faxbox_id"] = data.data[0].id;
 		}else{
-			//createFaxBox();	//TODO
+			console.log("No faxbox, try to create");
+			createFaxBox();
 		}
 	}, error: (data, status)=>{
-		console.log("Update phoneBook error, code %o", status.status);
-	}});	
+		console.log("getMyFaxBoxId error, code %o", status.status);
+	}});
+}
+
+function createFaxBox(){
+	if(is_too_fast(undefined, 60000)) return;
+	console.log("Sorry, no faxboxes for you");   //TODO
+	// KAZOO.faxbox.create({account_id: localStorage["account_id"], success: (data, status)=>{
+		
+	// }, error: (data, status)=>{
+	// 	console.log("createFaxBox error, code %o", status.status);
+	// }});
 }
 
 function voiceMailDeleteEntryHandler(data){

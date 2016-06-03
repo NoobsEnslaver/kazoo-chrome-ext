@@ -21,7 +21,7 @@ function send(){
 	var options = $('form[name=Options]').serializeArray().reduce((obj, item)=>{
 		obj[item.name] = item.value;
 		return obj;
-	}, {type: "SEND_FAX",  attachment: $("#attachment")[0].files});		//FIXME - illegal object sending
+	}, {type: "SEND_FAX",  attachment: $("#attachment")[0].value});		//FIXME - illegal object sending
 	chrome.runtime.sendMessage(options, (e)=>{});
 }
 

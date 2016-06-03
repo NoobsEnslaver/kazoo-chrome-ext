@@ -31,7 +31,7 @@
       "css" : [ "injected.css" ]
     }
   ],
-  "permissions": [ "notifications", "tabs", "http://*/*", "https://*/*", "tts" ,"identity", "contextMenus", "activeTab" ],
+	"permissions": [ "notifications","downloads", "tabs", "http://*/*", "https://*/*", "tts" ,"identity", "contextMenus", "activeTab" ],
     "icons": {
 	"128": "images/bsft_logo_128x128.png"
    }
