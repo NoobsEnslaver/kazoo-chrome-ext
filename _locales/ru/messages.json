@@ -51,5 +51,8 @@
 	"save": {"message": "Сохранить"},
 	"reset": {"message": "Сбросить"},
 	"send": {"message": "Отправить"},
-	"fax_send": {"message": "Отправить факс"}
+	"fax_send": {"message": "Отправить факс"},
+	"attachment_url": {"message": "Адрес документа"},
+	"to_phone": {"message": "Телефон получателя"},
+	"from_phone": {"message": "Телефон отправителя"}
 }

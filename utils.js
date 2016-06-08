@@ -81,3 +81,81 @@ var storage = {
 		this.set(key, Object.assign(old_val, val));
 	}
 };
+
+function executeWithDelay(listOfFuncs, delay){
+	var foo = listOfFuncs.pop();
+	if (typeof foo === "function") {
+		try{
+			foo();
+		}catch(e){
+			console.error("Error in %o: %o", foo.name, e);
+		}
+		window.setTimeout(()=>{
+			executeWithDelay(listOfFuncs, delay);
+		}, delay);
+	}
+}
+
+function substract(a, b){
+	if(!Array.isArray(a)) a = toArray(a);
+	if(!Array.isArray(b)) b = toArray(b);
+	
+	return a.filter((x)=>{return !b.includes(x);});
+}
+
+function intersection(a, b){
+	if(!Array.isArray(a)) a = toArray(a);
+	if(!Array.isArray(b)) b = toArray(b);
+	
+	return a.filter((x)=>{return b.includes(x);});
+}
+
+function union(a, b){
+	if(!Array.isArray(a)) a = toArray(a);
+	if(!Array.isArray(b)) b = toArray(b);
+	
+	return a.concat(substract(b, a));
+}
+
+function difference(a, b){
+	if(!Array.isArray(a)) a = toArray(a);
+	if(!Array.isArray(b)) b = toArray(b);
+	
+	return substract(union(a,b), intersection(a,b));
+}
+
+function product(a, b){
+	var result = [];	
+	 a.forEach((x)=>{
+		 b.forEach((y)=>{
+			 result.push([x, y]);
+			 result.push([y, x]);
+		 });
+	 });
+	return result;
+}
+
+function remove_repeates(a){
+	if(!Array.isArray(a)) a = toArray(a);
+	return a.reduce((acc, x)=>{
+		if (!acc.includes(x)) acc.push(x);
+		return acc;
+	}, []);
+}
+
+function toArray(o){
+	var result = [];
+	switch(true){
+	case Array.isArray(o):
+		result = o;
+		break;
+
+	default:
+		for(var x in o){
+			if (!o.hasOwnProperty(x)) continue;
+			result.push({key: x, val: o[x]});
+		}		
+	}
+	
+	return result;
+}

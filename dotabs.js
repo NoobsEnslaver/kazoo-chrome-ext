@@ -22,7 +22,6 @@ if(localStorage["connectionStatus"] != "signedIn") signout(false);
 // due to an authentication error or some other error, then retain some
 // information.
 function signout(manual) {
-
 	localStorage.removeItem("vm_daemon_id");
 	localStorage.removeItem("auth_daemon_id");
 	localStorage.removeItem("authTokens");
@@ -33,6 +32,10 @@ function signout(manual) {
 	localStorage.removeItem("account_id");
 	localStorage.removeItem("user_id");
 	if (manual) {
+		localStorage.removeItem("faxbox_id");
+		localStorage.removeItem("faxes");
+		localStorage.removeItem("email");
+		localStorage.removeItem("new_faxes");
 		localStorage.removeItem("phone_book");
 		localStorage.removeItem("history");
 		localStorage.removeItem("devices");
@@ -149,12 +152,13 @@ function restoreTabs() {
 
 				case "fax":
 					var fax_list = storage.get("faxes", []);
+					var new_faxes_list = storage.get("new_faxes", []);
 					$("#faxentries").empty();
 					create_input_fax_row();
 					for ( var z = 1; z < fax_list.length; z++) {
-						create_default_fax_row(fax_list[z].name, fax_list[z].from_number, fax_list[z].id, z);
+						create_default_fax_row(fax_list[z].name, fax_list[z].from_number, fax_list[z].id, new_faxes_list.includes(fax_list[z].id), z);
 					}
-
+					storage.set("new_faxes", []);
 					break;
 				case "conference":
 					
@@ -232,7 +236,7 @@ function restoreTabs() {
 	localize();
 }
 
-function create_default_fax_row(name, phone, fax_id, pos){
+function create_default_fax_row(name, phone, fax_id, is_new, pos){
 	var table = $("#faxentries")[0].childNodes[0];
 	table.insertRow(pos);
 	table.rows[pos].insertCell(0);
@@ -243,13 +247,13 @@ function create_default_fax_row(name, phone, fax_id, pos){
 	table.rows[pos].cells[0].childNodes[0].appendChild(document.createTextNode(name));
 	table.rows[pos].cells[0].appendChild(document.createTextNode(phone));
 	//table.rows[pos].cells[1].appendChild(document.createTextNode("-----"));
-
+	if(is_new) table.rows[pos].cells[1].style.backgroundColor = "green";
+	
 	table.rows[pos].cells[2].appendChild(document.createElement("img"));
 	table.rows[pos].cells[2].childNodes[0].src = "images/download.ico";
 	table.rows[pos].cells[2].childNodes[0].style.height = "24px";
 	table.rows[pos].cells[2].childNodes[0].style.width = "24px";
 	table.rows[pos].cells[2].childNodes[0].onclick = (e)=>{
-		console.log(e);
 		chrome.downloads.download({
 			url: localStorage["url"] + "v2/accounts/" + localStorage["account_id"] + "/faxes/incoming/" +
 				fax_id + "/attachment?auth_token=" + localStorage["authTokens"]

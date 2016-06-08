@@ -19,6 +19,7 @@ var KAZOO = {};
 var SOCKET = {};
 var AUTH_DAEMON_ID;
 var VM_DAEMON_ID;
+var FAX_DAEMON_ID;
 
 function onMessage(request, sender, sendResponse) {
 	var type = request.type;
@@ -99,21 +100,17 @@ function onMessage(request, sender, sendResponse) {
 }
 
 function send_fax(request){
-	var name = request.name;
-	var phone = request.phone;
-	var attachment = request.attachment;	// FIXME: no data received
-
+	if(is_too_fast()) return;
 	var data = {
 		"document":{
-			"url": attachment,
+			"url": request.attachment,
 			"method":"get"
 		},
-		"retries":1,
-		"to_name": name,
-		"to_number": phone,
-		"from_number": localStorage["fax_caller_id"],
-		"from_name": localStorage["fax_caller_name"]
-
+		"retries":3,
+		"to_name": request.to_name,
+		"to_number": request.to_phone,
+		"from_number": request.from_phone,
+		"from_name": localStorage["faxbox_caller_name"]
 	};
 	KAZOO.faxes.send({account_id: localStorage.account_id, data: data});
 }
@@ -121,31 +118,28 @@ function send_fax(request){
 function updateFax(){
 	if(is_too_fast()) return;
 	var faxbox_id = storage.get("faxbox_id", "");
+	if(faxbox_id == "none") return;
 	if(faxbox_id){
 		KAZOO.faxes.incoming({account_id: localStorage["account_id"], filters: { filter_faxbox_id: localStorage["faxbox_id"] }, success: (data, status)=>{
+			var new_faxes = substract(data.data.map((x)=>{return x.id;}), storage.get("faxes", []).map((x)=>{return x.id;}));
 			storage.set("faxes", data.data);
-			// data.data.forEach((fax)=>{
-			// 	chrome.downloads.download({
-			// 		url: localStorage["url"] + "v2/accounts/" + localStorage["account_id"]+ "/faxes/incoming/" +
-			// 			fax.id + "/attachment?auth_token=" + localStorage["authTokens"]
-			// 	});
-			// });
+			storage.set("new_faxes", union(storage.get("new_faxes", []), new_faxes));
 		}, error: (data, status)=>{
 			console.log("updateFax error, code %o", status.status);
 			storage.set("faxes", []);
 		}});
 	}else{
 		console.log("No faxbox_id, try to get");
-		getMyFaxBoxId();
+		executeWithDelay([getMyFaxBoxId, updateFax], 4000);
 	}	
 }
 
 function getMyFaxBoxId(){
 	if(is_too_fast()) return;
-	KAZOO.faxbox.list({account_id: localStorage["account_id"], // filters: { filter_owner_id: localStorage["user_id"] },
-			   success: (data, status)=>{
+	KAZOO.faxbox.list({account_id: localStorage["account_id"], filters: { filter_owner_id: localStorage["user_id"] }, success: (data, status)=>{
 		if (data.data.length > 0) {
 			localStorage["faxbox_id"] = data.data[0].id;
+			localStorage["faxbox_caller_name"] = data.data[0].caller_name;
 		}else{
 			console.log("No faxbox, try to create");
 			createFaxBox();
@@ -158,6 +152,7 @@ function getMyFaxBoxId(){
 function createFaxBox(){
 	if(is_too_fast(undefined, 60000)) return;
 	console.log("Sorry, no faxboxes for you");   //TODO
+	localStorage["faxbox_id"] = "none";
 	// KAZOO.faxbox.create({account_id: localStorage["account_id"], success: (data, status)=>{
 		
 	// }, error: (data, status)=>{
@@ -425,7 +420,7 @@ function authorize(){
 			credentials: localStorage["credentials"]
 		},
 		success: function(data, status) {
-			console.log(MODULE + " Require user data...");			
+			console.log(MODULE + " Require user data...");
 			localStorage["account_id"] = data.data.account_id;
 			//localStorage["user_id"] = data.data.owner_id;
 			KAZOO.user.list({
@@ -440,15 +435,14 @@ function authorize(){
 					localStorage["errorMessage"]="";
 					localStorage["authTokens"] = KAZOO.authTokens[Object.keys(KAZOO.authTokens)[0]];
 					localStorage["user_id"] = b_data.data[0].id;
-					updateDevices();
-					updateVoiceMails();
-					updatePhoneBook();
-					signToBlackholeEvents();
+					executeWithDelay([getMyFaxBoxId, updateDevices, updateVoiceMails, updatePhoneBook, updateFax, signToBlackholeEvents], 1000);
 
 					clearInterval(AUTH_DAEMON_ID);
 					clearInterval(VM_DAEMON_ID);
+					clearInterval(FAX_DAEMON_ID);
 					AUTH_DAEMON_ID = window.setInterval(authorize, 60*60*1000); // update auth-token every hour
 					VM_DAEMON_ID = window.setInterval(updateVoiceMails, 30*1000);
+					FAX_DAEMON_ID = window.setInterval(updateFax, 60*1000);
 				},
 				error: error_handler
 			});
@@ -470,11 +464,11 @@ function signToBlackholeEvents(){
 		auth_token: localStorage.authTokens,
 		binding: 'call.*.*'
         });
-
+		
 	SOCKET.emit('subscribe', {
 		account_id: localStorage.account_id,
 		auth_token: localStorage.authTokens,
-		binding: 'fax.status.*'
+		binding: 'fax.status.*' //<<"fax.status.", FaxId/binary>>, может передать faxid?
         });
 
 	function call_event_handler(EventJObj) {
@@ -555,71 +549,39 @@ function signToBlackholeEvents(){
 
 	function fax_event_handler(EventJObj){
 		if(is_too_fast()) return;
+		if(EventJObj.data["FaxBox-ID"] !== localStorage.faxbox_id) return;
+		if(EventJObj.data["Direction"] !== "incoming") return;
+		if(EventJObj.data["Status"] !== "Fax Successfuly received") return;
+		//if(EventJObj.data["Fax-State"] !== "receive") return;
+		updateFax();
 
 		if(localStorage.fax_system_notification === "true"){
 			chrome.notifications.create("Kazoo chrome extension fax event", {
 				type: "basic",
 				iconUrl: "images/phone-push.png",
 				title: "Received fax",
-				//eventTime: 2000,
-				isClickable: true,
-				buttons: [{title:"View"}, {title: "Cancel"}],
-				message: "Received fax from " + EventJObj.data.name,
-				contextMessage: EventJObj.data.number
+				isClickable: false,
+				buttons: [],
+				message: "Received fax from " + EventJObj.data["Caller-ID-Name"],
+				contextMessage: EventJObj.data["Caller-ID-Number"]
 			}, ()=>{});
-			chrome.notifications.onClicked.addListener((id)=>{
-				if(id !== "Kazoo chrome extension fax event") return;
-				blackholeUserActionHandler("VIEW_FAX");
-			});
-			chrome.notifications.onButtonClicked.addListener((id, b_idx)=>{
-				if(id !== "Kazoo chrome extension fax event") return;
-				if (b_idx === 0) {
-					alert("OK");
-				}else{
-					alert("Not OK");
-				}
-			});
 		}
-		
-		// chrome.tabs.query({active: true}, function(tabs) {
-		// 		chrome.tabs.sendMessage(tabs[0].id, {
-		// 			sender: "KAZOO",
-		// 			type: "event",
-		// 			data: {
-		// 				number: EventJObj.data.number,
-		// 				name: EventJObj.data.name,
-		// 				"Event-Name": EventJObj["Event-Name"]
-		// 			}
-		// 		}, ()=>{});
-		// 	});		
 	}
 
 	function conference_event_handler(EventJObj){
 		if(is_too_fast()) return;
 
 		if(localStorage.conerence_system_notification === "true"){
-			chrome.notifications.create("Kazoo chrome extension conference event", {
-				type: "basic",
-				iconUrl: "images/phone-push.png",
-				title: "Received fax",
-				//eventTime: 2000,
-				isClickable: true,
-				buttons: [{title:"View"}, {title: "Cancel"}],
-				message: "Received fax from " + EventJObj.data.name,
-				contextMessage: EventJObj.data.number
-			}, ()=>{});
-			chrome.notifications.onClicked.addListener((id)=>{
-				if(id !== "Kazoo chrome extension fax event") return;
-				blackholeUserActionHandler("VIEW_FAX");
-			});
-			chrome.notifications.onButtonClicked.addListener((id, b_idx)=>{
-				if(id !== "Kazoo chrome extension fax event") return;
-				if (b_idx === 0) {
-					alert("OK");
-				}else{
-					alert("Not OK");
-				}
-			});
+			// chrome.notifications.create("Kazoo chrome extension conference event", {
+			// 	type: "basic",
+			// 	iconUrl: "images/phone-push.png",
+			// 	title: "Received fax",
+			// 	//eventTime: 2000,
+			// 	isClickable: true,
+			// 	buttons: [{title:"View"}, {title: "Cancel"}],
+			// 	message: "Received fax from " + EventJObj.data.name,
+			// 	contextMessage: EventJObj.data.number
+			// }, ()=>{});
 		}
 	}
 	
@@ -627,8 +589,8 @@ function signToBlackholeEvents(){
 	SOCKET.on('CHANNEL_CREATE', call_event_handler);
 	SOCKET.on('CHANNEL_ANSWER', call_event_handler);
 	SOCKET.on('CHANNEL_DESTROY', call_event_handler);
-        SOCKET.on('FAX_RECEIVED', fax_event_handler);                             //FIXME: Event name
-	SOCKET.on('CONFERENCE_PARTICIPANT', conference_event_handler);            //FIXME: Event name
+	SOCKET.on("status", fax_event_handler);                             	//TODO: Test it
+	SOCKET.on('participants_event', conference_event_handler);            	//TODO: Test it
 }
 
 
@@ -729,6 +691,7 @@ function bg_restart(){
 	SOCKET = {};
 	clearInterval(AUTH_DAEMON_ID);
 	clearInterval(VM_DAEMON_ID);
+	clearInterval(FAX_DAEMON_ID);
 	contentLoaded();
 }
 
