@@ -5,7 +5,6 @@
   "default_locale": "en",
   "description" : "__MSG_appDesc__",
   "manifest_version": 2,
-  "omnibox": { "keyword" : "-call" },
   "options_page": "options.html",
   "browser_action": {
     "default_icon": "images/logo_offline_128x128.png",
@@ -33,6 +32,6 @@
   ],
 	"permissions": [ "notifications","downloads", "tabs", "http://*/*", "https://*/*", "tts" ,"identity", "contextMenus", "activeTab" ],
     "icons": {
-	"128": "images/bsft_logo_128x128.png"
+	"128": "images/logo_128x128.png"
    }
 }

@@ -29,7 +29,7 @@
 	"username": {"message": "Имя пользователя"},
 	"password": {"message": "Пароль"},
 	"signin": {"message": "Войти"},
-	"about": {"message": "справка" },
+	"about": {"message": "Справка" },
 	"signout_text": {"message": "выйти"},
 	"call_tab": {"message": "Позвонить"},
 	"history_tab": {"message": "История"},
@@ -42,8 +42,8 @@
 	"help_ask_create_pb": {"message": "Телефонной книги еще нет, возможно, вы хотите её "},
 	"help_ask_create_pb2": {"message": "создать?"},
 	"help_why_answer": {"message": "Адресная книга позволяет хранить ваши контакты на удалённом сервере и получать доступ к ним в удобной форме с различных устройств."},
-	"pb_name_placeholder": {"message": "имя"},
-	"pb_phone_placeholder": {"message": "номер телефона"},
+	"pb_name_placeholder": {"message": "Имя"},
+	"pb_phone_placeholder": {"message": "Номер телефона"},
 	"get_owner_name": {"message": "Введите имя владельца номера"},
 	"anonymous": {"message": "Таинственный незнакомец"},
 	"cant_parse_number": {"message": "Не удаётся выделить номер"},
@@ -54,5 +54,11 @@
 	"fax_send": {"message": "Отправить факс"},
 	"attachment_url": {"message": "Адрес документа"},
 	"to_phone": {"message": "Телефон получателя"},
-	"from_phone": {"message": "Телефон отправителя"}
+	"from_phone": {"message": "Телефон отправителя"},
+	"msg": {"message": "Сообщения"},
+	"phonebook": {"message": "Телефонная книга"},
+	"conference": {"message": "Конферениции"},
+	"fax": {"message": "Факс"},
+	"no_voicemail_msg1": {"message": "Нет голосовых сообщений для Вас..."},
+	"no_voicemail_msg2": {"message": "...можно отдохнуть :)"}
 }

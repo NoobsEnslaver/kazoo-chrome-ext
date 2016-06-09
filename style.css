@@ -583,7 +583,7 @@ ul.ui-autocomplete {
 	border-collapse: collapse;
 }
 .tabled_tab tr td img {
-	width: 80%;
+	width: 30px;
 }
 .tabled_tab tr td {
 	cursor: pointer;

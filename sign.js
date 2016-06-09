@@ -20,9 +20,7 @@ var KAZOO = {};
 function showMessage(message, fadeOut) {
 	$("#status").text(message);
 	$("#status").fadeIn();
-	if (fadeOut) {
-		$("#status").fadeOut(5000);
-	}
+	$("#status").fadeOut(fadeOut || 5000);
 }
 
 function addConnection(connection) {
@@ -64,15 +62,12 @@ function signin() {
 	localStorage["username"] = $("#username").val();
 	localStorage["accname"] = $("#accname").val();
 	localStorage["credentials"] = CryptoJS.MD5(localStorage["username"] + ":" + $("#password").val()).toString();
-	localStorage["clicktodial"] = "true";
 	localStorage["notifications"] = "true";
-	localStorage["texttospeech"] = "true";
 	localStorage["account_id"] = "";
 	localStorage["user_id"] = "";
 	localStorage["errorMessage"] = "";
-
-	localStorage["connectionStatus"] = "";
-
+	localStorage["connectionStatus"] = "signedOut";
+	
 	chrome.runtime.sendMessage({type : "BG_RESTART"});
 
 	wait(()=>{
@@ -86,6 +81,12 @@ function signin() {
 		return (localStorage["connectionStatus"] == "signedIn") || (localStorage["connectionStatus"] == "authFailed");
 	}, {
 		timeout_callback: ()=>{
+			localStorage.removeItem("url");
+			localStorage.removeItem("username");
+			localStorage.removeItem("accname");
+			localStorage.removeItem("credentials");
+			localStorage.removeItem("connectionStatus");
+
 			console.log(MODULE + "Connection timeout");
 			showMessage("Connection timeout");},
 		timeout: 6000
@@ -207,7 +208,7 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 	if (!a.sender == "KAZOO") return;
 
 	if (a.type == "error") {
-		var error_code = a.data.status || a.data.error;
+		var error_code = "status" in a.data? a.data.status: a.data.error;
 		switch(error_code + ""){
 		case "0":
 			showMessage("Bad server url.");

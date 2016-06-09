@@ -28,17 +28,17 @@ function onMessage(request, sender, sendResponse) {
 		if(is_too_fast("last_call_time", 3000)) return;
 		var destination = request.text.replace(/[- \)\(\.]/g, "");
 		console.log(MODULE + " calling: " + destination);
-		if (localStorage["active_device"] && localStorage["active_device"] != "" && localStorage["active_device"] != "auto") {
-			KAZOO.device.quickcall({
-				number: destination,
-				account_id: localStorage["account_id"],
-				deviceId: localStorage["active_device"]
-			});
-		}else{
+		if (storage.get("active_device", "auto") === "auto") {
 			KAZOO.user.quickcall({
 				number: destination,
 				account_id: localStorage["account_id"],
 				userId: localStorage["user_id"]
+			});
+		}else{
+			KAZOO.device.quickcall({
+				number: destination,
+				account_id: localStorage["account_id"],
+				deviceId: localStorage["active_device"]
 			});
 		}
 
@@ -54,7 +54,8 @@ function onMessage(request, sender, sendResponse) {
 		break;
 
 	case "BG_RESTART":
-		bg_restart();
+		remove_workers();
+		contentLoaded();
 		break;
 
 	case "UPDATE_LOCALIZATION":
@@ -67,7 +68,6 @@ function onMessage(request, sender, sendResponse) {
 		break;
 
 	case "PHONE_BOOK_ADD_ENTRY":
-		//sendResponse("");
 		delete request["type"];
 		phoneBookAddEntry(request);
 		break;
@@ -187,40 +187,7 @@ function updateLocalization(){
 	var lang = localStorage["lang"];
 
 	var a = $.getJSON("_locales/" + lang + "/messages.json").
-		    done( (x)=> { localStorage["localization"] = JSON.stringify(x); }).
-		    fail( ( )=> { localStorage["localization"] = JSON.stringify({ "appName":{message: chrome.i18n.getMessage("appName")},
-										  "appDesc":{message: chrome.i18n.getMessage("appDesc")},
-										  "signin_label":{message: chrome.i18n.getMessage("signin_label")},
-										  "enter_connection":{message: chrome.i18n.getMessage("enter_connection")},
-										  "choose_connection":{message: chrome.i18n.getMessage("choose_connection")},
-										  "new_connection":{message: chrome.i18n.getMessage("new_connection")},
-										  "url":{message: chrome.i18n.getMessage("url")},
-										  "lang":{message: chrome.i18n.getMessage("lang")},
-										  "info":{message: chrome.i18n.getMessage("info")},
-										  "first_name":{message: chrome.i18n.getMessage("first_name")},
-										  "last_name":{message: chrome.i18n.getMessage("last_name")},
-										  "birthday":{message: chrome.i18n.getMessage("birthday")},
-										  "tel":{message: chrome.i18n.getMessage("tel")},
-										  "email":{message: chrome.i18n.getMessage("email")},
-										  "address":{message: chrome.i18n.getMessage("address")},
-										  "accname":{message: chrome.i18n.getMessage("accname")},
-										  "username":{message: chrome.i18n.getMessage("username")},
-										  "password":{message: chrome.i18n.getMessage("password")},
-										  "signin":{message: chrome.i18n.getMessage("signin")},
-										  "about":{message: chrome.i18n.getMessage("about")},
-										  "signout_text":{message: chrome.i18n.getMessage("signout_text")},
-										  "call_tab":{message: chrome.i18n.getMessage("call_tab")},
-										  "history_tab":{message: chrome.i18n.getMessage("history_tab")},
-										  "pref_tab":{message: chrome.i18n.getMessage("pref_tab")},
-										  "phone_num":{message: chrome.i18n.getMessage("phone_num")},
-										  "clicktodialbox":{message: chrome.i18n.getMessage("clicktodialbox")},
-										  "notificationsbox":{message: chrome.i18n.getMessage("notificationsbox")},
-										  "texttospeechbox":{message: chrome.i18n.getMessage("texttospeechbox")},
-										  "any_phone":{message: chrome.i18n.getMessage("any_phone")},
-										  "robutton":{message: chrome.i18n.getMessage("robutton")},
-										  "cfabutton":{message: chrome.i18n.getMessage("cfabutton")},
-										  "dndbutton":{message: chrome.i18n.getMessage("dndbutton")}
-										});});
+		    done((x)=> { storage.set("localization", x);});
 }
 
 function phoneBookRemoveEntry(entry_id){
@@ -342,8 +309,8 @@ function contentLoaded() {
 			var error_count = incrementErrorCount(error.status);
 
 			if (error.status == "401"){
-				if (error_count < 3) {
-					window.setTimeout(authorize, 1500);
+				if (error_count < 3 && localStorage["connectionStatus"] === "signedIn") {
+					window.setTimeout(authorize, 1500);	//attempt to reconnect
 				}
 			}
 
@@ -356,31 +323,17 @@ function contentLoaded() {
 }
 
 function prepareToStart(){
-	if (!localStorage["errors"]) {
-		localStorage["errors"] = JSON.stringify({});
-	}
-	if (!localStorage["vm_media"]) {
-		localStorage["vm_media"] = JSON.stringify({});
-	}
-	if(!localStorage["vm_boxes"]){
-		localStorage["vm_boxes"] = JSON.stringify([]);
-	}
-	if (!localStorage["history"]) {
-		localStorage["history"] = JSON.stringify([]);
-	}
-	if (!localStorage["pkg_dump"]) {
-		var preset = {
-			"Call-Direction": "",
-			"Event-Name": ""
-		};
-		localStorage["pkg_dump"] = JSON.stringify(preset);
-	}
-	if (!localStorage["custom_profile_page"]) {
-		localStorage["custom_profile_page"] = "https://google.com/search?q={{Caller-ID-Name}}%20{{Caller-ID-Number}}";
-	}
-	if(!localStorage["active_device"] || localStorage["active_device"] == ""){
-		localStorage["active_device"] = "auto";
-	}
+	localStorage["connectionStatus"] = "signedOut";
+	storage.maybe_set("errors", {});
+	storage.maybe_set("vm_media", {});
+	storage.maybe_set("vm_boxes", []);
+	storage.maybe_set("history", []);
+	storage.maybe_set("inboundCallNotificationsEnabled", true);
+	storage.maybe_set("system_notification", true);
+	storage.maybe_set("clicktodial", true);
+	storage.maybe_set("pkg_dump", {"Call-Direction": "","Event-Name": ""});
+	storage.maybe_set("custom_profile_page", "https://google.com/search?q={{Caller-ID-Name}}%20{{Caller-ID-Number}}");
+	storage.maybe_set("active_device", "auto");
 }
 
 function incrementErrorCount(error_code){
@@ -517,9 +470,9 @@ function signToBlackholeEvents(){
 				chrome.notifications.onButtonClicked.addListener((id, b_idx)=>{
 					if(id !== "Kazoo chrome extension push event") return;
 					if (b_idx === 0) {
-						alert("OK");
+						alert("Comming soon");
 					}else{
-						alert("Not OK");
+						alert("Comming soon");
 					}
 				});
 			}
@@ -595,13 +548,14 @@ function signToBlackholeEvents(){
 
 
 function error_handler(data, status){
-	console.log(MODULE + " Error: ", status.error);
+	console.log(MODULE + " Error: %o", status.error);
 	chrome.browserAction.setIcon({path: "images/logo_offline_128x128.png"});
 	localStorage["connectionStatus"]= "authFailed";
 	localStorage.removeItem('credentials');
 	localStorage["errorMessage"] = status.responseText;
 
-	bg_restart();
+	remove_workers();
+	//contentLoaded();
 }
 
 function updateVoiceMails(){
@@ -686,34 +640,31 @@ function gentlyOpenPage(url){
 	});
 }
 
-function bg_restart(){
+function remove_workers(){
 	KAZOO = {};
 	SOCKET = {};
 	clearInterval(AUTH_DAEMON_ID);
 	clearInterval(VM_DAEMON_ID);
 	clearInterval(FAX_DAEMON_ID);
-	contentLoaded();
 }
 
 chrome.extension.onMessage.addListener(onMessage);
-document.addEventListener('DOMContentLoaded', ()=>{contentLoaded();});
+document.addEventListener('DOMContentLoaded', contentLoaded);
 chrome.contextMenus.create({
 	onclick: (a,b)=>{
 		if(a.mediaType == "image"){
 
 		}else{
 			var text = a.selectionText;
-			var international = "(([+]?)([0-9][0-9]?)((\\.|-| )([0-9]{1,3}))((\\.|-| )([0-9]{1,4})){2,4})";
-			var us = "((([2-9][0-8][0-9])|([\(][2-9][0-8][0-9][\)]))(\\.|-| )?([2-9][0-9]{2})(\\.|-| )?([0-9]{4}))";
-			var re = new RegExp();
-			re.compile("(" + us + "|" + international + ")");
+			var re = new RegExp(/(?:^| )(?!(?:[0-3]?\d([- ])[0-3]?\d\1\d{2,4})|(?:\d{2,4}([- ])[0-3]?\d\2[0-3]?\d) )((?:[+]?\d{1,3}([- ]?))[(]?\d{2,4}[)]?\4\d{2,5}(-|\4?)\d{2,5}(?:\5\d{2,5}){0,2})(?: |$|.|,)/);
 
 			var localization = storage.get("localization", {});
 			var phone = text.match(re);
 			if (phone) {
-				var name = prompt(localization.get_owner_name.message + " " +phone[0], localization.anonymous.message);
+				var ph = phone[3] || phone[0];
+				var name = prompt(localization.get_owner_name.message + " " + ph, localization.anonymous.message);
 				if (name) {
-					phoneBookAddEntry(name, phone[0]);
+					phoneBookAddEntry(name, ph);
 				}
 			} else {
 				alert(localization.cant_parse_number.message + " :(");
@@ -722,7 +673,7 @@ chrome.contextMenus.create({
 	},
 	id: "add_phone",
 	title:"Add to phonebook",
-	contexts: ["selection", "image"]
+	contexts: ["selection"]
 });
 chrome.runtime.onInstalled.addListener((details)=>{
 	reloadTabs();

@@ -79,6 +79,11 @@ var storage = {
 		if(typeof(val) !== "object") throw new Error("Assign for Objects only!");
 		var old_val = this.get(key, {});
 		this.set(key, Object.assign(old_val, val));
+	},
+	maybe_set: function(key, val){
+		if (!key in localStorage) {
+			this.set(key, val);
+		}
 	}
 };
 

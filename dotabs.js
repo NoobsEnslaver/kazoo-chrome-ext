@@ -32,21 +32,11 @@ function signout(manual) {
 	localStorage.removeItem("account_id");
 	localStorage.removeItem("user_id");
 	if (manual) {
-		localStorage.removeItem("faxbox_id");
-		localStorage.removeItem("faxes");
-		localStorage.removeItem("email");
-		localStorage.removeItem("new_faxes");
-		localStorage.removeItem("phone_book");
-		localStorage.removeItem("history");
-		localStorage.removeItem("devices");
-		localStorage.removeItem("username");
-		localStorage.removeItem("accname");
-		localStorage.removeItem("clicktodial");
-		localStorage.removeItem("notifications");
-		localStorage.removeItem("texttospeech");
-		localStorage.removeItem("errorMessage");
-		localStorage.removeItem('vm_boxes');
-		localStorage.removeItem("vm_media");
+		for(var key in localStorage){
+			if (key !== "connections") {
+				localStorage.removeItem(key);
+			}
+		}
 	}
 	chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "sign.html"}, ()=>{});
 	chrome.runtime.sendMessage({type : "BG_RESTART"}, ()=>{});
@@ -278,14 +268,17 @@ function create_input_fax_row(){
 function draw_no_vm_logo(){
 	var popup_heigth = storage.get("popup_heigth", 480);
 	var p1, p2, img, h3_1, h3_2;
+	var translate = storage.get("localization", {
+		"no_voicemail_msg1": {"message": "You have no voicemails yet..."},
+		"no_voicemail_msg2": {"message": "...make a rest"}
+	});
 	
-
 	p1= document.createElement("p");
 	p2= document.createElement("p");
 	h3_1= document.createElement("h3");
 	h3_2= document.createElement("h3");
-	h3_1.innerText = "You have no voicemails yet...";
-	h3_2.innerText = "... make a rest";
+	h3_1.innerText = translate.no_voicemail_msg1.message;
+	h3_2.innerText = translate.no_voicemail_msg2.message;
 	p1.appendChild(h3_1);
 	p2.appendChild(h3_2);
 	img = document.createElement("img");
@@ -323,9 +316,9 @@ function showVMMessages(e){
 	}
 	$("#msgtable").off("click", ".mes__row");
 	$("#msgtable").on("click", ".mes__row", function() {
-		audio = $(this).find("audio");
-		$(audio)[0].pause();
-		$(audio)[0].currentTime = 0;		//CHECK IT
+		var audio = $(this).find("audio");
+		// $(audio)[0].pause();
+		// $(audio)[0].currentTime = 0;		//CHECK IT
 		$(audio).closest(".mes__audio").toggle(300);
 	});
 
@@ -550,10 +543,17 @@ function localize(){
 		
 		$("#signout_text")[0].innerText = x.signout_text.message;
 		$("#history_tab")[0].title = x.history_tab.message;
-		$("#pref_tab")[0].title = x.pref_tab.message;
 		$("#destination")[0].placeholder = x.phone_num.message;
 		$("#dndbutton")[0].title = x.dndbutton.message;
-		// $("#about")[0].innerText = x.about.message;
+		$("#options")[0].title = x.pref_tab.message;
+		$("#about")[0].title = x.about.message;
+		$("#cfabutton")[0].title = x.cfabutton.message;
+
+		$("#msg_tab")[0].title = x.msg.message;
+		$("#phonebook_tab")[0].title = x.phonebook.message;
+		$("#fax_tab")[0].title = x.fax.message;
+		$("#conf_tab")[0].title = x.conference.message;
+				
 	}catch(e){
 		console.log(MODULE + ", Localization error: %o", e);
 	};
@@ -577,12 +577,18 @@ function showAboutBox() {
 	top.location.assign("about.html");
 }
 
+function showMessage(message, fadeOut) {
+	$("#error_msg").text(message);
+	$("#error_msg").fadeIn();
+	$("#error_msg").fadeOut(fadeOut || 5000);
+}
+
 //background error drawer
 chrome.runtime.onMessage.addListener((a,b,c)=>{
 	if (!a.sender == "KAZOO") return;
 
 	if (a.type == "error") {
-		var error_code = a.data.status || a.data.error;
+		var error_code = "status" in a.data? a.data.status: a.data.error;
 		switch(error_code + ""){
 		case "0":
 			showMessage("Bad server url.");
@@ -598,7 +604,7 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 			break;
 
 		default:
-			//showMessage(a.data.statusText + " (" + a.data.status  + ")");
+			showMessage(a.data.statusText + " (" + a.data.status  + ")");
 			console.log(a);
 			break;
 		}

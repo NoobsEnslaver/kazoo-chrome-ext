@@ -39,21 +39,17 @@ chrome.runtime.sendMessage({type : "IS_CLICK_TO_DIAL_ENABLED"}, function(respons
 		var replacement = " $3 <img id='clicktocall' src='" + image + "' onClick=\"sendCallMessage('$3');\" />";
 		var replacement2= " $3 <img id='clicktocall' src='" + image + "'/>";
 
-		for ( var i = 0; i < nodes.length; i++) {
-			var node = nodes[i];
+		nodes.forEach((node)=>{
 			if (node.parentNode) {
-				if(node.parentNode.tagName == 'A')
-					node.parentNode.innerHTML = node.parentNode.innerHTML.replace(replacer, replacement2);
-				else
-					node.parentNode.innerHTML = node.parentNode.innerHTML.replace(replacer, replacement);
+				node.parentNode.innerHTML = node.parentNode.innerHTML.replace(replacer, (node.parentNode.tagName == 'A')? replacement2: replacement);
 			}
-		}
-
+		});
+			
 		// Links handler
 		var targets = Array.from(document.body.getElementsByTagName("a")).filter(
 			(x)=>{return (x.href && x.href.trim().match(links));});
 
-		targets.map((x)=>{
+		targets.forEach((x)=>{
 			var num = x.href.match(links)[1];
 			if (num && num.length > 0){
 				x.addEventListener('click', (e)=>{ sendCallMessage(num);});
@@ -67,7 +63,6 @@ chrome.runtime.sendMessage({type : "IS_CLICK_TO_DIAL_ENABLED"}, function(respons
 				return;
 			}
 			if (e.data.type && (e.data.type == "CALL")) {
-				console.log("Content script received: %o", e.data.text);
 				chrome.runtime.sendMessage(e.data, ()=> {});
 			}
 		});
