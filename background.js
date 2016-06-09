@@ -52,6 +52,9 @@ function onMessage(request, sender, sendResponse) {
 			status : localStorage["clicktodial"]
 		});
 		break;
+	case "SWITCH_CALL_FORWARD":		
+		switch_call_forward();
+		break;
 
 	case "BG_RESTART":
 		remove_workers();
@@ -218,6 +221,14 @@ function update_DND_ico(){
 	}, ()=>{});
 }
 
+function update_CF_ico(){
+	chrome.runtime.sendMessage({
+		sender: "KAZOO",
+		type: "action",
+		data: {action: "update_CF_icon"}
+	}, ()=>{});
+}
+
 function switchDND(){
 	if(is_too_fast()) return;
 	KAZOO.user.get({userId: localStorage['user_id'], account_id: localStorage['account_id'],
@@ -228,29 +239,38 @@ function switchDND(){
 				data.data.do_not_disturb.enabled = !data.data.do_not_disturb.enabled;
 				localStorage.dnd = data.data.do_not_disturb.enabled;
 				KAZOO.user.update({data: data.data, userId: localStorage['user_id'], account_id: localStorage['account_id'],
-						   success:(a,b)=>{
+						   success:(d, s)=>{
+							   console.log("Call_forward set to %o", d.data.do_not_disturb.enabled);
 							   update_DND_ico(); },
-						   error: (x)=>{ update_DND_ico(); }
+						   error: (x)=>{
+							   console.log("Error on update DND, %o", x);
+							   update_DND_ico(); }
 						  });
 			},
-			error: (x)=>{ update_DND_ico(); }});
+			error: (x)=>{
+				console.log("Error on get DND, %o", x);
+				update_DND_ico();				
+			}});
 }
 
 function updatePhoneBook(){
 	if(is_too_fast()) return;
-	KAZOO.lists.getLists({account_id: localStorage["account_id"], success: (data, status)=>{
-		var phone_book = data.data.find((x)=>{return ( x.name == (localStorage["username"] + "'s phone book"));});
-		if (phone_book) {
-			localStorage["phoneBookListId"] = phone_book.id;
-			KAZOO.lists.getEntries({account_id: localStorage["account_id"], list_id: phone_book.id,
-						success:(d, s)=>{ localStorage["phone_book"] = JSON.stringify(d.data);},
-						error:  (d, s)=>{ console.log(MODULE + " Can't create phonebook! response: %o", s.status); }});
-		}else{
-			createPhoneBook();
-		}
-	}, error: (data, status)=>{
-		console.log("Update phoneBook error, code %o", status.status);
-	}});
+	KAZOO.lists.getLists({account_id: localStorage["account_id"],
+			      filters: {filter_name: localStorage["username"] + "'s phone book"},
+			      success: (data, status)=>{
+				      //var phone_book = data.data.find((x)=>{return ( x.name == (localStorage["username"] + "'s phone book"));});
+				      var phone_book = data.data[0];
+				      if (phone_book) {
+					      localStorage["phoneBookListId"] = phone_book.id;
+					      KAZOO.lists.getEntries({account_id: localStorage["account_id"], list_id: phone_book.id,
+								      success:(d, s)=>{ storage.set("phone_book", d.data); },
+								      error:  (d, s)=>{ console.log(MODULE + " Can't get entries! response: %o", s.status); }});
+				      }else{
+					      createPhoneBook();
+				      }
+			      }, error: (data, status)=>{
+				      console.log("Update phoneBook error, code %o", status.status);
+			      }});
 }
 
 function updateDevices(){
@@ -322,7 +342,7 @@ function contentLoaded() {
 	authorize();
 }
 
-function prepareToStart(){
+function prepareToStart(){	
 	localStorage["connectionStatus"] = "signedOut";
 	storage.maybe_set("errors", {});
 	storage.maybe_set("vm_media", {});
@@ -388,7 +408,7 @@ function authorize(){
 					localStorage["errorMessage"]="";
 					localStorage["authTokens"] = KAZOO.authTokens[Object.keys(KAZOO.authTokens)[0]];
 					localStorage["user_id"] = b_data.data[0].id;
-					executeWithDelay([getMyFaxBoxId, updateDevices, updateVoiceMails, updatePhoneBook, updateFax, signToBlackholeEvents], 1000);
+					executeWithDelay([getMyFaxBoxId, updateDevices, updateVoiceMails, updatePhoneBook, updateFax, signToBlackholeEvents, get_cf_and_dnd], 1000);
 
 					clearInterval(AUTH_DAEMON_ID);
 					clearInterval(VM_DAEMON_ID);
@@ -403,6 +423,65 @@ function authorize(){
 		error: error_handler,
 		generateError: true
 	});
+}
+
+function get_cf_and_dnd(){
+	KAZOO.user.get({
+		account_id: localStorage.account_id,
+		userId: localStorage.user_id,
+		success:(data, status)=> {			
+			if(!(data.data.do_not_disturb && data.data.do_not_disturb.enabled)){
+					data.data.do_not_disturb = {enabled: false};
+			}
+			if(!"call_forward" in data){
+				if("enabled" in data.call_forward){
+					data.call_forward.enabled = false;
+				}else{
+					data.call_forward = {enabled: false};
+				}
+			}
+			storage.set("call_forward", data.data.call_forward.enabled);
+			storage.set("dnd", data.data.do_not_disturb.enabled);
+		},
+		error:  (d, s)=>{ console.log("Error getting call_forward"); }
+	});
+}
+
+function switch_call_forward(){
+	KAZOO.user.get({
+		account_id: localStorage.account_id,
+		userId: localStorage.user_id,
+		success:(data, status)=> {
+			data = data.data;
+			if(!"call_forward" in data){
+				if("enabled" in data.call_forward){
+					data.call_forward.enabled = false;
+				}else{
+					data.call_forward = {enabled: false};
+				}
+			}
+			
+			data.call_forward.enabled = !data.call_forward.enabled;
+			KAZOO.user.update({
+				account_id: localStorage.account_id,
+				userId: localStorage.user_id,
+				data: data,
+				success:(d, s)=> {
+					console.log("Call_forward set to %o",d.data.call_forward.enabled);
+					storage.set("call_forward", d.data.call_forward.enabled);
+					update_CF_ico();
+				},
+				error:  (d, s)=>{
+					console.log("Error setting call_forward, %o", d);
+					update_CF_ico();
+				}
+			});
+		},
+		error:  (d, s)=>{
+			console.log("Error getting call_forward, %o", d);
+			update_CF_ico();
+		}
+	});	
 }
 
 var last_blackhole_pkg = {};
@@ -543,7 +622,7 @@ function signToBlackholeEvents(){
 	SOCKET.on('CHANNEL_ANSWER', call_event_handler);
 	SOCKET.on('CHANNEL_DESTROY', call_event_handler);
 	SOCKET.on("status", fax_event_handler);                             	//TODO: Test it
-	SOCKET.on('participants_event', conference_event_handler);            	//TODO: Test it
+	//SOCKET.on('participants_event', conference_event_handler);            	//TODO: Test it
 }
 
 
@@ -568,6 +647,7 @@ function updateVoiceMails(){
 				KAZOO.voicemail.get({
 					account_id: localStorage["account_id"],
 					voicemailId: box.id,
+					// filters: { created_from: last_time_update_time },	//TODO: May simplify code
 					success: (box_data, box_status)=> {
 						var msg_list = storage.get("vm_media", {});
 						msg_list[box.id] = box_data.data;
@@ -650,6 +730,7 @@ function remove_workers(){
 
 chrome.extension.onMessage.addListener(onMessage);
 document.addEventListener('DOMContentLoaded', contentLoaded);
+chrome.contextMenus.removeAll();
 chrome.contextMenus.create({
 	onclick: (a,b)=>{
 		if(a.mediaType == "image"){

@@ -164,3 +164,7 @@ function toArray(o){
 	
 	return result;
 }
+
+function default_error_handler(){
+	//console.error("Error in var")
+}

@@ -37,7 +37,7 @@
 			'addList': { verb: 'PUT', url: 'accounts/{account_id}/lists'},
 			'replaceList': { verb: 'POST', url: 'accounts/{account_id}/lists'}, //Error: 405 (Method Not Allowed)
 			//'updateList': { verb: 'PATCH', url: 'accounts/{account_id}/lists'}, //Error: 405 (Method Not Allowed)
-			//'deleteList': { verb: 'DELETE', url: 'accounts/{account_id}/lists/{list_id}'},
+			'deleteList': { verb: 'DELETE', url: 'accounts/{account_id}/lists/{list_id}'},
 			'purgeList': { verb: 'DELETE', url: 'accounts/{account_id}/lists/{list_id}/entries'},
 			'addEntry': { verb: 'PUT', url: 'accounts/{account_id}/lists/{list_id}/entries'},
 			'getEntries': { verb: 'GET', url: 'accounts/{account_id}/lists/{list_id}/entries'},

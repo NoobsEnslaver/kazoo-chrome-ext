@@ -175,9 +175,9 @@ function restoreTabs() {
 	case "fax":
 		$("#tabs").tabs("option", "active", 3);
 		break;
-	case "conference":
-		$("#tabs").tabs("option", "active", 4);
-		break;
+	// case "conference":
+	// 	$("#tabs").tabs("option", "active", 4);
+	// 	break;
 	default:
 		$("#tabs").tabs("option", "active", 1);
 		$("#tabs").tabs("option", "active", 0);
@@ -214,8 +214,10 @@ function restoreTabs() {
 		if (e.which == 13) call_btn();
 	});
 
+	$("#cfabutton").on("click", cf_btn_handler);
 	$("#dndbutton").on("click", dnd_btn_handler);
 	updateDNDButtonImage();
+	updateCFButtonImage();
 
 	$("#options").on("click", ()=>{
 		chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "options.html"}, ()=>{});
@@ -317,8 +319,6 @@ function showVMMessages(e){
 	$("#msgtable").off("click", ".mes__row");
 	$("#msgtable").on("click", ".mes__row", function() {
 		var audio = $(this).find("audio");
-		// $(audio)[0].pause();
-		// $(audio)[0].currentTime = 0;		//CHECK IT
 		$(audio).closest(".mes__audio").toggle(300);
 	});
 
@@ -537,6 +537,15 @@ function dnd_btn_handler(){
 	chrome.runtime.sendMessage({type : "SWITCH_DND"}, ()=>{});
 }
 
+function cf_btn_handler(){
+	$("#cfabutton")[0].src = "images/logo_wait_128x128.gif";
+	chrome.runtime.sendMessage({type : "SWITCH_CALL_FORWARD"});
+}
+
+function updateCFButtonImage(){
+	$("#cfabutton")[0].src = "images/cf_" + (storage.get("call_forward", false)? "enabled.png":"disabled.png");
+}
+
 function localize(){
 	try{
 		var x = storage.get("localization", {});
@@ -552,7 +561,7 @@ function localize(){
 		$("#msg_tab")[0].title = x.msg.message;
 		$("#phonebook_tab")[0].title = x.phonebook.message;
 		$("#fax_tab")[0].title = x.fax.message;
-		$("#conf_tab")[0].title = x.conference.message;
+		//$("#conf_tab")[0].title = x.conference.message;
 				
 	}catch(e){
 		console.log(MODULE + ", Localization error: %o", e);
@@ -614,6 +623,9 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 			updateDNDButtonImage();
 			break;
 
+		case "update_CF_icon":
+			updateCFButtonImage();
+			break;
 		default:
 			//showMessage("Unknown action " + a.data.action);
 			console.log(a);
