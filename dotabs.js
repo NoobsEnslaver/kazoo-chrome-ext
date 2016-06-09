@@ -151,7 +151,7 @@ function restoreTabs() {
 					storage.set("new_faxes", []);
 					break;
 				case "conference":
-					
+
 					break;
 				}
 			}
@@ -234,13 +234,13 @@ function create_default_fax_row(name, phone, fax_id, is_new, pos){
 	table.rows[pos].insertCell(0);
 	table.rows[pos].insertCell(1);
 	table.rows[pos].insertCell(2);
-	
+
 	table.rows[pos].cells[0].appendChild(document.createElement("p"));
 	table.rows[pos].cells[0].childNodes[0].appendChild(document.createTextNode(name));
 	table.rows[pos].cells[0].appendChild(document.createTextNode(phone));
 	//table.rows[pos].cells[1].appendChild(document.createTextNode("-----"));
 	if(is_new) table.rows[pos].cells[1].style.backgroundColor = "green";
-	
+
 	table.rows[pos].cells[2].appendChild(document.createElement("img"));
 	table.rows[pos].cells[2].childNodes[0].src = "images/download.ico";
 	table.rows[pos].cells[2].childNodes[0].style.height = "24px";
@@ -259,9 +259,8 @@ function create_input_fax_row(){
 	});
 	table.insertRow(0);
 	table.rows[0].insertCell(0).colSpan = 3;
-	table.rows[0].cells[0].appendChild(document.createElement("button"));
-	table.rows[0].cells[0].childNodes[0].innerText = translate.fax_send.message;
-	table.rows[0].cells[0].childNodes[0].style.width = "100%";	
+	$(table.rows[0].cells[0]).append($("<button/>", {class: "sendfax__btn"}));
+	$(".sendfax__btn").text(translate.fax_send.message);
 	table.rows[0].cells[0].childNodes[0].onclick = (e)=>{
 		chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "send_fax.html"}, ()=>{});
 	};
@@ -274,7 +273,7 @@ function draw_no_vm_logo(){
 		"no_voicemail_msg1": {"message": "You have no voicemails yet..."},
 		"no_voicemail_msg2": {"message": "...make a rest"}
 	});
-	
+
 	p1= document.createElement("p");
 	p2= document.createElement("p");
 	h3_1= document.createElement("h3");
@@ -284,7 +283,7 @@ function draw_no_vm_logo(){
 	p1.appendChild(h3_1);
 	p2.appendChild(h3_2);
 	img = document.createElement("img");
-	
+
 	img.src = "images/no_voicemailbox.png";
 	img.height = (popup_heigth - 260)*0.7;
 
@@ -304,17 +303,24 @@ function showVMMessages(e){
 	if (media_list[vmbox_id].length == 0) {
 		draw_no_vm_logo();
 	} else {
-		for ( var i = 0; i < media_list[vmbox_id].length; i++) {
+		for (var i = 0; i < media_list[vmbox_id].length; i++) {
 			var new_info_row = create_info_media_row(media_list[vmbox_id][i].caller_id_name,
 								 "", // media_list[vmbox_id][i].from,
 								 media_list[vmbox_id][i].caller_id_number,
 								 vmbox_id,
 								 media_list[vmbox_id][i].media_id );
-			var new_player_row = create_play_media_row(vmbox_id, media_list[vmbox_id][i].media_id);
+			//var new_player_row = create_play_media_row(vmbox_id, media_list[vmbox_id][i].media_id);
 
-			$(new_info_row).append(new_player_row);
+			//$(new_info_row).append(new_player_row);
 			$("#msgtable").append(new_info_row);
 		}
+		setTimeout(function() {
+			for (var i = 0; i < media_list[vmbox_id].length; i++) {
+				var new_player_row = create_play_media_row(vmbox_id, media_list[vmbox_id][i].media_id);
+
+				$("#msgtable").find(".mes__row").eq(i).append(new_player_row);
+			}
+		}, 0);
 	}
 	$("#msgtable").off("click", ".mes__row");
 	$("#msgtable").on("click", ".mes__row", function() {
@@ -346,6 +352,7 @@ function set_popup_heigth(new_len){
 	$("#messages")[0].style.height = (new_len - 190) + "px";
 	$("#phonebook")[0].style.height = (new_len- 190) + "px";
 	$("#history")[0].style.height = (new_len- 190) + "px";
+	$("#fax")[0].style.height = (new_len- 190) + "px";
 }
 
 function create_input_pb_row(){
@@ -549,7 +556,7 @@ function updateCFButtonImage(){
 function localize(){
 	try{
 		var x = storage.get("localization", {});
-		
+
 		$("#signout_text")[0].innerText = x.signout_text.message;
 		$("#history_tab")[0].title = x.history_tab.message;
 		$("#destination")[0].placeholder = x.phone_num.message;
@@ -562,7 +569,6 @@ function localize(){
 		$("#phonebook_tab")[0].title = x.phonebook.message;
 		$("#fax_tab")[0].title = x.fax.message;
 		//$("#conf_tab")[0].title = x.conference.message;
-				
 	}catch(e){
 		console.log(MODULE + ", Localization error: %o", e);
 	};

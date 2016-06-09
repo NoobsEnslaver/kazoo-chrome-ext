@@ -134,7 +134,7 @@ function updateFax(){
 	}else{
 		console.log("No faxbox_id, try to get");
 		executeWithDelay([getMyFaxBoxId, updateFax], 4000);
-	}	
+	}
 }
 
 function getMyFaxBoxId(){
@@ -157,7 +157,7 @@ function createFaxBox(){
 	console.log("Sorry, no faxboxes for you");   //TODO
 	localStorage["faxbox_id"] = "none";
 	// KAZOO.faxbox.create({account_id: localStorage["account_id"], success: (data, status)=>{
-		
+
 	// }, error: (data, status)=>{
 	// 	console.log("createFaxBox error, code %o", status.status);
 	// }});
@@ -177,7 +177,7 @@ function phoneBookAddEntry(request){
 	if ((request.name.length > 0 || request.last_name.length > 0) && request.phone.length > 0 && localStorage["phoneBookListId"]) {
 		KAZOO.lists.addEntry({account_id: localStorage["account_id"],
 				      success: updatePhoneBook,
-				      list_id: localStorage["phoneBookListId"], 
+				      list_id: localStorage["phoneBookListId"],
 				      data: request
 				     });
 	}
@@ -496,7 +496,7 @@ function signToBlackholeEvents(){
 		auth_token: localStorage.authTokens,
 		binding: 'call.*.*'
         });
-		
+
 	SOCKET.emit('subscribe', {
 		account_id: localStorage.account_id,
 		auth_token: localStorage.authTokens,
@@ -616,7 +616,7 @@ function signToBlackholeEvents(){
 			// }, ()=>{});
 		}
 	}
-	
+
 
 	SOCKET.on('CHANNEL_CREATE', call_event_handler);
 	SOCKET.on('CHANNEL_ANSWER', call_event_handler);
@@ -676,8 +676,12 @@ function updateVoiceMails(){
 
 function blackholeUserActionHandler(action){
 	switch(action){
-	case "TAKE":
-		alert("Received");
+	case "KEEP_CALL":
+		alert("Keep call; now this features isn't implemented");
+		break;
+
+	case "CALL_FORWARDING":
+		alert("Call forwarding; now this features isn't implemented");
 		break;
 
 	case "OVERLAY":

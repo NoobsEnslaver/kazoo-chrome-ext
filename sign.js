@@ -36,7 +36,7 @@ function addConnection(connection) {
 		connections = $.parseJSON(localStorage["connections"]);
 
 		$.each(connections, function(i, item) {
-			if (i == connection || item.url == connect[connection].url && item.acc == connect[connection].acc && item.user == connect[connection].user) {
+			if (item.url == connect[connection].url && item.acc == connect[connection].acc && item.user == connect[connection].user) {
 				addConnect = false;
 				return false;
 			}
@@ -67,7 +67,7 @@ function signin() {
 	localStorage["user_id"] = "";
 	localStorage["errorMessage"] = "";
 	localStorage["connectionStatus"] = "signedOut";
-	
+
 	chrome.runtime.sendMessage({type : "BG_RESTART"});
 
 	wait(()=>{
@@ -148,7 +148,6 @@ function restoreOptions() {
 				$("#connection").val("");
 				$("#accname").val("");
 				$("#username").val("");
-				$("#password").val("");
 				$(".multiselect__input").show().focus();
 			} else {
 				$("#url").val($('option:selected', this).attr("url"));
@@ -159,8 +158,9 @@ function restoreOptions() {
 			$("#url").val("");
 			$("#accname").val("");
 			$("#username").val("");
-			$("#password").val("");
 		}
+
+		$("#password").val("");
 	});
 	$(".multiselect__input").on("dblclick", function() {
 		$(this).hide();
