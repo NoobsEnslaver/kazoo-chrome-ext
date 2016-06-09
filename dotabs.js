@@ -257,9 +257,8 @@ function create_input_fax_row(){
 	});
 	table.insertRow(0);
 	table.rows[0].insertCell(0).colSpan = 3;
-	table.rows[0].cells[0].appendChild(document.createElement("button"));
-	table.rows[0].cells[0].childNodes[0].innerText = translate.fax_send.message;
-	table.rows[0].cells[0].childNodes[0].style.width = "100%";
+	$(table.rows[0].cells[0]).append($("<button/>", {class: "sendfax__btn"}));
+	$(".sendfax__btn").text(translate.fax_send.message);
 	table.rows[0].cells[0].childNodes[0].onclick = (e)=>{
 		chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "send_fax.html"}, ()=>{});
 	};
@@ -353,6 +352,7 @@ function set_popup_heigth(new_len){
 	$("#messages")[0].style.height = (new_len - 190) + "px";
 	$("#phonebook")[0].style.height = (new_len- 190) + "px";
 	$("#history")[0].style.height = (new_len- 190) + "px";
+	$("#fax")[0].style.height = (new_len- 190) + "px";
 }
 
 function create_input_pb_row(){

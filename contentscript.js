@@ -44,7 +44,7 @@ chrome.runtime.sendMessage({type : "IS_CLICK_TO_DIAL_ENABLED"}, function(respons
 				node.parentNode.innerHTML = node.parentNode.innerHTML.replace(replacer, (node.parentNode.tagName == 'A')? replacement2: replacement);
 			}
 		});
-			
+
 		// Links handler
 		var targets = Array.from(document.body.getElementsByTagName("a")).filter(
 			(x)=>{return (x.href && x.href.trim().match(links));});
@@ -89,11 +89,12 @@ $("body").append($("<div>", {class: "call"}).load(chrome.extension.getURL("injec
 	}
 
 	$("body").on("click", ".call__overlay", sendAndClose("OVERLAY"));
-	$("body").on("click", ".callup__btn-take", sendAndClose("TAKE"));
-	$("body").on("click", ".callup__btn-info", sendAndClose("VIEW_PROFILE"));
+	$("body").on("click", ".callup__btn-profile", sendAndClose("VIEW_PROFILE"));
 	$("body").on("click", ".callup__btn-reject", sendAndClose("REJECT"));
-	$("body").on("mouseover", ".callup",  ()=>{ $(".callup").css("animation", "none");});
-	$("body").on("mouseleave", ".callup", ()=>{ $(".callup").css("animation", "blink infinite 1.2s linear");});
+	$("body").on("click", ".callup__btn-keep", sendAndClose("KEEP_CALL"));
+	$("body").on("click", ".callup__btn-forward", sendAndClose("CALL_FORWARDING"));
+	$("body").on("mouseover", ".callup",  ()=>{$(".callup").css("animation", "none");});
+	$("body").on("mouseleave", ".callup", ()=>{$(".callup").css("animation", "blink infinite 1.2s linear");});
 	$(".call__audio").attr("src", chrome.extension.getURL("audio1.mp3"));
 }));
 
@@ -110,10 +111,10 @@ chrome.runtime.onMessage.addListener((message, sender, callback)=>{
 		switch (message.data["Event-Name"]) {
 		case "CHANNEL_CREATE":
 			if (sumCall == 0) {
-				sumCall++;				
-				$(".callup__number")[0].text = message.data.number;
-				$(".callup__name")[0].innerText = (message.data.in_phone_book_name? (message.data.in_phone_book_name + "(" + message.data.name + ")") : message.data.name);
-				
+				sumCall++;
+				$(".callup__number").text(message.data.number);
+				$(".callup__name").text((message.data.in_phone_book_name ? (message.data.in_phone_book_name + " (" + message.data.name + ")") : message.data.name));
+
 				$(".call").filter(function() {return $(this).css("display") == "none";}).toggle(400, function() {
 					$(".callup").css("animation", "blink infinite 1.2s linear");
 					$(".call__audio")[0].play();
