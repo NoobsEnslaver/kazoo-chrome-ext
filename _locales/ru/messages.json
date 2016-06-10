@@ -53,12 +53,14 @@
 	"send": {"message": "Отправить"},
 	"fax_send": {"message": "Отправить факс"},
 	"attachment_url": {"message": "Адрес документа"},
-	"to_phone": {"message": "Телефон получателя"},
-	"from_phone": {"message": "Телефон отправителя"},
+	"to_number": {"message": "Телефон получателя"},
+	"from_number": {"message": "Телефон отправителя"},
 	"msg": {"message": "Сообщения"},
 	"phonebook": {"message": "Телефонная книга"},
 	"conference": {"message": "Конферениции"},
 	"fax": {"message": "Факс"},
 	"no_voicemail_msg1": {"message": "Нет голосовых сообщений для Вас..."},
-	"no_voicemail_msg2": {"message": "...можно отдохнуть :)"}
+	"no_voicemail_msg2": {"message": "...можно отдохнуть :)"},
+	"to_name": {"message": "Имя получателя"},
+	"clean_history": {"message": "Очистить историю"}
 }

@@ -32,6 +32,8 @@ function localize(){
 	$("#other").text(dictionary["other"].message);
 	$("#save_btn").attr("value", dictionary["save"].message);
 	$("#reset_btn").attr("value", dictionary["reset"].message);
+	$("#clean_history_btn").attr("value", dictionary["clean_history"].message);
+
 }
 
 function save_options(){

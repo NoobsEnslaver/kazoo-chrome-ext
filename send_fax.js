@@ -13,9 +13,8 @@
 
 		$("#title").text(dictionary["fax_send"].message);
 		$("#attachment").attr("placeholder", dictionary["attachment_url"].message);
-		$("#first_name").attr("placeholder", dictionary["first_name"].message);
-		$("#to_phone").attr("placeholder", dictionary["to_phone"].message);
-		$("#from_phone").attr("placeholder", dictionary["from_phone"].message);
+		$("#to_name").attr("placeholder", dictionary["to_name"].message);
+		$("#to_number").attr("placeholder", dictionary["to_number"].message);
 		$("#send_btn").attr("value", dictionary["send"].message);
 		$("#reset_btn").attr("value", dictionary["reset"].message);
 	}

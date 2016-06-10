@@ -230,7 +230,12 @@ function update_CF_ico(){
 }
 
 function switchDND(){
-	if(is_too_fast()) return;
+	if(is_too_fast()){
+		showError({statusText: "Too fast"});
+		return;
+	}
+	localStorage.removeItem("dnd");
+	update_DND_ico();
 	KAZOO.user.get({userId: localStorage['user_id'], account_id: localStorage['account_id'],
 			success: (data, status)=>{
 				if(!(data.data.do_not_disturb && data.data.do_not_disturb.enabled)){
@@ -240,7 +245,7 @@ function switchDND(){
 				localStorage.dnd = data.data.do_not_disturb.enabled;
 				KAZOO.user.update({data: data.data, userId: localStorage['user_id'], account_id: localStorage['account_id'],
 						   success:(d, s)=>{
-							   console.log("Call_forward set to %o", d.data.do_not_disturb.enabled);
+							   console.log("DND set to %o", d.data.do_not_disturb.enabled);
 							   update_DND_ico(); },
 						   error: (x)=>{
 							   console.log("Error on update DND, %o", x);
@@ -249,7 +254,7 @@ function switchDND(){
 			},
 			error: (x)=>{
 				console.log("Error on get DND, %o", x);
-				update_DND_ico();				
+				update_DND_ico();
 			}});
 }
 
@@ -277,27 +282,50 @@ function updateDevices(){
 	if(is_too_fast()) return;
 	KAZOO.device.list({
 		account_id: localStorage["account_id"],
+		filters: {filter_owner_id: localStorage.user_id},
 		success: (data, status)=>{
 			var new_devices = [];
 			var devices = data.data;
 			for(var device_num in devices) {
-				if (devices[device_num].owner_id == localStorage.user_id) {
-					new_devices.push({
-						num: device_num,
-						name: devices[device_num].name,
-						id: devices[device_num].id
-					});
-				}
-			};
-			localStorage["devices"] = JSON.stringify(new_devices);
-
+				new_devices.push({
+					num: device_num,
+					name: devices[device_num].name,
+					id: devices[device_num].id
+				});
+			}
+			storage.set("devices", new_devices);			
 			localStorage["active_device"] = (localStorage["active_device"] && devices[localStorage["active_device"]])? localStorage["active_device"]: "auto";
+
+			//get call_number / call_name
+			new_devices.forEach((dev)=>{		//FIXME: concurent writing
+				KAZOO.device.get({
+					account_id: localStorage["account_id"],
+					deviceId: dev.id,
+					success: (data, status)=>{
+						var d = data.data;
+						var external_name, external_number, internal_name, internal_number;
+						// "caller_id": {
+						// 	"external": {
+						// 		"name": "Phone1 outer caller name",
+						// 		"number": "4000"
+						// 	},
+						// 	"internal": {
+						// 		"name": "Phone1 inner caller name",
+						// 		"number": "3000"
+						// 	}
+						// },
+						try{
+							
+						}catch(e){}
+					}
+				});
+			});
 		}});
 };
 
 function reloadTabs(){
 	chrome.tabs.getAllInWindow((tabs)=>{
-		tabs.map((tab)=>{
+		tabs.forEach((tab)=>{
 			if (!tab.url.startsWith("chrome")) {
 				chrome.tabs.reload(tab.id);
 			}
@@ -350,7 +378,7 @@ function prepareToStart(){
 	storage.maybe_set("history", []);
 	storage.maybe_set("inboundCallNotificationsEnabled", true);
 	storage.maybe_set("system_notification", true);
-	storage.maybe_set("clicktodial", true);
+	storage.maybe_set("clicktodial", true);		//FIXME
 	storage.maybe_set("pkg_dump", {"Call-Direction": "","Event-Name": ""});
 	storage.maybe_set("custom_profile_page", "https://google.com/search?q={{Caller-ID-Name}}%20{{Caller-ID-Number}}");
 	storage.maybe_set("active_device", "auto");
@@ -408,7 +436,7 @@ function authorize(){
 					localStorage["errorMessage"]="";
 					localStorage["authTokens"] = KAZOO.authTokens[Object.keys(KAZOO.authTokens)[0]];
 					localStorage["user_id"] = b_data.data[0].id;
-					executeWithDelay([getMyFaxBoxId, updateDevices, updateVoiceMails, updatePhoneBook, updateFax, signToBlackholeEvents, get_cf_and_dnd], 1000);
+					executeWithDelay([getMyFaxBoxId, grubUserData, updateDevices, updateVoiceMails, updatePhoneBook, updateFax, signToBlackholeEvents], 1000);
 
 					clearInterval(AUTH_DAEMON_ID);
 					clearInterval(VM_DAEMON_ID);
@@ -425,40 +453,52 @@ function authorize(){
 	});
 }
 
-function get_cf_and_dnd(){
+function grubUserData(){
+	if(is_too_fast()) return;
 	KAZOO.user.get({
 		account_id: localStorage.account_id,
 		userId: localStorage.user_id,
-		success:(data, status)=> {			
-			if(!(data.data.do_not_disturb && data.data.do_not_disturb.enabled)){
-					data.data.do_not_disturb = {enabled: false};
+		success:(d, s)=> {
+			if(!(d.data.do_not_disturb && d.data.do_not_disturb.enabled)){
+				d.data.do_not_disturb = {enabled: false};
 			}
-			if(!"call_forward" in data){
-				if("enabled" in data.call_forward){
-					data.call_forward.enabled = false;
-				}else{
-					data.call_forward = {enabled: false};
-				}
+			if(!(d.data.call_forward && d.data.call_forward.enabled)){
+				d.data.call_forward = {enabled: false};
 			}
-			storage.set("call_forward", data.data.call_forward.enabled);
-			storage.set("dnd", data.data.do_not_disturb.enabled);
+
+			storage.set("call_forward", d.data.call_forward.enabled);
+			storage.set("dnd", d.data.do_not_disturb.enabled);
+			try{
+				storage.set("inner_caller_id_name", d.data.caller_id.internal.name);
+			}catch(e){ console.log("no inner_caller_id_name presented"); }
+			try{
+				storage.set("outer_caller_id_name", d.data.caller_id.external.name);
+			}catch(e){ console.log("no outer_caller_id_name presented"); }
+			try{
+				storage.set("inner_caller_id_number", d.data.caller_id.external.number);
+			}catch(e){ console.log("no inner_caller_id_number presented"); }
+			try{
+				storage.set("outer_caller_id_number", d.data.caller_id.internal.number);
+			}catch(e){ console.log("no outer_caller_id_number presented"); }
 		},
 		error:  (d, s)=>{ console.log("Error getting call_forward"); }
 	});
 }
 
 function switch_call_forward(){
+	if(is_too_fast()){
+		showError({statusText: "Too fast" });
+		return;
+	}
+	localStorage.removeItem("call_forward");
+	update_CF_ico();
 	KAZOO.user.get({
 		account_id: localStorage.account_id,
 		userId: localStorage.user_id,
 		success:(data, status)=> {
 			data = data.data;
-			if(!"call_forward" in data){
-				if("enabled" in data.call_forward){
-					data.call_forward.enabled = false;
-				}else{
-					data.call_forward = {enabled: false};
-				}
+			if(!(data.call_forward && data.call_forward.enabled)){
+				data.call_forward = {enabled: false};
 			}
 			
 			data.call_forward.enabled = !data.call_forward.enabled;
@@ -549,9 +589,9 @@ function signToBlackholeEvents(){
 				chrome.notifications.onButtonClicked.addListener((id, b_idx)=>{
 					if(id !== "Kazoo chrome extension push event") return;
 					if (b_idx === 0) {
-						alert("Comming soon");
+						alert("Coming soon");
 					}else{
-						alert("Comming soon");
+						alert("Coming soon");
 					}
 				});
 			}

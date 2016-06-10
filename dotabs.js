@@ -214,8 +214,8 @@ function restoreTabs() {
 		if (e.which == 13) call_btn();
 	});
 
-	$("#cfabutton").on("click", cf_btn_handler);
-	$("#dndbutton").on("click", dnd_btn_handler);
+	$("#cfabutton").on("click", ()=>{chrome.runtime.sendMessage({type: "SWITCH_CALL_FORWARD"});});
+	$("#dndbutton").on("click", ()=>{chrome.runtime.sendMessage({type: "SWITCH_DND"}, ()=>{});});
 	updateDNDButtonImage();
 	updateCFButtonImage();
 
@@ -536,21 +536,37 @@ function updatePhoneBook(){
 }
 
 function updateDNDButtonImage(){
-	$("#dndbutton")[0].src = "images/dnd_" + (localStorage.dnd=="true"? "active.png":"normal.png");
-}
+	var src = "images/";
+	switch(localStorage.dnd){
+	case "true":
+		src += "dnd_active.png";
+		break;
 
-function dnd_btn_handler(){
-	$("#dndbutton")[0].src = "images/logo_wait_128x128.gif";
-	chrome.runtime.sendMessage({type : "SWITCH_DND"}, ()=>{});
-}
+	case "false":
+		src += "dnd_normal.png";
+		break;
 
-function cf_btn_handler(){
-	$("#cfabutton")[0].src = "images/logo_wait_128x128.gif";
-	chrome.runtime.sendMessage({type : "SWITCH_CALL_FORWARD"});
+	default:
+		src += "logo_wait_128x128.gif";
+	}
+	$("#dndbutton")[0].src =  src;
 }
 
 function updateCFButtonImage(){
-	$("#cfabutton")[0].src = "images/cf_" + (storage.get("call_forward", false)? "enabled.png":"disabled.png");
+	var src = "images/";
+	switch(localStorage.call_forward){
+	case "true":
+		src += "cf_enabled.png";
+		break;
+
+	case "false":
+		src += "cf_disabled.png";
+		break;
+
+	default:
+		src += "logo_wait_128x128.gif";
+	}
+	$("#cfabutton")[0].src =  src;
 }
 
 function localize(){
@@ -619,7 +635,7 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 			break;
 
 		default:
-			showMessage(a.data.statusText + " (" + a.data.status  + ")");
+			showMessage(a.data.statusText + ("status" in a.data?("(" + a.data.status  + ")"):""));
 			console.log(a);
 			break;
 		}
@@ -632,6 +648,7 @@ chrome.runtime.onMessage.addListener((a,b,c)=>{
 		case "update_CF_icon":
 			updateCFButtonImage();
 			break;
+
 		default:
 			//showMessage("Unknown action " + a.data.action);
 			console.log(a);

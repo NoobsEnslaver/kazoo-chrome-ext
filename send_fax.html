@@ -30,17 +30,20 @@ limitations under the License.
 			<form class="settings__body" name="Options">
 				<fieldset>
 					<div class="settings__item">
-						<input class="input" type="url" id="attachment" name="attachment" placeholder="Url" />
+						<input class="input" type="url" id="attachment" name="attachment" placeholder="Url" required="true" />
 					</div>
 					<div class="settings__item">
-						<input class="input" type="text" id="first_name" name="to_name" placeholder="Recipient's name" required="true" />
+						<input class="input" type="text" id="to_name" name="to_name" placeholder="Recipient's name" required="true" />
 					</div>
 					<div class="settings__item">
-						<input class="input" type="tel" id="to_phone" name="to_phone" placeholder="Recipient's phone number" required="true" />
+						<input class="input" type="tel" id="to_number" name="to_number" placeholder="Recipient's phone number" required="true" />
 					</div>
 					<div class="settings__item">
-						<input class="input" type="tel" id="from_phone" name="from_phone" placeholder="Sender's phone number" required="true" />
-					</div>
+						<select class="input"  name="caller_id" id="caller_id" required>
+							<option value="" disabled selected hidden>Send fax as:</option>
+							<!-- <option value="volvo">Volvo</option> -->
+						</select>
+					</div>					
 				</fieldset>
 
 				<br/>

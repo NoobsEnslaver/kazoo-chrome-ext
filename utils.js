@@ -18,7 +18,6 @@ function is_too_fast(event_name, timeout){
 	event_name = event_name || arguments.callee.caller.name + "_last_call";
 	var last_time = storage.get(event_name, 0);
 	if (Date.now() - last_time < timeout){
-		//showError({statusText: "Too fast", status: arguments.callee.caller.name});
 		console.log("Too fast:" + arguments.callee.caller.name);
 		return true;
 	}else{
@@ -81,7 +80,7 @@ var storage = {
 		this.set(key, Object.assign(old_val, val));
 	},
 	maybe_set: function(key, val){
-		if (!key in localStorage) {
+		if (!(key in localStorage)) {
 			this.set(key, val);
 		}
 	}
@@ -163,8 +162,4 @@ function toArray(o){
 	}
 	
 	return result;
-}
-
-function default_error_handler(){
-	//console.error("Error in var")
 }
