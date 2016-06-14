@@ -15,8 +15,8 @@
  */
 document.addEventListener('DOMContentLoaded', ()=>{
 	document.querySelector('#about_ok_button').addEventListener('click', ()=>{
-		if (localStorage["currentTab"] == "options"){
-			top.location.assign("options.html");
+		if (localStorage["currentTab"] == "sign"){
+			top.location.assign("sign.html");
 		}
 		else{
 			top.location.assign("tabs.html");
