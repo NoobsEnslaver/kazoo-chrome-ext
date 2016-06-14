@@ -44,7 +44,7 @@ function signout(manual) {
 }
 
 function history_handler(e){
-	var tel = $(this).find("td:first-child() span").text();
+	var tel = $(this).find("td:nth-child(2) span").text();
 
 	chrome.runtime.sendMessage({
 		type : "CALL",
@@ -71,34 +71,12 @@ function restoreTabs() {
 				localStorage["currentTab"] = new_panel_id;
 				switch(new_panel_id){
 				case "history":
-					var list = storage.get("history", []);
-
-					list.sort(function(a, b) {
-						a = new Date(a.time);
-						b = new Date(b.time);
-						return b.getTime() - a.getTime();
-					});
+					var history = storage.get("history", []);
 					$("#calllogentries").empty();
-					for ( var i = 0; i < list.length; i++) {
-						var row = "<tr id='calllogentry" + i + "_"
-							    + list[i].number + "'>";
-						if (list[i].type == "outgoing") {
-							row = row
-								+ "<td><img src='images/outcoming.png '/></td>";
-						} else if (list[i].type == "received") {
-							row = row
-								+ "<td><img src='images/incoming.png'/></td>";
-						} else {
-							row = row
-								+ "<td><img src='images/reject.png'/></td>";
-						}
-						row = row + "<td><p>" + list[i].name
-						+ "</p><span>" + list[i].number + "</span></td>";
-						row = row + "<td>"
-							+ formatTimestamp(list[i].time)
-							+ "</td>";
-						$("#calllogentries").append(row);
-					}
+					$("#calllogentries")[0].appendChild(document.createElement("tbody"));
+					history.forEach((entry)=>{
+						create_default_history_row(entry.type, entry.name, entry.number, entry.time);
+					});
 					$("#calllogentries").on("click", "tr", history_handler);
 					break;
 
@@ -292,6 +270,41 @@ function draw_no_vm_logo(){
 		$("#msgtable").append(img);
 		$("#msgtable").append(p2);
 	}
+}
+
+function create_default_history_row(type, name, number, time){
+	var table = $("#calllogentries")[0].childNodes[0];
+	var pos = table.childNodes.length;
+	table.insertRow(pos);
+	table.rows[pos].insertCell(0);
+	table.rows[pos].insertCell(1);
+	table.rows[pos].insertCell(2);
+
+	table.rows[pos].cells[0].appendChild(document.createElement("img"));
+	table.rows[pos].cells[0].childNodes[0].src = "images/" + type + ".png";
+	table.rows[pos].cells[0].childNodes[0].style.height = "24px";
+	table.rows[pos].cells[0].childNodes[0].style.width = "24px";
+	
+	table.rows[pos].cells[1].appendChild(document.createElement("p"));
+	table.rows[pos].cells[1].childNodes[0].appendChild(document.createTextNode(name));
+	table.rows[pos].cells[1].appendChild(document.createElement("span"));
+	table.rows[pos].cells[1].childNodes[1].appendChild(document.createTextNode(number));
+
+	table.rows[pos].cells[2].appendChild(document.createTextNode(time));
+	// for ( var i = 0; i < history.length; i++) {
+		
+	// 	var row = "<tr id='calllogentry" + i + "_" + list[i].number + "'>";
+	// 	if (list[i].type == "outgoing") {
+	// 		row += "<td><img src='images/outcoming.png '/></td>";
+	// 	} else if (list[i].type == "received") {
+	// 		row += "<td><img src='images/incoming.png'/></td>";
+	// 	} else {
+	// 		row += "<td><img src='images/reject.png'/></td>";
+	// 	}
+	// 	row += "<td><p>" + list[i].name	+ "</p><span>" + list[i].number + "</span></td>";
+	// 	row += "<td>" + formatTimestamp(list[i].time) + "</td>";
+	// 	$("#calllogentries").append(row);
+	// }
 }
 
 function showVMMessages(e){

@@ -26,7 +26,6 @@ function is_too_fast(event_name, timeout){
 	}
 }
 
-
 function flatten(o) {
 	var prefix = arguments[1] || "", out = arguments[2] || {}, name;
 	for (name in o) {
@@ -36,23 +35,6 @@ function flatten(o) {
 		}
 	}
 	return out;
-}
-
-
-function formatTimestamp(timestamp) {
-	var today = new Date();
-	var dt = new Date(timestamp);
-	if (today.getDay() == dt.getDay() && today.getMonth() == dt.getMonth()
-			&& today.getFullYear() == dt.getFullYear()) {
-		var hours = dt.getHours();
-		var minutes = dt.getMinutes();
-		var ampm = hours >= 12 ? 'pm' : 'am';
-		hours = hours % 12;
-		hours = hours ? hours : 12;
-		return hours + ":" + (minutes < 10 ? "0" + minutes : minutes) + " "
-				+ ampm;
-	}
-	return dt.getMonth() + "/" + dt.getDay() + "/" + dt.getFullYear();
 }
 
 var storage = {
@@ -69,10 +51,28 @@ var storage = {
 	set: function(key, val){
 		localStorage[key] = typeof(val) === "string"? val: JSON.stringify(val);
 	},
+	unshift: function(key, value){
+		var old_val = this.get(key, []);
+		var tmp = old_val.unshift(value);
+		this.set(key, old_val);
+		return tmp;
+	},
+	shift: function(key){
+		var old_val = this.get(key, []);
+		var tmp = old_val.shift();
+		this.set(key, old_val);
+		return tmp;
+	},
 	push: function(key, new_val){
 		var old_val = this.get(key, []);
 		old_val.push(new_val);
 		this.set(key, old_val);
+	},
+	pop: function(key){
+		var old_val = this.get(key, []);
+		var value = old_val.pop();
+		this.set(key, old_val);
+		return value;
 	},
 	assign: function(key, val){
 		if(typeof(val) !== "object") throw new Error("Assign for Objects only!");

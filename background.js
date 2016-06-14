@@ -20,6 +20,7 @@ var SOCKET = {};
 var AUTH_DAEMON_ID;
 var VM_DAEMON_ID;
 var FAX_DAEMON_ID;
+var HISTORY_DAEMON_ID;
 
 function onMessage(request, sender, sendResponse) {
 	var type = request.type;
@@ -436,14 +437,16 @@ function authorize(){
 					localStorage["errorMessage"]="";
 					localStorage["authTokens"] = KAZOO.authTokens[Object.keys(KAZOO.authTokens)[0]];
 					localStorage["user_id"] = b_data.data[0].id;
-					executeWithDelay([getMyFaxBoxId, grubUserData, updateDevices, updateVoiceMails, updatePhoneBook, updateFax, signToBlackholeEvents], 1000);
+					executeWithDelay([getMyFaxBoxId, grubUserData, updateDevices, updateVoiceMails, updatePhoneBook, updateFax, signToBlackholeEvents, updateHistory], 1000);
 
 					clearInterval(AUTH_DAEMON_ID);
 					clearInterval(VM_DAEMON_ID);
 					clearInterval(FAX_DAEMON_ID);
+					clearInterval(HISTORY_DAEMON_ID);
 					AUTH_DAEMON_ID = window.setInterval(authorize, 60*60*1000); // update auth-token every hour
 					VM_DAEMON_ID = window.setInterval(updateVoiceMails, 30*1000);
 					FAX_DAEMON_ID = window.setInterval(updateFax, 60*1000);
+					HISTORY_DAEMON_ID = window.setInterval(updateHistory, 30*1000);
 				},
 				error: error_handler
 			});
@@ -557,16 +560,16 @@ function signToBlackholeEvents(){
 
 			number = is_outgoing? (EventJObj["Callee-ID-Number"] || EventJObj["To"].split('@')[0]):
 				    (EventJObj["Caller-ID-Number"] || EventJObj["Other-Leg-Caller-ID-Number"] || EventJObj["From"].split('@')[0] || "unknown");
-			in_phone_book_name = storage.get("phone_book", []).find((x)=>{return (x.value.phone == number);});
+			in_phone_book_name = storage.get("phone_book", []).find((x)=>{return (x.value && x.value.phone == number);});
 			if(in_phone_book_name && in_phone_book_name.value && in_phone_book_name.value.name) in_phone_book_name = in_phone_book_name.value.name;
 			name = is_outgoing? (EventJObj["Callee-ID-Name"] || EventJObj["To"].split('@')[0]):
 				(EventJObj["Caller-ID-Name"] || EventJObj["Other-Leg-Caller-ID-Name"] || EventJObj["From"].split('@')[0] ||"unknown");
-			storage.push("history", {
-				number: number,
-				time: Date.now(),
-				type: is_outgoing?"outgoing":"received",
-				name: in_phone_book_name? (in_phone_book_name + " (" + name + ")") : name
-			});
+			// storage.push("history", {
+			// 	number: number,
+			// 	time: Date.now(),
+			// 	type: is_outgoing?"outgoing":"received",
+			// 	name: in_phone_book_name? (in_phone_book_name + " (" + name + ")") : name
+			// });
 			if(is_outgoing && localStorage.outboundCallNotificationsEnabled !== "true") return;
 			if(!is_outgoing && localStorage.inboundCallNotificationsEnabled !== "true") return;
 			if(EventJObj["Caller-ID-Name"] === "Device QuickCall" && localStorage.onQuickCallNotifications !== "true") return;
@@ -597,8 +600,11 @@ function signToBlackholeEvents(){
 			}
 		}
 
-		if (EventJObj["Event-Name"] === "CHANNEL_DESTROY")
+		if (EventJObj["Event-Name"] === "CHANNEL_DESTROY"){
 			chrome.notifications.clear("Kazoo chrome extension push event");
+			window.setTimeout(updateHistory, 3000);
+		}
+		
 
 		if (!is_too_fast("send_" + EventJObj["Event-Name"])){
 			chrome.tabs.query({active: true}, function(tabs) {
@@ -611,7 +617,6 @@ function signToBlackholeEvents(){
 						name: name,
 						"Event-Name": EventJObj["Event-Name"],
 						"Call-Direction": EventJObj["Call-Direction"]
-
 					}
 				}, ()=>{});
 			});
@@ -770,6 +775,40 @@ function remove_workers(){
 	clearInterval(AUTH_DAEMON_ID);
 	clearInterval(VM_DAEMON_ID);
 	clearInterval(FAX_DAEMON_ID);
+	clearInterval(HISTORY_DAEMON_ID);
+}
+
+function updateHistory(){
+	if(is_too_fast(undefined, 5000)) return;
+	KAZOO.cdrs.listByUser({account_id: localStorage.account_id,
+			       userId: localStorage.user_id,
+			       filters: { created_from: storage.get("last_history_update", 63633113191) },
+			       success: (d, s)=>{
+				       if(d.data.length > 0){
+					       console.log("%o new history records received", d.data.length);
+					       d.data.sort((a, b)=> {
+						       a = Number.parseInt(a.timestamp);
+						       b = Number.parseInt(b.timestamp);
+						       return a - b;
+					       }).forEach((record)=>{						       
+						       var is_outgoing = record.direction === "inbound";
+						       var number = (is_outgoing? record.dialed_number: record.callee_id_number) || "unknown";//is_outgoing? record.caller_id_number: record.callee_id_number;
+						       var in_phone_book_name = storage.get("phone_book", []).find((x)=>{return (x.value && x.value.phone == number);});
+						       if(in_phone_book_name && in_phone_book_name.value && in_phone_book_name.value.name) in_phone_book_name = in_phone_book_name.value.name;
+						       var name = (is_outgoing? record.callee_id_name: record.caller_id_name) || "unknown";
+						       storage.unshift("history", {
+							       number: number,
+							       time: record.datetime,
+							       type: is_outgoing? "outgoing":"incoming",
+							       name: in_phone_book_name? (in_phone_book_name + " (" + name + ")") : name
+						       });
+					       });
+					       storage.set("last_history_update", Number.parseInt(d.data[d.data.length-1].timestamp) + 15); // 15s it is threshold
+				       }
+			       },
+			       error: (d, s)=>{
+				       console.log("Error updateHistory: %o", d);
+			       }});
 }
 
 chrome.extension.onMessage.addListener(onMessage);
