@@ -87,7 +87,7 @@ var storage = {
 };
 
 function executeWithDelay(listOfFuncs, delay){
-	var foo = listOfFuncs.pop();
+	var foo = listOfFuncs.shift();
 	if (typeof foo === "function") {
 		try{
 			foo();
