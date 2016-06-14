@@ -199,7 +199,7 @@ function flag_click_handler(e){
 }
 
 function showAboutBox() {
-	localStorage["currentTab"] = "options";
+	localStorage["currentTab"] = "sign";
 	top.location.assign("about.html");
 }
 
