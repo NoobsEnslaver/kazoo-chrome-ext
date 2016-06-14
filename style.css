@@ -14,6 +14,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+:root {
+	--btnBgColor: #35b;
+	--btnBgColorHover: #139;
+	--btnBgColorActive: #24c;
+	--btnSaveBgColor: #5b3;
+	--btnSaveBgColorHover: #391;
+	--btnSaveBgColorActive: #4c2;
+
+	--settingsBgColor: #f8f9fb;
+	--signBoxBgColor: transparent;
+
+	--mainFontColor: #222;
+	--errFontColor: #b11;
+	--bgFontColor: #fff;
+
+	--colorBorderDelimiter: #eee;
+}
 html {
 	font-size: 100%;
 	height: auto;
@@ -61,7 +78,8 @@ a {
 	padding: 20px;
 	line-height: normal;
 	vertical-align: middle;
-	border: 2px solid #35b;
+	background-color: var(--signBoxBgColor);
+	border: 2px solid var(--btnBgColor);
 	border-radius: 4px;
 	margin-bottom: 12px;
 	box-sizing: border-box;
@@ -105,8 +123,8 @@ a {
 	display: none;
 }
 .wrap_btn {
-	background-color: #35b;
-	color: #fff;
+	background-color: var(--btnBgColor);
+	color: var(--bgFontColor);
 	border: 0;
 	display: inline-block;
 	text-align: center;
@@ -118,11 +136,10 @@ a {
 	outline: none;
 }
 .wrap_btn:hover {
-	background-color: #54849F;
+	background-color: var(--btnBgColorHover);
 }
 .wrap_btn:active {
-	background-color: #24a;
-	color: #eee;
+	background-color: var(--btnBgColorActive);
 }
 .about,
 .about:link,
@@ -196,7 +213,7 @@ a {
 	transition: all ease 0.3s;
 }
 .language__li:hover {
-	color: #fff;
+	color: var(--bgFontColor);
 	border-bottom: 1px solid #d7d7d7;
 	background-color: rgba(0, 0, 0, 0.86);
 	transition: all ease 0.3s;
@@ -218,7 +235,7 @@ a {
 .about__box {
 	font-family: sans-serif;
 	padding: 8px 16px 16px;
-	border: 2px solid #35b;
+	border: 2px solid var(--btnBgColor);
 	border-radius: 4px;
 	overflow: hidden;
 	line-height: 1.2rem;
@@ -245,10 +262,10 @@ a {
 	margin: auto;
 }
 .about__button:hover {
-	background-color: #44748F;
+	background-color: var(--btnBgColorHover);
 }
 .about__button:active {
-	background-color: #24a;
+	background-color: var(--btnBgColorActive);
 }
 
 
@@ -263,11 +280,11 @@ a {
 }
 .mes__row {
 	cursor: pointer;
-	border-bottom: 1px solid #F1F1F1;
+	border-bottom: 1px solid var(--colorBorderDelimiter);
 	box-sizing: border-box;
 }
 .mes__row:hover {
-	background-color: #57b;
+	background-color: var(--btnBgColorHover);
 }
 .mes__col {
 	padding: 12px 4px;
@@ -320,9 +337,9 @@ a {
 	box-sizing: border-box;
 }
 .back {
-	margin-top: 10px;
-	background-color: #35b;
-	color: #fff;
+	margin: 10px 10px 10px 0px;
+	background-color: var(--btnBgColor);
+	color: var(--bgFontColor);
 	border: 0;
 	display: inline-block;
 	text-align: center;
@@ -333,7 +350,7 @@ a {
 	box-sizing: border-box;
 }
 .back:hover {
-	background-color: #44748F;
+	background-color: var(--btnBgColorHover);
 }
 
 .numbers {
@@ -361,26 +378,26 @@ a {
 	user-select: none;
 	background-image: none;
 	border-radius: 0px;
-	color: #fff;
+	color: var(--bgFontColor);
 	margin-bottom: 1px;
 	box-sizing: border-box;
-	background-color: #35b;
+	background-color: var(--btnBgColor);
 	border: 0px;
 }
 .btn_added:hover {
-	background-color: #139;
+	background-color: var(--btnBgColorHover);
 }
 .btn_added:active {
-	background-color: #24a;
+	background-color: var(--btnBgColorActive);
 }
 #btn12 {
-	background-color: #5b3;
+	background-color: var(--btnSaveBgColor);
 }
 #btn12:hover {
-	background-color: #391;
+	background-color: var(--btnSaveBgColorHover);
 }
 #btn12:active {
-	background-color: #5d3;
+	background-color: var(--btnSaveBgColorActive);
 }
 .btn-call {
 	width: 100%;
@@ -394,15 +411,16 @@ a {
 
 
 .input-phonebook {
-	font-size: 0.75rem !important;
-	height: 1.5rem;
-	line-height: 1.5rem;
+	font-size: 0.73rem !important;
+	height: 1.75rem;
+	line-height: 1.75rem;
+	margin: 3px 0px;
 }
 
 
 #toolbar {
 	position: relative;
-	background-color: #35b;
+	background-color: var(--btnBgColor);
 	text-align: right;
 	width: 100%;
 	display: inline-block;
@@ -423,13 +441,14 @@ a {
 	cursor: pointer;
 }
 #error_msg {
-	color: #9C0C0C;
+	color: var(--errFontColor);
 	display: inline-block;
 	font-size: 0.8rem;
 	position: absolute;
-	line-height: 1rem;
+	line-height: 30px;
 	top: 0px;
 	left: 12px;
+	text-align: left;
 	min-width: 140px;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -439,8 +458,8 @@ a {
 
 
 #signout_link_tabs {
-	background-color: #35b;
-	color: whitesmoke;
+	background-color: var(--btnBgColor);
+	color: var(--bgFontColor);
 	height: 28px;
 	text-align: left;
 	border-top-left-radius: 2px;
@@ -456,7 +475,7 @@ a {
 	margin-right: 70px
 }
 #signout a {
-	color: whitesmoke;
+	color: var(--bgFontColor);
 	outline: none;
 	position: absolute;
 	top: 0px;
@@ -467,7 +486,7 @@ a {
 
 
 .sendfax__btn {
-	color: #fff;
+	color: var(--bgFontColor);
 	border: 0;
 	display: block;
 	text-align: center;
@@ -477,14 +496,13 @@ a {
 	cursor: pointer;
 	box-sizing: border-box;
 	outline: none;
-	background-color: #35b;
+	background-color: var(--btnBgColor);
 }
 .sendfax__btn:hover {
-	background-color: #139;
+	background-color: var(--btnBgColorHover);
 }
 .sendfax__btn:active {
-	background-color: #24a;
-	color: #eee;
+	background-color: var(--btnBgColorActive);
 }
 
 button {
@@ -501,7 +519,7 @@ fieldset {
 	width: 100%;
 	display: block;
 	padding: 8px 20px;
-	border-color: #35b;
+	border-color: var(--btnBgColor);
 	border-radius: 4px;
 	margin: 0;
 	box-sizing: border-box;
@@ -523,7 +541,7 @@ ul.ui-autocomplete {
 }
 
 #about_link_tabs a {
-	color: #333333;
+	color: var(--mainFontColor);
 	outline: none;
 	/* position: absolute; */
 	/* right: 2px; */
@@ -531,7 +549,7 @@ ul.ui-autocomplete {
 }
 
 #about_link_options a {
-	color: #333333;
+	color: var(--mainFontColor);
 	outline: none;
 	position: absolute;
 	right: 14px;
@@ -545,19 +563,19 @@ ul.ui-autocomplete {
 #status {
 	font-size: 1rem;
 	margin: 8px;
-	color: #9C0C0C;
+	color: var(--errFontColor);
 }
 
 #dialer {
 	font-size: 0.9rem;
 	margin: 0 auto;
 	padding: 12px;
-	border: 1px solid #35b;
+	border: 1px solid var(--btnBgColor);
 	border-bottom-style: none;
 }
 
 #history {
-	font-size: 8pt;
+	font-size: 1rem;
 	overflow: auto;
 	height: 80%;
 	width: 280px;
@@ -566,19 +584,19 @@ ul.ui-autocomplete {
 
 
 #preferences {
-	font-size: 8pt;
+	font-size: 1rem;
 	margin: 2px;
 }
 
 #fax {
-	font-size: 8pt;
+	font-size: 1rem;
 	overflow-y: auto;
 	margin: 2px;
 }
 
 #tabs {
 	height: 90%;
-	border-color: #35b;
+	border-color: var(--btnBgColor);
 	margin: 0 auto;
 	border-top-style: none;
 	overflow: hidden;
@@ -623,7 +641,7 @@ ul.ui-autocomplete {
 	cursor: pointer;
 	padding: 4px;
 	text-align: left;
-	border-bottom: 1px solid #F1F1F1;
+	border-bottom: 1px solid var(--colorBorderDelimiter);
 	font-size: 0.8rem;
 }
 .tabled_tab tr td p {
@@ -632,7 +650,7 @@ ul.ui-autocomplete {
 	font-weight: bold;
 }
 .tabled_tab tr:hover {
-	background-color: #57b;
+	background-color: var(--btnBgColor);
 }
 .tabled_tab tr td:first-child {
 	padding-left: 12px;
@@ -657,7 +675,7 @@ ul.ui-autocomplete {
 #phonebookentries tr td {
 	padding: 4px;
 	text-align: left;
-	border-bottom: 1px solid #F1F1F1;
+	border-bottom: 1px solid var(--colorBorderDelimiter);
 }
 #phonebookentries tr td:first-child {
 	padding-left: 12px;
@@ -683,7 +701,7 @@ ul.ui-autocomplete {
 	cursor: pointer;
 }
 #phonebookentries tr:hover {
-	background-color: #57b;
+	background-color: var(--btnBgColor);
 }
 #phonebookentries tr:first-child:hover {
 	background-color: transparent;
@@ -794,14 +812,14 @@ ul.ui-autocomplete {
 	display: inline-block;
 	max-width: 680px;
 	width: 92%;
-	background-color: #f8f9fb;
-	color: #333;
+	background-color: var(--settingsBgColor);
+	color: var(--mainFontColor);
 	margin-top: 60px;
 	margin-bottom: 60px;
 	padding: 30px;
 	font-size: 1rem;
 	line-height: 1.6rem;
-	border: 2px solid #35b;
+	border: 2px solid var(--btnBgColor);
 	border-radius: 4px;
 	text-align: left;
 	box-sizing: border-box;
@@ -815,9 +833,6 @@ ul.ui-autocomplete {
 	font-size: 2rem;
 	margin-top: 0;
 	margin-bottom: 20px;
-}
-.settings__body {
-
 }
 .settings__items {
 	display: block;
@@ -860,7 +875,7 @@ ul.ui-autocomplete {
 	text-align: center;
 }
 .settings__btn {
-	color: #fff;
+	color: var(--bgFontColor);
 	border: 0;
 	margin: 16px;
 	margin-top: 40px;
@@ -875,22 +890,30 @@ ul.ui-autocomplete {
 	outline: none;
 }
 .settings__btn-reset {
-	background-color: #35b;
+	background-color: var(--btnBgColor);
 }
 .settings__btn-reset:hover {
-	background-color: #139;
+	background-color: var(--btnBgColorHover);
 }
 .settings__btn-reset:active {
-	background-color: #24a;
-	color: #eee;
+	background-color: var(--btnBgColorActive);
 }
 .settings__btn-save {
-	background-color: #5b3;
+	background-color: var(--btnSaveBgColor);
 }
 .settings__btn-save:hover {
-	background-color: #6a4;
+	background-color: var(--btnSaveBgColorHover);
 }
 .settings__btn-save:active {
-	background-color: #4b2;
-	color: #eee;
+	background-color: var(--btnSaveBgColorActive);
+}
+#clean_history_btn {
+	margin: 16px;
+}
+.settings__body summary {
+	outline: none;
+	cursor: pointer;
+}
+.inner__params {
+	margin-left: 18px;
 }

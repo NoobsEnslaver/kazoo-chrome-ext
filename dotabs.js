@@ -189,7 +189,28 @@ function restoreTabs() {
 	$(".btn_added:not(#btn12)").on("click", btn_handler);
 	$("#btn12").on("click", call_btn);
 	$("#destination").on('keydown', function(e) {
-		if (e.which == 13) call_btn();
+		if (e.which == 13) {
+			call_btn();
+		} else {
+			if ($(this).val().length < 25 && ((e.which === 8 || e.which === 37 || e.which === 39) ||
+				(((e.which >= 48 && e.which <= 57) || (e.which >= 96 && e.which <= 105)) && (this.selectionStart === 0 && $(this).val()[0] !== "+" || this.selectionStart !== 0)) ||
+				((e.which === 187 || e.which === 107) && this.selectionStart === 0 && $(this).val().replace("+", "") === $(this).val()))) {
+			} else {
+				return false;
+			}
+		}
+	});
+	$("#pb_new_phone").on('keydown', function(e) {
+		if (e.which == 13) {
+			$(".add_phone").trigger("click");
+		} else {
+			if ($(this).val().length < 25 && ((e.which === 8 || e.which === 37 || e.which === 39) ||
+				(((e.which >= 48 && e.which <= 57) || (e.which >= 96 && e.which <= 105)) && (this.selectionStart === 0 && $(this).val()[0] !== "+" || this.selectionStart !== 0)) ||
+				((e.which === 187 || e.which === 107) && this.selectionStart === 0 && $(this).val().replace("+", "") === $(this).val()))) {
+			} else {
+				return false;
+			}
+		}
 	});
 
 	$("#cfabutton").on("click", ()=>{chrome.runtime.sendMessage({type: "SWITCH_CALL_FORWARD"});});
@@ -263,7 +284,13 @@ function draw_no_vm_logo(){
 	img = document.createElement("img");
 
 	img.src = "images/no_voicemailbox.png";
-	img.height = (popup_heigth - 260)*0.7;
+
+	$(img).css({
+		"height": "calc(100vh - 400px)",
+		"min-height": "48px",
+		"border-radius": "50%",
+		"background-color": "#35b"
+	});
 
 	$("#msgtable").append(p1);
 	if(popup_heigth > 320){
@@ -386,15 +413,13 @@ function create_input_pb_row(){
 	input1.id = "pb_new_name";
 	$(input1).attr("class", "input input-phonebook");
 	input1.placeholder = translate["pb_name_placeholder"].message;
-	input1.size=15;
+	input1.size=14;
 	input2.id = "pb_new_phone";
 	$(input2).attr("class", "input input-phonebook");
 	input2.placeholder = translate["pb_phone_placeholder"].message;
-	input2.size=15;
+	input2.size=16;
 	image.src = "images/add.png";
-	image.onclick = (e)=>{
-		chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "add_to_phonebook.html"}, ()=>{});
-	};
+	$(image).attr("class", "add_phone");
 
 	col1.appendChild(input1);
 	col2.appendChild(input2);
@@ -405,6 +430,10 @@ function create_input_pb_row(){
 	input_field.appendChild(col3);
 
 	$("#phonebookentries").append(input_field);
+
+	$("body").on("click", ".add_phone", function() {
+		chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "add_to_phonebook.html"}, ()=>{});
+	});
 
 	$("#pb_new_name").on('input', text_input_handler_names);
 	$("#pb_new_phone").on('input', text_input_handler_phones);
@@ -605,13 +634,25 @@ function localize(){
 
 
 function btn_handler(e){
-	$("#destination")[0].value += e.currentTarget.textContent;
+	var dest = $("#destination");
+	var shift = 0;
+	var selStart = dest[0].selectionStart;
+	if ((e.currentTarget.textContent >= 0 && e.currentTarget.textContent <= 9 && (selStart === 0 && dest.val()[0] !== "+" || selStart !== 0)) ||
+		(e.currentTarget.textContent === "+" && selStart === 0 && dest.val().replace("+", "") === dest.val())) {
+		if (dest.val().length < 24) {
+			dest.val(dest.val().substr(0, selStart) + e.currentTarget.textContent + dest.val().substr(selStart));
+			shift = 1;
+		}
+	}
+
+	dest.focus();
+	dest[0].setSelectionRange(selStart + shift, selStart + shift);
 }
 
 function call_btn(){
 	var message = {
 		type : "CALL",
-		text : $("#destination")[0].value
+		text : $("#destination").val()
 	};
 	$("#destination").val("");
 	chrome.runtime.sendMessage(message, ()=>{});
