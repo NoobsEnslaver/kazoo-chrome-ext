@@ -123,9 +123,9 @@ function restoreTabs() {
 					var new_faxes_list = storage.get("new_faxes", []);
 					$("#faxentries").empty();
 					create_input_fax_row();
-					for ( var z = 1; z < fax_list.length; z++) {
-						create_default_fax_row(fax_list[z].name, fax_list[z].from_number, fax_list[z].id, new_faxes_list.includes(fax_list[z].id), z);
-					}
+					fax_list.forEach((fax)=>{
+						create_default_fax_row(fax.name, fax.from_number, fax.id, new_faxes_list.includes(fax.id));
+					});
 					storage.set("new_faxes", []);
 					break;
 				case "conference":
@@ -227,8 +227,9 @@ function restoreTabs() {
 	localize();
 }
 
-function create_default_fax_row(name, phone, fax_id, is_new, pos){
+function create_default_fax_row(name, phone, fax_id, is_new){
 	var table = $("#faxentries")[0].childNodes[0];
+	var pos = table.childNodes.length;
 	table.insertRow(pos);
 	table.rows[pos].insertCell(0);
 	table.rows[pos].insertCell(1);

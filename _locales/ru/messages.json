@@ -64,5 +64,6 @@
 	"to_name": {"message": "Имя получателя"},
 	"clean_history": {"message": "Очистить историю"},
 	"success": {"message": "Успешно"},
-	"failed": {"message": "Ошибка"}
+	"failed": {"message": "Ошибка"},
+	"onNewFaxNotification": {"message": "Уведомлять о получении новых факсов"}
 }

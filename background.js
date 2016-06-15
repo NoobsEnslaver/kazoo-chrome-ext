@@ -104,7 +104,7 @@ function onMessage(request, sender, sendResponse) {
 }
 
 function send_fax(request){
-	if(is_too_fast()) return false;
+	if(is_too_fast()) return true;
 	console.log("Sending fax to %o", request.to_number);
 	var data = {
 		"document":{
@@ -116,6 +116,9 @@ function send_fax(request){
 		"to_number": request.to_number
 	};
 	switch(request.caller_id){
+	case undefined:
+		return true;
+
 	case "account":
 		data.from_name = localStorage.account_external_caller_name;
 		data.from_number = localStorage.account_external_caller_number;
@@ -125,15 +128,15 @@ function send_fax(request){
 		data.from_name = localStorage.user_external_caller_name;
 		data.from_number = localStorage.user_external_caller_number;
 		break;
-
+		
 	default:
 		var device = storage.get("devices", [])[request.caller_id];
-		data.from_name = device.external_caller_name;     // TODO: test it, external || internal?
+		data.from_name = device.external_caller_name;
 		data.from_number = device.external_caller_number;		
 	}
 	KAZOO.faxes.send({account_id: localStorage.account_id, data: data});
 	
-	return true;
+	return false;
 }
 
 function updateFax(){
@@ -146,6 +149,19 @@ function updateFax(){
 				      success: (data, status)=>{
 					      var new_faxes = substract(data.data.map((x)=>{return x.id;}),
 									storage.get("faxes", []).map((x)=>{return x.id;}));
+					      if (new_faxes.length > 0 && localStorage.onNewFaxNotification === "true") {
+						      var message = new_faxes.length > 1? "Received " + new_faxes.length + " faxes":
+							  "Received fax from " + data.data.filter((x)=>{return x.id === new_faxes[0];}).caller_id_name;
+						      chrome.notifications.create("Kazoo chrome extension fax event", {
+							      type: "basic",
+							      iconUrl: "images/fax-push.png",
+							      title: "Received fax",
+							      isClickable: false,
+							      buttons: [],
+							      message: message,
+							      contextMessage: ""// EventJObj.data["Caller-ID-Number"]
+						      }, ()=>{});
+					      }
 					      storage.set("faxes", data.data);
 					      storage.set("new_faxes", union(storage.get("new_faxes", []), new_faxes));
 				      },
@@ -162,7 +178,7 @@ function updateFax(){
 function getMyFaxBoxId(){
 	if(is_too_fast()) return;
 	KAZOO.faxbox.list({account_id: localStorage["account_id"],
-			   filters: { filter_owner_id: localStorage["user_id"] },
+			   //filters: { filter_owner_id: localStorage["user_id"] },
 			   success: (data, status)=>{
 				   if (data.data.length > 0) {
 					   localStorage["faxbox_id"] = data.data[0].id;
@@ -337,8 +353,8 @@ function updateDevices(){
 							var devices = storage.get("devices", []);
 							var current_device_index = devices.findIndex((x)=>{return x.id===dev.id;});
 							if (current_device_index >= 0) {
-								try{ devices[current_device_index].external_caller_name = d.caller_id.external.name;	  }catch(e){}
-								try{ devices[current_device_index].internal_caller_name = d.caller_id.internal.name;	  }catch(e){}
+								try{ devices[current_device_index].external_caller_name = d.caller_id.external.name;	 }catch(e){}
+								try{ devices[current_device_index].internal_caller_name = d.caller_id.internal.name;	 }catch(e){}
 								try{ devices[current_device_index].external_caller_number = d.caller_id.external.number; }catch(e){}
 								try{ devices[current_device_index].internal_caller_number = d.caller_id.internal.number; }catch(e){}
 
@@ -391,8 +407,8 @@ function contentLoaded() {
 					window.setTimeout(authorize, 1500);	//attempt to reconnect
 				}
 			}
-
-			 showError(error);
+			
+			showError(error);
 		}
 	};
 	KAZOO = $.getKazooSdk(kazoosdk_options);
@@ -408,10 +424,11 @@ function prepareToStart(){
 	storage.maybe_set("history", []);
 	storage.maybe_set("inboundCallNotificationsEnabled", true);
 	storage.maybe_set("system_notification", true);
-	storage.maybe_set("clicktodial", true);		//FIXME
+	storage.maybe_set("clicktodial", true);
 	storage.maybe_set("pkg_dump", {"Call-Direction": "","Event-Name": ""});
 	storage.maybe_set("custom_profile_page", "https://google.com/search?q={{Caller-ID-Name}}%20{{Caller-ID-Number}}");
 	storage.maybe_set("active_device", "auto");
+	storage.maybe_set("onNewFaxNotification", true);	
 }
 
 function incrementErrorCount(error_code){
@@ -600,11 +617,11 @@ function signToBlackholeEvents(){
 		binding: 'call.*.*'
         });
 
-	SOCKET.emit('subscribe', {
-		account_id: localStorage.account_id,
-		auth_token: localStorage.authTokens,
-		binding: 'fax.status.*' //<<"fax.status.", FaxId/binary>>, может передать faxid?
-        });
+	// SOCKET.emit('subscribe', {
+	// 	account_id: localStorage.account_id,
+	// 	auth_token: localStorage.authTokens,
+	// 	binding: 'fax.status.*' //<<"fax.status.", FaxId/binary>>, может передать faxid?
+        // });
 
 	function call_event_handler(EventJObj) {
 		var devices = storage.get("devices", []).map((x)=>{return x.id;});
@@ -676,24 +693,24 @@ function signToBlackholeEvents(){
 
 
 	function fax_event_handler(EventJObj){
-		if(is_too_fast()) return;
-		if(EventJObj.data["FaxBox-ID"] !== localStorage.faxbox_id) return;
-		if(EventJObj.data["Direction"] !== "incoming") return;
-		if(EventJObj.data["Status"] !== "Fax Successfuly received") return;
-		//if(EventJObj.data["Fax-State"] !== "receive") return;
-		updateFax();
+		// if(is_too_fast()) return;
+		// if(EventJObj.data["FaxBox-ID"] !== localStorage.faxbox_id) return;
+		// if(EventJObj.data["Direction"] !== "incoming") return;
+		// if(EventJObj.data["Status"] !== "Fax Successfuly received") return;
+		// //if(EventJObj.data["Fax-State"] !== "receive") return;
+		// updateFax();
 
-		if(localStorage.fax_system_notification === "true"){
-			chrome.notifications.create("Kazoo chrome extension fax event", {
-				type: "basic",
-				iconUrl: "images/phone-push.png",
-				title: "Received fax",
-				isClickable: false,
-				buttons: [],
-				message: "Received fax from " + EventJObj.data["Caller-ID-Name"],
-				contextMessage: EventJObj.data["Caller-ID-Number"]
-			}, ()=>{});
-		}
+		// if(localStorage.fax_system_notification === "true"){
+		// 	chrome.notifications.create("Kazoo chrome extension fax event", {
+		// 		type: "basic",
+		// 		iconUrl: "images/phone-push.png",
+		// 		title: "Received fax",
+		// 		isClickable: false,
+		// 		buttons: [],
+		// 		message: "Received fax from " + EventJObj.data["Caller-ID-Name"],
+		// 		contextMessage: EventJObj.data["Caller-ID-Number"]
+		// 	}, ()=>{});
+		// }
 	}
 
 	function conference_event_handler(EventJObj){

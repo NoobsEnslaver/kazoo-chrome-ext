@@ -64,5 +64,6 @@
 	"to_name": {"message": "Recipient's name"},
 	"clean_history": {"message": "Clean history"},
 	"success": {"message": "Success"},
-	"failed": {"message": "Failed"}
+	"failed": {"message": "Failed"},
+	"onNewFaxNotification": {"message": "Notify when new fax received"}
 }

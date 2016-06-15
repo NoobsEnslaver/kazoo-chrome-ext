@@ -33,7 +33,7 @@ function localize(){
 	$("#save_btn").attr("value", dictionary["save"].message);
 	$("#reset_btn").attr("value", dictionary["reset"].message);
 	$("#clean_history_btn").attr("value", dictionary["clean_history"].message);
-
+	$("#onNewFaxNotification_text").text(dictionary["onNewFaxNotification"].message);
 }
 
 function save_options(){
@@ -49,6 +49,7 @@ function save_options(){
 	storage.set("onQuickCallNotifications", options["onQuickCallNotifications"] === "on");
 	storage.set("clicktodial", options["clicktodial"] === "on");
 	storage.set("custom_profile_page", options["custom_profile_page"]);
+	storage.set("onNewFaxNotification", options["onNewFaxNotification"]);
 
 	chrome.runtime.sendMessage({ type : "UPDATE_LOCALIZATION"}, ()=>{
 		chrome.tabs.reload();
@@ -72,6 +73,7 @@ function restore_options(){
 	opt.elements["onQuickCallNotifications"].checked = storage.get("onQuickCallNotifications", false);
 	opt.elements["clicktodial"].checked = storage.get("clicktodial", false);
 	opt.elements["custom_profile_page"].value = storage.get("custom_profile_page", "");
+	opt.elements["onNewFaxNotification"].checked = storage.get("onNewFaxNotification", true);
 }
 
 function get_devices(){
@@ -90,32 +92,5 @@ function get_devices(){
 	}
 	return result_list;
 }
-
-var storage = {
-	get: function(key, def_val){
-		if(typeof(def_val) === "string")
-			return localStorage[key] || def_val;
-
-		var value = def_val;
-		try{
-			value = JSON.parse(localStorage[key]);
-		}catch(e){}
-		return value;
-	},
-	set: function(key, val){
-		localStorage[key] = typeof(val) === "string"? val: JSON.stringify(val);
-	},
-	push: function(key, new_val){
-		var old_val = this.get(key, []);
-		old_val.push(new_val);
-		this.set(key, old_val);
-	},
-	assign: function(key, val){
-		if(typeof(val) !== "object") throw new Error("Assign for Objects only!");
-		var old_val = this.get(key, {});
-		this.set(key, Object.assign(old_val, val));
-	}
-};
-
 
 document.addEventListener('DOMContentLoaded', main);
