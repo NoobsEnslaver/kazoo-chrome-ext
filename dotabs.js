@@ -312,7 +312,7 @@ function create_default_history_row(type, name, number, time){
 	table.rows[pos].cells[0].childNodes[0].src = "images/" + type + ".png";
 	table.rows[pos].cells[0].childNodes[0].style.height = "24px";
 	table.rows[pos].cells[0].childNodes[0].style.width = "24px";
-	
+
 	table.rows[pos].cells[1].appendChild(document.createElement("p"));
 	table.rows[pos].cells[1].childNodes[0].appendChild(document.createTextNode(name));
 	table.rows[pos].cells[1].appendChild(document.createElement("span"));
@@ -320,7 +320,7 @@ function create_default_history_row(type, name, number, time){
 
 	table.rows[pos].cells[2].appendChild(document.createTextNode(time));
 	// for ( var i = 0; i < history.length; i++) {
-		
+
 	// 	var row = "<tr id='calllogentry" + i + "_" + list[i].number + "'>";
 	// 	if (list[i].type == "outgoing") {
 	// 		row += "<td><img src='images/outcoming.png '/></td>";
@@ -499,7 +499,8 @@ function create_box_row(name, phone, count, is_new, id){
 	img = $("<img class='mes__img' />");
 
 	$(p1).text(name).attr("title", name);
-	$(img).attr("src", "images/msg_" + (is_new ? "new.jpg" : (count > 0 ? "not_empty.png" : "empty.png")));
+	$(img).attr("src", "images/msg_" + (is_new ? "new.jpg" : (count > 0 ? "not_empty.png" : "empty.png")))
+			.attr("title", (is_new ? "New" : (count > 0 ? "Not empty" : "Empty")));
 	$(col1).text(phone).attr("title", phone);
 	$(col1).append(p1);
 	$(col2).text(count);

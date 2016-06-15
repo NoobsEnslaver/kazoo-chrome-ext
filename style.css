@@ -25,12 +25,19 @@ limitations under the License.
 	--settingsBgColor: #f8f9fb;
 	--signBoxBgColor: transparent;
 
+	/*--bgLock: url(images/img_lock.png);*/
+
 	--mainFontColor: #222;
 	--errFontColor: #b11;
 	--bgFontColor: #fff;
 
 	--colorBorderDelimiter: #eee;
 }
+
+#tabs {
+	background: white url(images/img_lock.png);
+}
+
 html {
 	font-size: 100%;
 	height: auto;
@@ -46,6 +53,7 @@ body {
 	border-radius: 2px;
 	text-align: center;
 	box-sizing: border-box;
+	background: url(images/img_lock.png);
 }
 
 a {
@@ -78,7 +86,7 @@ a {
 	padding: 20px;
 	line-height: normal;
 	vertical-align: middle;
-	background-color: var(--signBoxBgColor);
+	background: var(--signBoxBgColor);
 	border: 2px solid var(--btnBgColor);
 	border-radius: 4px;
 	margin-bottom: 12px;
@@ -98,7 +106,7 @@ a {
 	height: 2.2rem;
 	font-size: 1rem;
 	outline: none;
-	background-color: #ffffff;
+	background: #ffffff;
 	border: 1px solid #cccccc;
 	padding-left: 6px;
 	color: #555555;
@@ -123,7 +131,7 @@ a {
 	display: none;
 }
 .wrap_btn {
-	background-color: var(--btnBgColor);
+	background: var(--btnBgColor);
 	color: var(--bgFontColor);
 	border: 0;
 	display: inline-block;
@@ -136,10 +144,10 @@ a {
 	outline: none;
 }
 .wrap_btn:hover {
-	background-color: var(--btnBgColorHover);
+	background: var(--btnBgColorHover);
 }
 .wrap_btn:active {
-	background-color: var(--btnBgColorActive);
+	background: var(--btnBgColorActive);
 }
 .about,
 .about:link,
@@ -198,7 +206,7 @@ a {
 	border-bottom: 1px solid #9f9f9f;
 	line-height: 2rem;
 	margin: 0;
-	background-color: rgba(0, 0, 0, 0.7);
+	background: rgba(0, 0, 0, 0.7);
 	cursor: pointer;
 	box-sizing: border-box;
 	transition: all ease 0.3s;
@@ -209,13 +217,13 @@ a {
 .language__li-active {
 	color: #eee;
 	border-bottom: 1px solid #ccc;
-	background-color: rgba(0, 0, 0, 0.8);
+	background: rgba(0, 0, 0, 0.8);
 	transition: all ease 0.3s;
 }
 .language__li:hover {
 	color: var(--bgFontColor);
 	border-bottom: 1px solid #d7d7d7;
-	background-color: rgba(0, 0, 0, 0.86);
+	background: rgba(0, 0, 0, 0.86);
 	transition: all ease 0.3s;
 }
 
@@ -262,10 +270,10 @@ a {
 	margin: auto;
 }
 .about__button:hover {
-	background-color: var(--btnBgColorHover);
+	background: var(--btnBgColorHover);
 }
 .about__button:active {
-	background-color: var(--btnBgColorActive);
+	background: var(--btnBgColorActive);
 }
 
 
@@ -274,7 +282,8 @@ a {
 	font-size: 0.72rem;
 	padding: 2px;
 	width: 100%;
-	overflow: auto;
+	overflow-y: auto;
+	overflow-x: hidden;
 	box-sizing: border-box;
 	border-collapse: collapse;
 }
@@ -284,7 +293,7 @@ a {
 	box-sizing: border-box;
 }
 .mes__row:hover {
-	background-color: var(--btnBgColorHover);
+	background: var(--btnBgColor);
 }
 .mes__col {
 	padding: 12px 4px;
@@ -319,6 +328,19 @@ a {
 	text-align: right;
 	padding-right: 12px;
 }
+#messages .mes__col-1 {
+	width: 66%;
+	padding-left: 12px;
+}
+#messages .mes__col-2 {
+	width: 16%;
+	text-align: center;
+}
+#messages .mes__col-3 {
+	width: 18%;
+	text-align: right;
+	padding-right: 12px;
+}
 .mes__img {
 	width: 100%;
 	margin-bottom: 3px;
@@ -337,8 +359,8 @@ a {
 	box-sizing: border-box;
 }
 .back {
-	margin: 10px 10px 10px 0px;
-	background-color: var(--btnBgColor);
+	margin-top: 10px;
+	background: var(--btnBgColor);
 	color: var(--bgFontColor);
 	border: 0;
 	display: inline-block;
@@ -350,7 +372,7 @@ a {
 	box-sizing: border-box;
 }
 .back:hover {
-	background-color: var(--btnBgColorHover);
+	background: var(--btnBgColorHover);
 }
 
 .numbers {
@@ -376,34 +398,33 @@ a {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
-	background-image: none;
 	border-radius: 0px;
 	color: var(--bgFontColor);
 	margin-bottom: 1px;
 	box-sizing: border-box;
-	background-color: var(--btnBgColor);
+	background: var(--btnBgColor);
 	border: 0px;
 }
 .btn_added:hover {
-	background-color: var(--btnBgColorHover);
+	background: var(--btnBgColorHover);
 }
 .btn_added:active {
-	background-color: var(--btnBgColorActive);
+	background: var(--btnBgColorActive);
 }
 #btn12 {
-	background-color: var(--btnSaveBgColor);
+	background: var(--btnSaveBgColor);
 }
 #btn12:hover {
-	background-color: var(--btnSaveBgColorHover);
+	background: var(--btnSaveBgColorHover);
 }
 #btn12:active {
-	background-color: var(--btnSaveBgColorActive);
+	background: var(--btnSaveBgColorActive);
 }
 .btn-call {
 	width: 100%;
 	height: 100%;
 	display: inline-block;
-	background-image: url(images/phone.png);
+	background: url(images/phone.png);
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: 24%;
@@ -420,7 +441,7 @@ a {
 
 #toolbar {
 	position: relative;
-	background-color: var(--btnBgColor);
+	background: var(--btnBgColor);
 	text-align: right;
 	width: 100%;
 	display: inline-block;
@@ -458,7 +479,7 @@ a {
 
 
 #signout_link_tabs {
-	background-color: var(--btnBgColor);
+	background: var(--btnBgColor);
 	color: var(--bgFontColor);
 	height: 28px;
 	text-align: left;
@@ -496,13 +517,13 @@ a {
 	cursor: pointer;
 	box-sizing: border-box;
 	outline: none;
-	background-color: var(--btnBgColor);
+	background: var(--btnBgColor);
 }
 .sendfax__btn:hover {
-	background-color: var(--btnBgColorHover);
+	background: var(--btnBgColorHover);
 }
 .sendfax__btn:active {
-	background-color: var(--btnBgColorActive);
+	background: var(--btnBgColorActive);
 }
 
 button {
@@ -603,7 +624,7 @@ ul.ui-autocomplete {
 }
 
 #tabs li {
-	background-color: #ffffff;
+	background: #ffffff;
 }
 
 #clicktodial {
@@ -650,7 +671,7 @@ ul.ui-autocomplete {
 	font-weight: bold;
 }
 .tabled_tab tr:hover {
-	background-color: var(--btnBgColor);
+	background: var(--btnBgColor);
 }
 .tabled_tab tr td:first-child {
 	padding-left: 12px;
@@ -701,10 +722,10 @@ ul.ui-autocomplete {
 	cursor: pointer;
 }
 #phonebookentries tr:hover {
-	background-color: var(--btnBgColor);
+	background: var(--btnBgColor);
 }
 #phonebookentries tr:first-child:hover {
-	background-color: transparent;
+	background: transparent;
 	cursor: auto;
 }
 /* ---- end Phone Book ------  */
@@ -778,6 +799,7 @@ ul.ui-autocomplete {
 	min-width: 640px;
 	text-align: center;
 	position: absolute;
+	background: url(images/img_lock.png);
 	top: 0;
 	left: 0;
 	bottom: 0;
@@ -812,7 +834,7 @@ ul.ui-autocomplete {
 	display: inline-block;
 	max-width: 680px;
 	width: 92%;
-	background-color: var(--settingsBgColor);
+	background: var(--settingsBgColor);
 	color: var(--mainFontColor);
 	margin-top: 60px;
 	margin-bottom: 60px;
@@ -855,7 +877,7 @@ ul.ui-autocomplete {
 	height: 2rem;
 	font-size: 1rem;
 	outline: none;
-	background-color: #ffffff;
+	background: #ffffff;
 	border: 1px solid #cccccc;
 	padding-left: 6px;
 	color: #555555;
@@ -890,22 +912,22 @@ ul.ui-autocomplete {
 	outline: none;
 }
 .settings__btn-reset {
-	background-color: var(--btnBgColor);
+	background: var(--btnBgColor);
 }
 .settings__btn-reset:hover {
-	background-color: var(--btnBgColorHover);
+	background: var(--btnBgColorHover);
 }
 .settings__btn-reset:active {
-	background-color: var(--btnBgColorActive);
+	background: var(--btnBgColorActive);
 }
 .settings__btn-save {
-	background-color: var(--btnSaveBgColor);
+	background: var(--btnSaveBgColor);
 }
 .settings__btn-save:hover {
-	background-color: var(--btnSaveBgColorHover);
+	background: var(--btnSaveBgColorHover);
 }
 .settings__btn-save:active {
-	background-color: var(--btnSaveBgColorActive);
+	background: var(--btnSaveBgColorActive);
 }
 #clean_history_btn {
 	margin: 16px;
