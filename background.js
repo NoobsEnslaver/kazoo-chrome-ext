@@ -73,7 +73,7 @@ function onMessage(request, sender, sendResponse) {
 
 	case "PHONE_BOOK_ADD_ENTRY":
 		delete request["type"];
-		phoneBookAddEntry(request);
+		sendResponse(!phoneBookAddEntry(request));
 		break;
 
 	case "PHONE_BOOK_REMOVE_ENTRY":
@@ -98,13 +98,13 @@ function onMessage(request, sender, sendResponse) {
 		break;
 
 	case "SEND_FAX":
-		sendResponse(send_fax(request));
+		sendResponse(!send_fax(request));
 		break;
 	}
 }
 
 function send_fax(request){
-	if(is_too_fast()) return true;
+	if(is_too_fast()) return false;
 	console.log("Sending fax to %o", request.to_number);
 	var data = {
 		"document":{
@@ -117,7 +117,7 @@ function send_fax(request){
 	};
 	switch(request.caller_id){
 	case undefined:
-		return true;
+		return false;
 
 	case "account":
 		data.from_name = localStorage.account_external_caller_name;
@@ -136,7 +136,7 @@ function send_fax(request){
 	}
 	KAZOO.faxes.send({account_id: localStorage.account_id, data: data});
 	
-	return false;
+	return true;
 }
 
 function updateFax(){
@@ -178,7 +178,7 @@ function updateFax(){
 function getMyFaxBoxId(){
 	if(is_too_fast()) return;
 	KAZOO.faxbox.list({account_id: localStorage["account_id"],
-			   //filters: { filter_owner_id: localStorage["user_id"] },
+			   filters: { filter_owner_id: localStorage["user_id"] },
 			   success: (data, status)=>{
 				   if (data.data.length > 0) {
 					   localStorage["faxbox_id"] = data.data[0].id;
@@ -205,6 +205,7 @@ function createFaxBox(){
 
 function voiceMailDeleteEntryHandler(data){
 	if(is_too_fast()) return;
+	console.log("Delete voicemail entry %o", data);
 	KAZOO.voicemail.delete({
 		account_id: localStorage["account_id"],
 		voicemailId: data.vmbox_id,
@@ -214,15 +215,19 @@ function voiceMailDeleteEntryHandler(data){
 }
 
 function phoneBookAddEntry(request){
+	if(is_too_fast()) return false;
 	if ((request.name.length > 0 || request.last_name.length > 0)
 	    && request.phone.length > 0
 	    && localStorage["phoneBookListId"]) {
+		console.log("New entry in phonebook: %o", request);
 		KAZOO.lists.addEntry({account_id: localStorage["account_id"],
 				      success: updatePhoneBook,
 				      list_id: localStorage["phoneBookListId"],
 				      data: request
 				     });
+		return true;
 	}
+	return false;
 }
 
 function updateLocalization(){
@@ -238,6 +243,7 @@ function updateLocalization(){
 function phoneBookRemoveEntry(entry_id){
 	if(!localStorage["phoneBookListId"]) return;
 	if(is_too_fast()) return;
+	console.log("Remove phonebook enrty %o", entry_id);
 	var list_id = localStorage["phoneBookListId"];
 	KAZOO.lists.deleteEntry({account_id: localStorage["account_id"],
 				 success: updatePhoneBook,
@@ -734,7 +740,7 @@ function signToBlackholeEvents(){
 	SOCKET.on('CHANNEL_CREATE', call_event_handler);
 	SOCKET.on('CHANNEL_ANSWER', call_event_handler);
 	SOCKET.on('CHANNEL_DESTROY', call_event_handler);
-	SOCKET.on("status", fax_event_handler);                             	//TODO: Test it
+	//SOCKET.on("status", fax_event_handler);                             	//TODO: Test it
 	//SOCKET.on('participants_event', conference_event_handler);            	//TODO: Test it
 }
 
@@ -900,7 +906,7 @@ chrome.contextMenus.create({
 				var ph = phone[3] || phone[0];
 				var name = prompt(localization.get_owner_name.message + " " + ph, localization.anonymous.message);
 				if (name) {
-					phoneBookAddEntry(name, ph);
+					phoneBookAddEntry({name:name, phone:ph});
 				}
 			} else {
 				alert(localization.cant_parse_number.message + " :(");

@@ -1,10 +1,9 @@
 (function(){
+	if (localStorage["connectionStatus"] != "signedIn")
+		chrome.tabs.update({url: chrome.extension.getURL("sign.html")});
+
 	var dictionary = storage.get("localization", {});
 	
-	if (localStorage["connectionStatus"] != "signedIn") {
-		chrome.tabs.update({url: chrome.extension.getURL("sign.html")});
-	}
-
 	function main(){
 		createDropdownMenu();
 		$("#send_btn").click(send);

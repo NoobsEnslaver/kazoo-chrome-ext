@@ -217,13 +217,12 @@ function restoreTabs() {
 	$("#dndbutton").on("click", ()=>{chrome.runtime.sendMessage({type: "SWITCH_DND"}, ()=>{});});
 	updateDNDButtonImage();
 	updateCFButtonImage();
-
+	
 	$("#options").on("click", ()=>{
 		chrome.runtime.sendMessage({type : "GENTLY_OPEN_PAGE", url: "options.html"}, ()=>{});
 		window.close();
 	});
 
-	updatePhoneBook();
 	localize();
 }
 
@@ -238,7 +237,6 @@ function create_default_fax_row(name, phone, fax_id, is_new){
 	table.rows[pos].cells[0].appendChild(document.createElement("p"));
 	table.rows[pos].cells[0].childNodes[0].appendChild(document.createTextNode(name));
 	table.rows[pos].cells[0].appendChild(document.createTextNode(phone));
-	//table.rows[pos].cells[1].appendChild(document.createTextNode("-----"));
 	if(is_new) table.rows[pos].cells[1].style.backgroundColor = "green";
 
 	table.rows[pos].cells[2].appendChild(document.createElement("img"));

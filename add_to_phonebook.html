@@ -20,8 +20,8 @@ limitations under the License.
 		<meta charset="utf-8">
 		<link rel="stylesheet" href="style.css" />
 		<script src="jquery.js"></script>
-		<script src="add_to_phonebook.js"></script>
 		<script src="utils.js"></script>
+		<script src="add_to_phonebook.js"></script>		
 	</head>
 	<body style="width: 100%;overflow: auto">
 		<div class="settings">
@@ -40,11 +40,11 @@ limitations under the License.
 					</div>
 
 					<div class="settings__item">
-						<input class="input" type="text" id="birthday" name="birthday" placeholder="Birthday" />
+						<input class="input" type="tel" id="phone" name="phone" placeholder="Telephone number" required="true" />
 					</div>
 
 					<div class="settings__item">
-						<input class="input" type="tel" id="phone" name="phone" placeholder="Telephone number" required="true" />
+					  <input class="input" type="text" id="birthday" name="birthday" placeholder="Birthday" />
 					</div>
 
 					<div class="settings__item">
@@ -55,8 +55,7 @@ limitations under the License.
 						<input class="input" type="text" id="address" name="address" placeholder="Address" />
 					</div>
 				</fieldset>
-
-				<br/>
+				<div id="error_msg2">&nbsp;&nbsp;</div>
 				<div class="settings__btns">
 					<input class="settings__btn settings__btn-save" type="button" value="Add entry" id="save_btn">
 					<input class="settings__btn settings__btn-reset" type="reset" value="Reset" id="reset_btn">
