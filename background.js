@@ -105,6 +105,7 @@ function onMessage(request, sender, sendResponse) {
 
 function send_fax(request){
 	if(is_too_fast()) return;
+	console.log("Sending fax to %o", request.to_number);
 	var data = {
 		"document":{
 			"url": request.attachment,
@@ -112,10 +113,24 @@ function send_fax(request){
 		},
 		"retries":3,
 		"to_name": request.to_name,
-		"to_number": request.to_phone,
-		"from_number": request.from_phone,
-		"from_name": localStorage["faxbox_caller_name"]
+		"to_number": request.to_number
 	};
+	switch(request.caller_id){
+	case "account":
+		data.from_name = localStorage.account_external_caller_name;
+		data.from_number = localStorage.account_external_caller_number;
+		break;
+		
+	case "user":
+		data.from_name = localStorage.user_external_caller_name;
+		data.from_number = localStorage.user_external_caller_number;
+		break;
+
+	default:
+		var device = storage.get("devices", [])[request.caller_id];
+		data.from_name = device.external_caller_name;     // TODO: test it, external || internal?
+		data.from_number = device.external_caller_number;		
+	}
 	KAZOO.faxes.send({account_id: localStorage.account_id, data: data});
 }
 
@@ -124,14 +139,18 @@ function updateFax(){
 	var faxbox_id = storage.get("faxbox_id", "");
 	if(faxbox_id == "none") return;
 	if(faxbox_id){
-		KAZOO.faxes.incoming({account_id: localStorage["account_id"], filters: { filter_faxbox_id: localStorage["faxbox_id"] }, success: (data, status)=>{
-			var new_faxes = substract(data.data.map((x)=>{return x.id;}), storage.get("faxes", []).map((x)=>{return x.id;}));
-			storage.set("faxes", data.data);
-			storage.set("new_faxes", union(storage.get("new_faxes", []), new_faxes));
-		}, error: (data, status)=>{
-			console.log("updateFax error, code %o", status.status);
-			storage.set("faxes", []);
-		}});
+		KAZOO.faxes.incoming({account_id: localStorage["account_id"],
+				      filters: { filter_faxbox_id: localStorage["faxbox_id"] },
+				      success: (data, status)=>{
+					      var new_faxes = substract(data.data.map((x)=>{return x.id;}),
+									storage.get("faxes", []).map((x)=>{return x.id;}));
+					      storage.set("faxes", data.data);
+					      storage.set("new_faxes", union(storage.get("new_faxes", []), new_faxes));
+				      },
+				      error: (data, status)=>{
+					      console.log("updateFax error, code %o", status.status);
+					      storage.set("faxes", []);
+				      }});
 	}else{
 		console.log("No faxbox_id, try to get");
 		executeWithDelay([getMyFaxBoxId, updateFax], 4000);
@@ -140,17 +159,19 @@ function updateFax(){
 
 function getMyFaxBoxId(){
 	if(is_too_fast()) return;
-	KAZOO.faxbox.list({account_id: localStorage["account_id"], filters: { filter_owner_id: localStorage["user_id"] }, success: (data, status)=>{
-		if (data.data.length > 0) {
-			localStorage["faxbox_id"] = data.data[0].id;
-			localStorage["faxbox_caller_name"] = data.data[0].caller_name;
-		}else{
-			console.log("No faxbox, try to create");
-			createFaxBox();
-		}
-	}, error: (data, status)=>{
-		console.log("getMyFaxBoxId error, code %o", status.status);
-	}});
+	KAZOO.faxbox.list({account_id: localStorage["account_id"],
+			   filters: { filter_owner_id: localStorage["user_id"] },
+			   success: (data, status)=>{
+				   if (data.data.length > 0) {
+					   localStorage["faxbox_id"] = data.data[0].id;
+				   }else{
+					   console.log("No faxbox, try to create");
+					   createFaxBox();
+				   }
+			   },
+			   error: (data, status)=>{
+				   console.log("getMyFaxBoxId error, code %o", status.status);
+			   }});
 }
 
 function createFaxBox(){
@@ -175,7 +196,9 @@ function voiceMailDeleteEntryHandler(data){
 }
 
 function phoneBookAddEntry(request){
-	if ((request.name.length > 0 || request.last_name.length > 0) && request.phone.length > 0 && localStorage["phoneBookListId"]) {
+	if ((request.name.length > 0 || request.last_name.length > 0)
+	    && request.phone.length > 0
+	    && localStorage["phoneBookListId"]) {
 		KAZOO.lists.addEntry({account_id: localStorage["account_id"],
 				      success: updatePhoneBook,
 				      list_id: localStorage["phoneBookListId"],
@@ -244,7 +267,9 @@ function switchDND(){
 				}
 				data.data.do_not_disturb.enabled = !data.data.do_not_disturb.enabled;
 				localStorage.dnd = data.data.do_not_disturb.enabled;
-				KAZOO.user.update({data: data.data, userId: localStorage['user_id'], account_id: localStorage['account_id'],
+				KAZOO.user.update({data: data.data,
+						   userId: localStorage['user_id'],
+						   account_id: localStorage['account_id'],
 						   success:(d, s)=>{
 							   console.log("DND set to %o", d.data.do_not_disturb.enabled);
 							   update_DND_ico(); },
@@ -295,32 +320,34 @@ function updateDevices(){
 				});
 			}
 			storage.set("devices", new_devices);			
-			localStorage["active_device"] = (localStorage["active_device"] && devices[localStorage["active_device"]])? localStorage["active_device"]: "auto";
+			localStorage["active_device"] = (localStorage["active_device"] && devices[localStorage["active_device"]])?
+				localStorage["active_device"]: "auto";
 
-			//get call_number / call_name
-			new_devices.forEach((dev)=>{		//FIXME: concurent writing
-				KAZOO.device.get({
-					account_id: localStorage["account_id"],
-					deviceId: dev.id,
-					success: (data, status)=>{
-						var d = data.data;
-						var external_name, external_number, internal_name, internal_number;
-						// "caller_id": {
-						// 	"external": {
-						// 		"name": "Phone1 outer caller name",
-						// 		"number": "4000"
-						// 	},
-						// 	"internal": {
-						// 		"name": "Phone1 inner caller name",
-						// 		"number": "3000"
-						// 	}
-						// },
-						try{
-							
-						}catch(e){}
-					}
-				});
+			//get caller_number / caller_name
+			var lazy_get_dev_info_functions = new_devices.map((dev)=>{
+				return function(){
+					KAZOO.device.get({
+						account_id: localStorage["account_id"],
+						deviceId: dev.id,
+						success: (data, status)=>{
+							var d = data.data;
+							var external_name, external_number, internal_name, internal_number;
+							var devices = storage.get("devices", []);
+							var current_device_index = devices.findIndex((x)=>{return x.id===dev.id;});
+							if (current_device_index >= 0) {
+								try{ devices[current_device_index].external_caller_name = d.caller_id.external.name;	  }catch(e){}
+								try{ devices[current_device_index].internal_caller_name = d.caller_id.internal.name;	  }catch(e){}
+								try{ devices[current_device_index].external_caller_number = d.caller_id.external.number; }catch(e){}
+								try{ devices[current_device_index].internal_caller_number = d.caller_id.internal.number; }catch(e){}
+
+								storage.set("devices", devices);
+							}
+						},
+						error: (x)=>{ console.log("Error getting "); }
+					});
+				};
 			});
+			executeWithDelay(lazy_get_dev_info_functions, 1500); //for prevent concurent writing to localStorage
 		}});
 };
 
@@ -424,7 +451,6 @@ function authorize(){
 		success: function(data, status) {
 			console.log(MODULE + " Require user data...");
 			localStorage["account_id"] = data.data.account_id;
-			//localStorage["user_id"] = data.data.owner_id;
 			KAZOO.user.list({
 				account_id: data.data.account_id,
 				filters: { filter_username: localStorage["username"] },
@@ -437,7 +463,17 @@ function authorize(){
 					localStorage["errorMessage"]="";
 					localStorage["authTokens"] = KAZOO.authTokens[Object.keys(KAZOO.authTokens)[0]];
 					localStorage["user_id"] = b_data.data[0].id;
-					executeWithDelay([getMyFaxBoxId, grubUserData, updateDevices, updateVoiceMails, updatePhoneBook, updateFax, signToBlackholeEvents, updateHistory], 1000);
+					executeWithDelay([getMyFaxBoxId
+							  ,grubUserData
+							  ,grubAccountData
+							  ,updateDevices
+							  ,updateVoiceMails
+							  ,updatePhoneBook
+							  ,signToBlackholeEvents
+							  ,updateFax
+							  ,updateHistory
+							  ,update_DND_ico
+							  ,update_CF_ico], 1200);
 
 					clearInterval(AUTH_DAEMON_ID);
 					clearInterval(VM_DAEMON_ID);
@@ -453,6 +489,28 @@ function authorize(){
 		},
 		error: error_handler,
 		generateError: true
+	});
+}
+
+function grubAccountData(){
+	if(is_too_fast()) return;
+	KAZOO.account.get({
+		account_id: localStorage.account_id,
+		success:(d, s)=> {
+			try{
+				storage.set("account_internal_caller_name", d.data.caller_id.internal.name);
+			}catch(e){}
+			try{
+				storage.set("account_external_caller_name", d.data.caller_id.external.name);
+			}catch(e){}
+			try{
+				storage.set("account_external_caller_number", d.data.caller_id.external.number);
+			}catch(e){}
+			try{
+				storage.set("account_internal_caller_number", d.data.caller_id.internal.number);
+			}catch(e){}
+		},
+		error:  (d, s)=>{ console.log("Error getting account's caller data"); }
 	});
 }
 
@@ -472,19 +530,19 @@ function grubUserData(){
 			storage.set("call_forward", d.data.call_forward.enabled);
 			storage.set("dnd", d.data.do_not_disturb.enabled);
 			try{
-				storage.set("inner_caller_id_name", d.data.caller_id.internal.name);
-			}catch(e){ console.log("no inner_caller_id_name presented"); }
+				storage.set("user_internal_caller_name", d.data.caller_id.internal.name);
+			}catch(e){}
 			try{
-				storage.set("outer_caller_id_name", d.data.caller_id.external.name);
-			}catch(e){ console.log("no outer_caller_id_name presented"); }
+				storage.set("user_external_caller_name", d.data.caller_id.external.name);
+			}catch(e){}
 			try{
-				storage.set("inner_caller_id_number", d.data.caller_id.external.number);
-			}catch(e){ console.log("no inner_caller_id_number presented"); }
+				storage.set("user_external_caller_number", d.data.caller_id.external.number);
+			}catch(e){}
 			try{
-				storage.set("outer_caller_id_number", d.data.caller_id.internal.number);
-			}catch(e){ console.log("no outer_caller_id_number presented"); }
+				storage.set("user_internal_caller_number", d.data.caller_id.internal.number);
+			}catch(e){}
 		},
-		error:  (d, s)=>{ console.log("Error getting call_forward"); }
+		error:  (d, s)=>{ console.log("Error getting user's caller data"); }
 	});
 }
 
