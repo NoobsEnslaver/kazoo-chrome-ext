@@ -19,8 +19,8 @@ limitations under the License.
 		<meta charset="utf-8">
 		<link rel="stylesheet" href="style.css" />
 		<script src="jquery.js"></script>
-		<script src="send_fax.js"></script>
 		<script src="utils.js"></script>
+		<script src="send_fax.js"></script>		
 	</head>
 	<body style="width: 100%;overflow: auto">
 		<div class="settings">
@@ -41,12 +41,11 @@ limitations under the License.
 					<div class="settings__item">
 						<select class="input"  name="caller_id" id="caller_id" required>
 							<option value="" disabled selected hidden>Send fax as:</option>
-							<!-- <option value="volvo">Volvo</option> -->
 						</select>
 					</div>					
 				</fieldset>
-
-				<br/>
+				<!-- <br/> -->
+				<div id="error_msg2">&nbsp;&nbsp;</div>
 				<div class="settings__btns">
 					<input class="settings__btn settings__btn-save" type="button" value="Send" id="send_btn">
 					<input class="settings__btn settings__btn-reset" type="reset" value="Reset" id="reset_btn">

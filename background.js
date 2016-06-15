@@ -98,13 +98,13 @@ function onMessage(request, sender, sendResponse) {
 		break;
 
 	case "SEND_FAX":
-		send_fax(request);
+		sendResponse(send_fax(request));
 		break;
 	}
 }
 
 function send_fax(request){
-	if(is_too_fast()) return;
+	if(is_too_fast()) return false;
 	console.log("Sending fax to %o", request.to_number);
 	var data = {
 		"document":{
@@ -132,6 +132,8 @@ function send_fax(request){
 		data.from_number = device.external_caller_number;		
 	}
 	KAZOO.faxes.send({account_id: localStorage.account_id, data: data});
+	
+	return true;
 }
 
 function updateFax(){
@@ -482,7 +484,7 @@ function authorize(){
 					AUTH_DAEMON_ID = window.setInterval(authorize, 60*60*1000); // update auth-token every hour
 					VM_DAEMON_ID = window.setInterval(updateVoiceMails, 30*1000);
 					FAX_DAEMON_ID = window.setInterval(updateFax, 60*1000);
-					HISTORY_DAEMON_ID = window.setInterval(updateHistory, 30*1000);
+					HISTORY_DAEMON_ID = window.setInterval(updateHistory, 60*1000);
 				},
 				error: error_handler
 			});
@@ -612,22 +614,14 @@ function signToBlackholeEvents(){
 		var number, in_phone_book_name, name;
 		if (EventJObj["Event-Name"] === "CHANNEL_CREATE") {
 			storage.assign("pkg_dump", flatten(EventJObj));		// Dump blackhole package structure
-			var is_outgoing = // EventJObj["Caller-ID-Name"] === "Device QuickCall" ||
-				    EventJObj["Call-Direction"] === "inbound";
+			var is_outgoing = EventJObj["Call-Direction"] === "inbound";
 			last_blackhole_pkg = EventJObj;
-
 			number = is_outgoing? (EventJObj["Callee-ID-Number"] || EventJObj["To"].split('@')[0]):
 				    (EventJObj["Caller-ID-Number"] || EventJObj["Other-Leg-Caller-ID-Number"] || EventJObj["From"].split('@')[0] || "unknown");
 			in_phone_book_name = storage.get("phone_book", []).find((x)=>{return (x.value && x.value.phone == number);});
 			if(in_phone_book_name && in_phone_book_name.value && in_phone_book_name.value.name) in_phone_book_name = in_phone_book_name.value.name;
 			name = is_outgoing? (EventJObj["Callee-ID-Name"] || EventJObj["To"].split('@')[0]):
 				(EventJObj["Caller-ID-Name"] || EventJObj["Other-Leg-Caller-ID-Name"] || EventJObj["From"].split('@')[0] ||"unknown");
-			// storage.push("history", {
-			// 	number: number,
-			// 	time: Date.now(),
-			// 	type: is_outgoing?"outgoing":"received",
-			// 	name: in_phone_book_name? (in_phone_book_name + " (" + name + ")") : name
-			// });
 			if(is_outgoing && localStorage.outboundCallNotificationsEnabled !== "true") return;
 			if(!is_outgoing && localStorage.inboundCallNotificationsEnabled !== "true") return;
 			if(EventJObj["Caller-ID-Name"] === "Device QuickCall" && localStorage.onQuickCallNotifications !== "true") return;
@@ -637,7 +631,6 @@ function signToBlackholeEvents(){
 					type: "basic",
 					iconUrl: "images/phone-push.png",
 					title: "Incoming Call",
-					//eventTime: 2000,
 					isClickable: true,
 					buttons: [{title:"View profile info"}, {title: "Call forward"}],
 					message: "User " + (in_phone_book_name? (in_phone_book_name + " (" + name + ")") : name) + " calling",
@@ -650,9 +643,9 @@ function signToBlackholeEvents(){
 				chrome.notifications.onButtonClicked.addListener((id, b_idx)=>{
 					if(id !== "Kazoo chrome extension push event") return;
 					if (b_idx === 0) {
-						alert("Coming soon");
+						//alert("Coming soon");
 					}else{
-						alert("Coming soon");
+						//alert("Coming soon");
 					}
 				});
 			}
@@ -842,27 +835,31 @@ function updateHistory(){
 			       userId: localStorage.user_id,
 			       filters: { created_from: storage.get("last_history_update", 63633113191) },
 			       success: (d, s)=>{
-				       if(d.data.length > 0){
-					       console.log("%o new history records received", d.data.length);
-					       d.data.sort((a, b)=> {
-						       a = Number.parseInt(a.timestamp);
-						       b = Number.parseInt(b.timestamp);
-						       return a - b;
-					       }).forEach((record)=>{						       
-						       var is_outgoing = record.direction === "inbound";
-						       var number = (is_outgoing? record.dialed_number: record.callee_id_number) || "unknown";//is_outgoing? record.caller_id_number: record.callee_id_number;
-						       var in_phone_book_name = storage.get("phone_book", []).find((x)=>{return (x.value && x.value.phone == number);});
-						       if(in_phone_book_name && in_phone_book_name.value && in_phone_book_name.value.name) in_phone_book_name = in_phone_book_name.value.name;
-						       var name = (is_outgoing? record.callee_id_name: record.caller_id_name) || "unknown";
-						       storage.unshift("history", {
-							       number: number,
-							       time: record.datetime,
-							       type: is_outgoing? "outgoing":"incoming",
-							       name: in_phone_book_name? (in_phone_book_name + " (" + name + ")") : name
-						       });
+				       if(d.data.length === 0) return;
+				       console.log("%o history records received", d.data.length);
+				       var old_history = storage.get("history", []);
+				       d.data.sort((a, b)=> {
+					       a = Number.parseInt(a.timestamp);
+					       b = Number.parseInt(b.timestamp);
+					       return a - b;
+				       }).filter((record)=>{
+					       return old_history.findIndex((x)=>{return x.id === record.id;}) === -1;   //only records, that don't contains in history
+				       }).forEach((record)=>{
+					       var is_outgoing = record.direction === "inbound";
+					       var number = (is_outgoing? record.dialed_number: record.callee_id_number) || "unknown";
+					       var in_phone_book_name = storage.get("phone_book", []).find((x)=>{return (x.value && x.value.phone == number);});
+					       if(in_phone_book_name && in_phone_book_name.value && in_phone_book_name.value.name) in_phone_book_name = in_phone_book_name.value.name;
+					       var name = (is_outgoing? record.callee_id_name: record.caller_id_name) || "unknown";
+					       storage.unshift("history", {
+						       number: number,
+						       time: record.datetime,
+						       type: is_outgoing? "outgoing":"incoming",
+						       name: in_phone_book_name? (in_phone_book_name + " (" + name + ")") : name,
+						       id: record.id
 					       });
-					       storage.set("last_history_update", Number.parseInt(d.data[d.data.length-1].timestamp) + 15); // 15s it is threshold
-				       }
+				       });
+				       storage.set("last_history_update", Number.parseInt(d.data[d.data.length-1].timestamp) + 15); // 15s it is threshold for no-receiving
+				       // that record again (may dont work)
 			       },
 			       error: (d, s)=>{
 				       console.log("Error updateHistory: %o", d);

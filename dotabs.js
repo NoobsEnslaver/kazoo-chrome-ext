@@ -276,11 +276,11 @@ function draw_no_vm_logo(){
 	p1= document.createElement("p");
 	p2= document.createElement("p");
 	h3_1= document.createElement("h3");
-	h3_2= document.createElement("h3");
+	//h3_2= document.createElement("h3");
 	h3_1.innerText = translate.no_voicemail_msg1.message;
-	h3_2.innerText = translate.no_voicemail_msg2.message;
+	//h3_2.innerText = translate.no_voicemail_msg2.message;
 	p1.appendChild(h3_1);
-	p2.appendChild(h3_2);
+	//p2.appendChild(h3_2);
 	img = document.createElement("img");
 
 	img.src = "images/no_voicemailbox.png";

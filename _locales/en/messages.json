@@ -59,8 +59,10 @@
 	"phonebook": {"message": "Phone book"},
 	"conference": {"message": "Conferences"},
 	"fax": {"message": "Fax"},
-	"no_voicemail_msg1": {"message": "You have no voicemails yet..."},
+	"no_voicemail_msg1": {"message": "You have no voicemails yet."},
 	"no_voicemail_msg2": {"message": "...make a rest"},
 	"to_name": {"message": "Recipient's name"},
-	"clean_history": {"message": "Clean history"}
+	"clean_history": {"message": "Clean history"},
+	"success": {"message": "Success"},
+	"failed": {"message": "Failed"}
 }

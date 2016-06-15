@@ -59,8 +59,10 @@
 	"phonebook": {"message": "Телефонная книга"},
 	"conference": {"message": "Конферениции"},
 	"fax": {"message": "Факс"},
-	"no_voicemail_msg1": {"message": "Нет голосовых сообщений для Вас..."},
+	"no_voicemail_msg1": {"message": "Нет голосовых сообщений для Вас."},
 	"no_voicemail_msg2": {"message": "...можно отдохнуть :)"},
 	"to_name": {"message": "Имя получателя"},
-	"clean_history": {"message": "Очистить историю"}
+	"clean_history": {"message": "Очистить историю"},
+	"success": {"message": "Успешно"},
+	"failed": {"message": "Ошибка"}
 }
