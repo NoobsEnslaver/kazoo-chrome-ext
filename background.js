@@ -635,7 +635,7 @@ function signToBlackholeEvents(){
 		    !EventJObj["Custom-Channel-Vars"]["Account-ID"] === localStorage["account_id"] ||	//FIXME(?)
 		    devices.findIndex((x)=>{ return x == EventJObj["Custom-Channel-Vars"]["Authorizing-ID"];}) < 0) return;
 		var number, in_phone_book_name, name;
-		if (EventJObj["Event-Name"] === "CHANNEL_CREATE") {
+		if (EventJObj["Event-Name"] === "CHANNEL_CREATE") {			
 			storage.assign("pkg_dump", flatten(EventJObj));		// Dump blackhole package structure
 			var is_outgoing = EventJObj["Call-Direction"] === "inbound";
 			last_blackhole_pkg = EventJObj;
@@ -672,9 +672,11 @@ function signToBlackholeEvents(){
 					}
 				});
 			}
+			console.log(is_outgoing?"Outgoing":"Incoming" + " call event CHANNEL_CREATE from %o %o", name, number);
 		}
 
 		if (EventJObj["Event-Name"] === "CHANNEL_DESTROY"){
+			console.log("Call event CHANNEL_DESTROY");
 			chrome.notifications.clear("Kazoo chrome extension push event");
 			window.setTimeout(updateHistory, 3000);
 		}
@@ -794,21 +796,22 @@ function updateVoiceMails(){
 }
 
 function blackholeUserActionHandler(action){
+	console.log("Blackhole user action: %o", action);
 	switch(action){
 	case "KEEP_CALL":
-		alert("Keep call; now this features isn't implemented");
+		//alert("Keep call; now this features isn't implemented");
 		break;
 
 	case "CALL_FORWARDING":
-		alert("Call forwarding; now this features isn't implemented");
+		//alert("Call forwarding; now this features isn't implemented");
 		break;
 
 	case "OVERLAY":
-		alert("Overlay");
+		//alert("Overlay");
 		break;
 
 	case "REJECT":
-		alert("Rejected");
+		//alert("Rejected");
 		break;
 
 	case "VIEW_PROFILE":
